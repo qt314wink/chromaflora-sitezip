@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cosmic Swirl Generator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a1a;
+      color: white;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    
+    h1 {
+      text-align: center;
+      margin-bottom: 8px;
+      background: linear-gradient(90deg, #a855f7, #22d3d8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .subtitle {
+      text-align: center;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 32px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 24px;
+    }
+    
+    @media (max-width: 900px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .canvas-wrapper {
+      background: rgba(20, 15, 40, 0.8);
+      border-radius: 16px;
+      padding: 16px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    canvas {
+      width: 100%;
+      border-radius: 12px;
+      display: block;
+    }
+    
+    .controls {
+      background: rgba(20, 15, 40, 0.8);
+      border-radius: 16px;
+      padding: 24px;
+      border: 1px solid rgba(255,255,255,0.1);
+      height: fit-content;
+    }
+    
+    .control-group {
+      margin-bottom: 20px;
+    }
+    
+    .control-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.7);
+    }
+    
+    .control-value {
+      color: #22d3d8;
+      font-weight: 500;
+    }
+    
+    input[type="range"] {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(255,255,255,0.1);
+      -webkit-appearance: none;
+      appearance: none;
+      outline: none;
+    }
+    
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #22d3d8, #a855f7);
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(34, 211, 216, 0.5);
+    }
+    
+    input[type="color"] {
+      width: 100%;
+      height: 40px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: transparent;
+    }
+    
+    .color-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    
+    .color-input-wrapper {
+      position: relative;
+    }
+    
+    .color-input-wrapper input {
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    .preset-buttons {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    
+    .btn {
+      padding: 10px 16px;
+      border-radius: 20px;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .btn--primary {
+      background: linear-gradient(135deg, #22d3d8, #a855f7);
+      color: white;
+      box-shadow: 0 0 15px rgba(34, 211, 216, 0.4);
+    }
+    
+    .btn--primary:hover {
+      box-shadow: 0 0 25px rgba(34, 211, 216, 0.6);
+      transform: scale(1.02);
+    }
+    
+    .btn--secondary {
+      background: rgba(255,255,255,0.1);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .btn--secondary:hover {
+      background: rgba(255,255,255,0.15);
+      border-color: #a855f7;
+    }
+    
+    .btn--full {
+      grid-column: span 2;
+    }
+    
+    .gallery {
+      margin-top: 32px;
+    }
+    
+    .gallery-title {
+      font-size: 16px;
+      margin-bottom: 16px;
+      color: rgba(255,255,255,0.8);
+    }
+    
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 12px;
+    }
+    
+    .gallery-item {
+      aspect-ratio: 1;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 2px solid transparent;
+    }
+    
+    .gallery-item:hover {
+      transform: scale(1.05);
+      border-color: #a855f7;
+      box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+    }
+    
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .section-divider {
+      height: 1px;
+      background: rgba(255,255,255,0.1);
+      margin: 20px 0;
+    }
+    
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    
+    .checkbox-group input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #a855f7;
+    }
+    
+    .checkbox-group label {
+      font-size: 13px;
+      color: rgba(255,255,255,0.7);
+    }
+  </style>
+</head>
+<body>
+  <h1>✨ Cosmic Swirl Generator</h1>
+  <p class="subtitle">Create procedural bioluminescent backgrounds for ChromaFlora</p>
+  
+  <div class="container">
+    <div>
+      <div class="canvas-wrapper">
+        <canvas id="canvas" width="800" height="800"></canvas>
+      </div>
+      
+      <div class="gallery">
+        <h3 class="gallery-title">Generated Gallery (click to load)</h3>
+        <div class="gallery-grid" id="gallery"></div>
+      </div>
+    </div>
+    
+    <div class="controls">
+      <div class="preset-buttons">
+        <button class="btn btn--primary" onclick="generate()">🎲 Generate</button>
+        <button class="btn btn--secondary" onclick="saveImage()">💾 Save PNG</button>
+        <button class="btn btn--secondary" onclick="applyPreset('cosmic')">🌌 Cosmic</button>
+        <button class="btn btn--secondary" onclick="applyPreset('floral')">🌸 Floral</button>
+        <button class="btn btn--secondary" onclick="applyPreset('ocean')">🌊 Ocean</button>
+        <button class="btn btn--secondary" onclick="applyPreset('sunset')">🌅 Sunset</button>
+        <button class="btn btn--secondary btn--full" onclick="addToGallery()">➕ Add to Gallery</button>
+      </div>
+      
+      <div class="section-divider"></div>
+      
+      <div class="control-group">
+        <div class="control-label">
+          <span>Swirl Intensity</span>
+          <span class="control-value" id="swirl-value">3.0</span>
+        </div>
+        <input type="range" id="swirl" min="0.5" max="8" step="0.1" value="3" oninput="updateValue('swirl'); generate()">
+      </div>
+      
+      <div class="control-group">
+        <div class="control-label">
+          <span>Turbulence</span>
+          <span class="control-value" id="turbulence-value">2.0</span>
+        </div>
+        <input type="range" id="turbulence" min="0.5" max="5" step="0.1" value="2" oninput="updateValue('turbulence'); generate()">
+      </div>
+      
+      <div class="control-group">
+        <div class="control-label">
+          <span>Scale</span>
+          <span class="control-value" id="scale-value">200</span>
+        </div>
+        <input type="range" id="scale" min="50" max="500" step="10" value="200" oninput="updateValue('scale'); generate()">
+      </div>
+      
+      <div class="control-group">
+        <div class="control-label">
+          <span>Glow Intensity</span>
+          <span class="control-value" id="glow-value">0.4</span>
+        </div>
+        <input type="range" id="glow" min="0" max="1" step="0.05" value="0.4" oninput="updateValue('glow'); generate()">
+      </div>
+      
+      <div class="control-group">
+        <div class="control-label">
+          <span>Color Blend</span>
+          <span class="control-value" id="blend-value">0.5</span>
+        </div>
+        <input type="range" id="blend" min="0" max="1" step="0.05" value="0.5" oninput="updateValue('blend'); generate()">
+      </div>
+      
+      <div class="section-divider"></div>
+      
+      <div class="control-group">
+        <div class="control-label">
+          <span>Colors</span>
+        </div>
+        <div class="color-row">
+          <div class="color-input-wrapper">
+            <input type="color" id="color1" value="#ec4899" onchange="generate()">
+          </div>
+          <div class="color-input-wrapper">
+            <input type="color" id="color2" value="#a855f7" onchange="generate()">
+          </div>
+          <div class="color-input-wrapper">
+            <input type="color" id="color3" value="#22d3d8" onchange="generate()">
+          </div>
+        </div>
+      </div>
+      
+      <div class="section-divider"></div>
+      
+      <div class="checkbox-group">
+        <input type="checkbox" id="animate" onchange="toggleAnimation()">
+        <label for="animate">Animate</label>
+      </div>
+      
+      <div class="checkbox-group">
+        <input type="checkbox" id="addNoise" checked onchange="generate()">
+        <label for="addNoise">Add grain/noise</label>
+      </div>
+      
+      <div class="checkbox-group">
+        <input type="checkbox" id="addHighlights" checked onchange="generate()">
+        <label for="addHighlights">Add highlights</label>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    let animationId = null;
+    let time = 0;
+    
+    // Simplex noise implementation
+    class SimplexNoise {
+      constructor(seed = Math.random()) {
+        this.p = new Uint8Array(256);
+        for (let i = 0; i < 256; i++) this.p[i] = i;
+        
+        // Shuffle with seed
+        let n = seed * 2147483647;
+        for (let i = 255; i > 0; i--) {
+          n = (n * 16807) % 2147483647;
+          const j = n % (i + 1);
+          [this.p[i], this.p[j]] = [this.p[j], this.p[i]];
+        }
+        
+        this.perm = new Uint8Array(512);
+        for (let i = 0; i < 512; i++) this.perm[i] = this.p[i & 255];
+      }
+      
+      noise2D(x, y) {
+        const F2 = 0.5 * (Math.sqrt(3) - 1);
+        const G2 = (3 - Math.sqrt(3)) / 6;
+        
+        const s = (x + y) * F2;
+        const i = Math.floor(x + s);
+        const j = Math.floor(y + s);
+        
+        const t = (i + j) * G2;
+        const X0 = i - t;
+        const Y0 = j - t;
+        const x0 = x - X0;
+        const y0 = y - Y0;
+        
+        const i1 = x0 > y0 ? 1 : 0;
+        const j1 = x0 > y0 ? 0 : 1;
+        
+        const x1 = x0 - i1 + G2;
+        const y1 = y0 - j1 + G2;
+        const x2 = x0 - 1 + 2 * G2;
+        const y2 = y0 - 1 + 2 * G2;
+        
+        const ii = i & 255;
+        const jj = j & 255;
+        
+        const grad = (hash, x, y) => {
+          const h = hash & 7;
+          const u = h < 4 ? x : y;
+          const v = h < 4 ? y : x;
+          return ((h & 1) ? -u : u) + ((h & 2) ? -2 * v : 2 * v);
+        };
+        
+        let n0 = 0, n1 = 0, n2 = 0;
+        
+        let t0 = 0.5 - x0 * x0 - y0 * y0;
+        if (t0 >= 0) {
+          t0 *= t0;
+          n0 = t0 * t0 * grad(this.perm[ii + this.perm[jj]], x0, y0);
+        }
+        
+        let t1 = 0.5 - x1 * x1 - y1 * y1;
+        if (t1 >= 0) {
+          t1 *= t1;
+          n1 = t1 * t1 * grad(this.perm[ii + i1 + this.perm[jj + j1]], x1, y1);
+        }
+        
+        let t2 = 0.5 - x2 * x2 - y2 * y2;
+        if (t2 >= 0) {
+          t2 *= t2;
+          n2 = t2 * t2 * grad(this.perm[ii + 1 + this.perm[jj + 1]], x2, y2);
+        }
+        
+        return 70 * (n0 + n1 + n2);
+      }
+      
+      // Fractal Brownian Motion
+      fbm(x, y, octaves = 4) {
+        let value = 0;
+        let amplitude = 1;
+        let frequency = 1;
+        let maxValue = 0;
+        
+        for (let i = 0; i < octaves; i++) {
+          value += amplitude * this.noise2D(x * frequency, y * frequency);
+          maxValue += amplitude;
+          amplitude *= 0.5;
+          frequency *= 2;
+        }
+        
+        return value / maxValue;
+      }
+    }
+    
+    let noise = new SimplexNoise();
+    
+    // Parse hex color to RGB
+    function hexToRgb(hex) {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+      } : null;
+    }
+    
+    // Interpolate between colors
+    function lerpColor(c1, c2, t) {
+      return {
+        r: Math.round(c1.r + (c2.r - c1.r) * t),
+        g: Math.round(c1.g + (c2.g - c1.g) * t),
+        b: Math.round(c1.b + (c2.b - c1.b) * t)
+      };
+    }
+    
+    // Get value from slider
+    function getValue(id) {
+      return parseFloat(document.getElementById(id).value);
+    }
+    
+    // Update displayed value
+    function updateValue(id) {
+      const value = getValue(id);
+      document.getElementById(`${id}-value`).textContent = value.toFixed(1);
+    }
+    
+    // Main generation function
+    function generate(t = 0) {
+      const width = canvas.width;
+      const height = canvas.height;
+      
+      const swirl = getValue('swirl');
+      const turbulence = getValue('turbulence');
+      const scale = getValue('scale');
+      const glowIntensity = getValue('glow');
+      const colorBlend = getValue('blend');
+      
+      const color1 = hexToRgb(document.getElementById('color1').value);
+      const color2 = hexToRgb(document.getElementById('color2').value);
+      const color3 = hexToRgb(document.getElementById('color3').value);
+      
+      const addNoiseEffect = document.getElementById('addNoise').checked;
+      const addHighlights = document.getElementById('addHighlights').checked;
+      
+      const imageData = ctx.createImageData(width, height);
+      const data = imageData.data;
+      
+      const centerX = width / 2;
+      const centerY = height / 2;
+      
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const idx = (y * width + x) * 4;
+          
+          // Distance from center
+          const dx = x - centerX;
+          const dy = y - centerY;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const angle = Math.atan2(dy, dx);
+          
+          // Swirl distortion
+          const swirlAngle = angle + (dist / scale) * swirl + t * 0.5;
+          const swirlX = centerX + Math.cos(swirlAngle) * dist;
+          const swirlY = centerY + Math.sin(swirlAngle) * dist;
+          
+          // Sample noise at swirled position
+          const nx = swirlX / scale;
+          const ny = swirlY / scale;
+          
+          // Multiple noise layers
+          const n1 = noise.fbm(nx + t * 0.1, ny, 4);
+          const n2 = noise.fbm(nx * turbulence + 100, ny * turbulence + t * 0.05, 3);
+          const n3 = noise.fbm(nx * 0.5 + 200 + t * 0.02, ny * 0.5, 2);
+          
+          // Combine noise values
+          let value = (n1 + n2 * 0.5 + n3 * 0.25) / 1.75;
+          value = (value + 1) / 2; // Normalize to 0-1
+          
+          // Color mapping with three-way blend
+          let color;
+          if (value < colorBlend) {
+            const t = value / colorBlend;
+            color = lerpColor(color1, color2, t);
+          } else {
+            const t = (value - colorBlend) / (1 - colorBlend);
+            color = lerpColor(color2, color3, t);
+          }
+          
+          // Add glow based on noise peaks
+          const glow = Math.pow(Math.max(0, n1), 2) * glowIntensity;
+          color.r = Math.min(255, color.r + glow * 100);
+          color.g = Math.min(255, color.g + glow * 150);
+          color.b = Math.min(255, color.b + glow * 200);
+          
+          // Add highlights
+          if (addHighlights) {
+            const highlight = Math.pow(Math.max(0, n2), 4) * 0.5;
+            color.r = Math.min(255, color.r + highlight * 255);
+            color.g = Math.min(255, color.g + highlight * 255);
+            color.b = Math.min(255, color.b + highlight * 255);
+          }
+          
+          // Add noise/grain
+          if (addNoiseEffect) {
+            const grain = (Math.random() - 0.5) * 15;
+            color.r = Math.max(0, Math.min(255, color.r + grain));
+            color.g = Math.max(0, Math.min(255, color.g + grain));
+            color.b = Math.max(0, Math.min(255, color.b + grain));
+          }
+          
+          // Vignette
+          const vignette = 1 - Math.pow(dist / (Math.max(width, height) * 0.7), 2) * 0.3;
+          
+          data[idx] = color.r * vignette;
+          data[idx + 1] = color.g * vignette;
+          data[idx + 2] = color.b * vignette;
+          data[idx + 3] = 255;
+        }
+      }
+      
+      ctx.putImageData(imageData, 0, 0);
+    }
+    
+    // Animation loop
+    function animate() {
+      time += 0.02;
+      generate(time);
+      animationId = requestAnimationFrame(animate);
+    }
+    
+    function toggleAnimation() {
+      if (document.getElementById('animate').checked) {
+        animate();
+      } else {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+      }
+    }
+    
+    // Presets
+    const presets = {
+      cosmic: {
+        swirl: 3, turbulence: 2, scale: 200, glow: 0.4, blend: 0.5,
+        color1: '#ec4899', color2: '#a855f7', color3: '#22d3d8'
+      },
+      floral: {
+        swirl: 4, turbulence: 1.5, scale: 250, glow: 0.6, blend: 0.4,
+        color1: '#f472b6', color2: '#c084fc', color3: '#a5f3fc'
+      },
+      ocean: {
+        swirl: 2, turbulence: 3, scale: 300, glow: 0.3, blend: 0.6,
+        color1: '#0ea5e9', color2: '#6366f1', color3: '#14b8a6'
+      },
+      sunset: {
+        swirl: 2.5, turbulence: 1.8, scale: 220, glow: 0.5, blend: 0.45,
+        color1: '#f97316', color2: '#ec4899', color3: '#8b5cf6'
+      }
+    };
+    
+    function applyPreset(name) {
+      const p = presets[name];
+      document.getElementById('swirl').value = p.swirl;
+      document.getElementById('turbulence').value = p.turbulence;
+      document.getElementById('scale').value = p.scale;
+      document.getElementById('glow').value = p.glow;
+      document.getElementById('blend').value = p.blend;
+      document.getElementById('color1').value = p.color1;
+      document.getElementById('color2').value = p.color2;
+      document.getElementById('color3').value = p.color3;
+      
+      updateValue('swirl');
+      updateValue('turbulence');
+      updateValue('scale');
+      updateValue('glow');
+      updateValue('blend');
+      
+      noise = new SimplexNoise(Math.random());
+      generate();
+    }
+    
+    // Save image
+    function saveImage() {
+      const link = document.createElement('a');
+      link.download = `cosmic-swirl-${Date.now()}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+    
+    // Gallery
+    function addToGallery() {
+      const gallery = document.getElementById('gallery');
+      const img = document.createElement('img');
+      img.src = canvas.toDataURL('image/png');
+      
+      const item = document.createElement('div');
+      item.className = 'gallery-item';
+      item.appendChild(img);
+      item.onclick = () => {
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = 800;
+        tempCanvas.height = 800;
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCtx.drawImage(img, 0, 0, 800, 800);
+        ctx.drawImage(tempCanvas, 0, 0);
+      };
+      
+      gallery.insertBefore(item, gallery.firstChild);
+      
+      // Limit gallery size
+      while (gallery.children.length > 12) {
+        gallery.removeChild(gallery.lastChild);
+      }
+    }
+    
+    // Randomize on each generate click
+    document.querySelector('.btn--primary').addEventListener('click', () => {
+      noise = new SimplexNoise(Math.random());
+    });
+    
+    // Initialize
+    generate();
+  </script>
+</body>
+</html>

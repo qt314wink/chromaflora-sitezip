@@ -697,102 +697,120 @@
     }
 
     /* ═══════════════════════════════
-       GALLERY — 6-tile masonry-feel
+       GALLERY — 18-tile procedural art
     ═══════════════════════════════ */
     .gallery-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      grid-template-rows: repeat(2, 220px);
-      gap: var(--s4);
+      grid-template-columns: repeat(6, 1fr);
+      grid-auto-rows: 180px;
+      gap: 14px;
     }
-    @media (max-width: 900px) {
-      .gallery-grid { grid-template-columns: repeat(2, 1fr); grid-template-rows: auto; }
-    }
+    @media (max-width: 1200px) { .gallery-grid { grid-template-columns: repeat(4, 1fr); } }
+    @media (max-width: 800px)  { .gallery-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 540px)  { .gallery-grid { grid-template-columns: repeat(2, 1fr); } }
+
+    /* Wide tiles */
+    .gt--abstract-flows, .gt--coloring-book, .gt--vortex { grid-column: span 2; }
+    /* Tall tiles */
+    .gt--mandala, .gt--quilling { grid-row: span 2; }
 
     .gallery-tile {
-      border-radius: 20px;
+      border-radius: 18px;
       overflow: hidden;
       position: relative;
       cursor: pointer;
       transition: var(--t-smooth);
       border: 1px solid rgba(255,255,255,0.07);
     }
-    .gallery-tile:hover { transform: scale(1.03) translateY(-4px); z-index: 5; }
+    .gallery-tile:hover { transform: scale(1.04) translateY(-5px); z-index: 5; border-color: rgba(255,255,255,0.18); }
     .gallery-tile:hover .gallery-tile-overlay { opacity: 1; }
     .gallery-tile:hover .gallery-tile-label { transform: translateY(0); }
 
-    .gallery-tile-bg {
+    /* Canvas fills the tile */
+    .gallery-tile canvas {
       position: absolute;
       inset: 0;
-      transition: transform 0.6s var(--ease-out-expo);
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
     }
-    .gallery-tile:hover .gallery-tile-bg { transform: scale(1.08); }
 
-    .gt--1 .gallery-tile-bg { background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #06b6d4 100%); }
-    .gt--2 .gallery-tile-bg { background: linear-gradient(45deg, #f97316 0%, #ec4899 50%, #a855f7 100%); }
-    .gt--3 .gallery-tile-bg { background: linear-gradient(180deg, #06b6d4 0%, #6366f1 50%, #ec4899 100%); }
-    .gt--4 .gallery-tile-bg { background: linear-gradient(225deg, #7c3aed 0%, #ec4899 50%, #f97316 100%); }
-    .gt--5 .gallery-tile-bg { background: linear-gradient(90deg, #10b981 0%, #22d3d8 40%, #a855f7 100%); }
-    .gt--6 .gallery-tile-bg { background: linear-gradient(315deg, #f472b6 0%, #22d3d8 50%, #6366f1 100%); }
-
-    .gallery-tile-bg::before {
-      content: '';
-      position: absolute;
-      inset: -10%;
-      background: inherit;
-      filter: blur(20px);
-      opacity: 0.5;
-      animation: morph-flow 9s ease-in-out infinite alternate;
-    }
-    @keyframes morph-flow {
-      0% { border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; }
-      100% { border-radius: 70% 30% 30% 70% / 70% 70% 30% 30%; }
-    }
+    /* Fallback bg per tile (shown before canvas loads) */
+    .gt--abstract-flows  { background: linear-gradient(135deg,#ec4899,#a855f7,#22d3d8); }
+    .gt--liquid-neon     { background: #040414; }
+    .gt--plasma-drift    { background: #050010; }
+    .gt--cosmic-tide     { background: #01010e; }
+    .gt--floral-glow     { background: #030112; }
+    .gt--deep-space      { background: #010108; }
+    .gt--liquid-mercury  { background: #080820; }
+    .gt--tectonic-shift  { background: #0a0508; }
+    .gt--ripple          { background: #020214; }
+    .gt--bubble          { background: #04091a; }
+    .gt--crystallize     { background: #020a18; }
+    .gt--liquify         { background: #080418; }
+    .gt--paper-layer     { background: #1a1408; }
+    .gt--quilling        { background: #0a0614; }
+    .gt--coloring-book   { background: #02020e; }
+    .gt--acid-pour       { background: #050214; }
+    .gt--prismatic       { background: #030108; }
+    .gt--vortex          { background: #020110; }
 
     .gallery-tile-overlay {
       position: absolute;
       inset: 0;
-      background: linear-gradient(to top, rgba(4,4,15,0.9) 0%, rgba(4,4,15,0.2) 50%, transparent 100%);
+      background: linear-gradient(to top, rgba(4,4,15,0.92) 0%, rgba(4,4,15,0.3) 40%, transparent 100%);
       opacity: 0;
       transition: opacity var(--t-smooth);
       display: flex;
       align-items: flex-end;
+      z-index: 10;
     }
     .gallery-tile-label {
-      padding: var(--s5);
+      padding: 14px 16px;
       transform: translateY(8px);
       transition: transform var(--t-smooth);
     }
     .gallery-tile-name {
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 700;
       color: white;
       margin-bottom: 2px;
     }
     .gallery-tile-meta {
-      font-size: 11px;
-      color: rgba(255,255,255,0.6);
+      font-size: 10px;
+      color: rgba(255,255,255,0.55);
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
     }
     .gallery-tile-meta::before {
       content: '◆';
-      font-size: 7px;
+      font-size: 6px;
       color: var(--aqua);
     }
 
-    /* Glow pulse on gallery tiles */
+    /* Glow border ring on hover */
     .gallery-tile::after {
       content: '';
       position: absolute;
       inset: 0;
-      border-radius: 20px;
+      border-radius: 18px;
       box-shadow: inset 0 0 0 1px rgba(255,255,255,0);
       transition: box-shadow var(--t-snap);
+      pointer-events: none;
+      z-index: 20;
     }
     .gallery-tile:hover::after {
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2), 0 0 30px rgba(168,85,247,0.3);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.22), 0 0 40px rgba(168,85,247,0.25);
+    }
+
+    /* Click burst overlay */
+    .gallery-tile .click-burst {
+      position: absolute;
+      inset: 0;
+      z-index: 15;
+      pointer-events: none;
+      border-radius: 18px;
     }
 
     /* ═══════════════════════════════
@@ -1383,10 +1401,10 @@
     <span class="logo-badge">v3.0</span>
   </div>
   <nav class="nav">
-    <a href="index.html" class="nav-link active" data-scramble="System">System</a>
+    <a href="index.html"           class="nav-link active" data-scramble="System">System</a>
+    <a href="projects.html"        class="nav-link" data-scramble="Projects">Projects</a>
     <a href="swirl-generator.html" class="nav-link" data-scramble="Generator">Generator</a>
-    <a href="#" class="nav-link" data-scramble="Components">Components</a>
-    <a href="#" class="nav-link" data-scramble="Tokens">Tokens</a>
+    <a href="#tokens"              class="nav-link" data-scramble="Tokens">Tokens</a>
   </nav>
   <div class="nav-actions">
     <button class="nav-pill">Export Kit</button>
@@ -1498,7 +1516,7 @@
       <span class="chip">Cosmic</span>
       <span class="chip">Organic</span>
     </div>
-    <!-- Stats row above gallery -->
+    <!-- Stats row -->
     <div class="stats-row" style="margin-top:var(--s6);">
       <div class="stat-card reveal" data-delay="0">
         <span class="stat-value"><span data-count="48">0</span><span class="stat-suffix">+</span></span>
@@ -1513,66 +1531,175 @@
         <div class="stat-label">Snap Reactivity</div>
       </div>
       <div class="stat-card reveal" data-delay="0.3">
-        <span class="stat-value"><span data-count="16">0</span><span class="stat-suffix">k</span></span>
-        <div class="stat-label">Design Tokens</div>
+        <span class="stat-value"><span data-count="18">0</span><span class="stat-suffix">×</span></span>
+        <div class="stat-label">Live Effects</div>
       </div>
     </div>
 
     <div class="gallery-grid">
-      <div class="gallery-tile gt--1 reveal-scale" data-delay="0">
-        <div class="gallery-tile-bg"></div>
-        <div class="gallery-tile-overlay">
-          <div class="gallery-tile-label">
-            <div class="gallery-tile-name">Abstract Flows</div>
-            <div class="gallery-tile-meta">Procedural · Biolume</div>
-          </div>
-        </div>
+
+      <!-- 1. Abstract Flows — wide, rotating flow streams -->
+      <div class="gallery-tile gt--abstract-flows reveal-scale" data-delay="0" data-effect="abstract-flows">
+        <canvas class="tile-canvas"></canvas>
+        <div class="gallery-tile-overlay"><div class="gallery-tile-label">
+          <div class="gallery-tile-name">Abstract Flows</div>
+          <div class="gallery-tile-meta">Procedural · Biolume</div>
+        </div></div>
       </div>
-      <div class="gallery-tile gt--2 reveal-scale" data-delay="0.07">
-        <div class="gallery-tile-bg"></div>
-        <div class="gallery-tile-overlay">
-          <div class="gallery-tile-label">
-            <div class="gallery-tile-name">Liquid Neon</div>
-            <div class="gallery-tile-meta">Cosmic · Organic</div>
-          </div>
-        </div>
+
+      <!-- 2. Liquid Neon — dripping neon columns -->
+      <div class="gallery-tile gt--liquid-neon reveal-scale" data-delay="0.05" data-effect="liquid-neon">
+        <canvas class="tile-canvas"></canvas>
+        <div class="gallery-tile-overlay"><div class="gallery-tile-label">
+          <div class="gallery-tile-name">Liquid Neon</div>
+          <div class="gallery-tile-meta">Cosmic · Organic</div>
+        </div></div>
       </div>
-      <div class="gallery-tile gt--3 reveal-scale" data-delay="0.14">
-        <div class="gallery-tile-bg"></div>
-        <div class="gallery-tile-overlay">
-          <div class="gallery-tile-label">
-            <div class="gallery-tile-name">Plasma Drift</div>
-            <div class="gallery-tile-meta">Biolume · Cosmic</div>
-          </div>
-        </div>
+
+      <!-- 3. Plasma Drift — pixel plasma field -->
+      <div class="gallery-tile gt--plasma-drift reveal-scale" data-delay="0.08" data-effect="plasma-drift">
+        <canvas class="tile-canvas"></canvas>
+        <div class="gallery-tile-overlay"><div class="gallery-tile-label">
+          <div class="gallery-tile-name">Plasma Drift</div>
+          <div class="gallery-tile-meta">Biolume · Cosmic</div>
+        </div></div>
       </div>
-      <div class="gallery-tile gt--4 reveal-scale" data-delay="0.21">
-        <div class="gallery-tile-bg"></div>
-        <div class="gallery-tile-overlay">
-          <div class="gallery-tile-label">
-            <div class="gallery-tile-name">Cosmic Tide</div>
-            <div class="gallery-tile-meta">Cosmic · Procedural</div>
-          </div>
-        </div>
+
+      <!-- 4. Mandala — tall, rotating sacred geometry -->
+      <div class="gallery-tile gt--mandala reveal-scale" data-delay="0.11" data-effect="mandala">
+        <canvas class="tile-canvas"></canvas>
+        <div class="gallery-tile-overlay"><div class="gallery-tile-label">
+          <div class="gallery-tile-name">Mandala</div>
+          <div class="gallery-tile-meta">Sacred · Geometry</div>
+        </div></div>
       </div>
-      <div class="gallery-tile gt--5 reveal-scale" data-delay="0.28">
-        <div class="gallery-tile-bg"></div>
-        <div class="gallery-tile-overlay">
-          <div class="gallery-tile-label">
-            <div class="gallery-tile-name">Floral Glow</div>
-            <div class="gallery-tile-meta">Organic · Biolume</div>
-          </div>
-        </div>
+
+      <!-- 5. Cosmic Tide — layered wave bands -->
+      <div class="gallery-tile gt--cosmic-tide reveal-scale" data-delay="0.14" data-effect="cosmic-tide">
+        <canvas class="tile-canvas"></canvas>
+        <div class="gallery-tile-overlay"><div class="gallery-tile-label">
+          <div class="gallery-tile-name">Cosmic Tide</div>
+          <div class="gallery-tile-meta">Cosmic · Wave</div>
+        </div></div>
       </div>
-      <div class="gallery-tile gt--6 reveal-scale" data-delay="0.35">
-        <div class="gallery-tile-bg"></div>
-        <div class="gallery-tile-overlay">
-          <div class="gallery-tile-label">
-            <div class="gallery-tile-name">Deep Space</div>
-            <div class="gallery-tile-meta">Cosmic · Organic</div>
-          </div>
-        </div>
+
+      <!-- 6. Floral Glow — blooming flower mandala -->
+      <div class="gallery-tile gt--floral-glow reveal-scale" data-delay="0.17" data-effect="floral-glow">
+        <canvas class="tile-canvas"></canvas>
+        <div class="gallery-tile-overlay"><div class="gallery-tile-label">
+          <div class="gallery-tile-name">Floral Glow</div>
+          <div class="gallery-tile-meta">Organic · Biolume</div>
+        </div></div>
       </div>
+
+      <!-- 7. Deep Space — galaxy starfield -->
+      <div class="gallery-tile gt--deep-space reveal-scale" data-delay="0.20" data-effect="deep-space">
+        <canvas class="tile-canvas"></canvas>
+        <div class="gallery-tile-overlay"><div class="gallery-tile-label">
+          <div class="gallery-tile-name">Deep Space</div>
+          <div class="gallery-tile-meta">Cosmic · Stars</div>
+        </div></div>
+      </div>
+
+      <!-- 8. Liquid Mercury — reflective blobs -->
+      <div class="gallery-tile gt--liquid-mercury reveal-scale" data-delay="0.23" data-effect="liquid-mercury">
+        <canvas class="tile-canvas"></canvas>
+        <div class="gallery-tile-overlay"><div class="gallery-tile-label">
+          <div class="gallery-tile-name">Liquid Mercury</div>
+          <div class="gallery-tile-meta">Metal · Fluid</div>
+        </div></div>
+      </div>
+
+      <!-- 9. Quilling — tall, paper coil spirals -->
+      <div class="gallery-tile gt--quilling reveal-scale" data-delay="0.26" data-effect="quilling">
+        <canvas class="tile-canvas"></canvas>
+        <div class="gallery-tile-overlay"><div class="gallery-tile-label">
+          <div class="gallery-tile-name">Quilling</div>
+          <div class="gallery-tile-meta">Paper · Craft</div>
+        </div></div>
+      </div>
+
+      <!-- 10. Tectonic Shift — cracked plates -->
+      <div class="gallery-tile gt--tectonic-shift reveal-scale" data-delay="0.29" data-effect="tectonic-shift">
+        <canvas class="tile-canvas"></canvas>
+        <div class="gallery-tile-overlay"><div class="gallery-tile-label">
+          <div class="gallery-tile-name">Tectonic Shift</div>
+          <div class="gallery-tile-meta">Geo · Fracture</div>
+        </div></div>
+      </div>
+
+      <!-- 11. Ripple — expanding water rings -->
+      <div class="gallery-tile gt--ripple reveal-scale" data-delay="0.32" data-effect="ripple-field">
+        <canvas class="tile-canvas"></canvas>
+        <div class="gallery-tile-overlay"><div class="gallery-tile-label">
+          <div class="gallery-tile-name">Ripple</div>
+          <div class="gallery-tile-meta">Water · Caustic</div>
+        </div></div>
+      </div>
+
+      <!-- 12. Bubble — iridescent floating orbs -->
+      <div class="gallery-tile gt--bubble reveal-scale" data-delay="0.35" data-effect="bubble">
+        <canvas class="tile-canvas"></canvas>
+        <div class="gallery-tile-overlay"><div class="gallery-tile-label">
+          <div class="gallery-tile-name">Bubble</div>
+          <div class="gallery-tile-meta">Surface · Soap</div>
+        </div></div>
+      </div>
+
+      <!-- 13. Crystallize — Voronoi crystal lattice -->
+      <div class="gallery-tile gt--crystallize reveal-scale" data-delay="0.38" data-effect="crystallize">
+        <canvas class="tile-canvas"></canvas>
+        <div class="gallery-tile-overlay"><div class="gallery-tile-label">
+          <div class="gallery-tile-name">Crystallize</div>
+          <div class="gallery-tile-meta">Mineral · Lattice</div>
+        </div></div>
+      </div>
+
+      <!-- 14. Liquify — morphing blob shapes -->
+      <div class="gallery-tile gt--liquify reveal-scale" data-delay="0.41" data-effect="liquify">
+        <canvas class="tile-canvas"></canvas>
+        <div class="gallery-tile-overlay"><div class="gallery-tile-label">
+          <div class="gallery-tile-name">Liquify</div>
+          <div class="gallery-tile-meta">Morph · Fluid</div>
+        </div></div>
+      </div>
+
+      <!-- 15. Paper Layer — stacked offset sheets -->
+      <div class="gallery-tile gt--paper-layer reveal-scale" data-delay="0.44" data-effect="paper-layer">
+        <canvas class="tile-canvas"></canvas>
+        <div class="gallery-tile-overlay"><div class="gallery-tile-label">
+          <div class="gallery-tile-name">Paper Layer</div>
+          <div class="gallery-tile-meta">Craft · Depth</div>
+        </div></div>
+      </div>
+
+      <!-- 16. Coloring Book Blueprint — wide, line art that fills -->
+      <div class="gallery-tile gt--coloring-book reveal-scale" data-delay="0.47" data-effect="coloring-book">
+        <canvas class="tile-canvas"></canvas>
+        <div class="gallery-tile-overlay"><div class="gallery-tile-label">
+          <div class="gallery-tile-name">Coloring Book</div>
+          <div class="gallery-tile-meta">Blueprint · Ink</div>
+        </div></div>
+      </div>
+
+      <!-- 17. Acid Pour — layered pigment blobs + bubbles -->
+      <div class="gallery-tile gt--acid-pour reveal-scale" data-delay="0.50" data-effect="acid-pour">
+        <canvas class="tile-canvas"></canvas>
+        <div class="gallery-tile-overlay"><div class="gallery-tile-label">
+          <div class="gallery-tile-name">Acid Pour</div>
+          <div class="gallery-tile-meta">Paint · Fluid</div>
+        </div></div>
+      </div>
+
+      <!-- 18. Vortex Nebula — wide, spiral galaxy pull -->
+      <div class="gallery-tile gt--vortex reveal-scale" data-delay="0.53" data-effect="vortex">
+        <canvas class="tile-canvas"></canvas>
+        <div class="gallery-tile-overlay"><div class="gallery-tile-label">
+          <div class="gallery-tile-name">Vortex Nebula</div>
+          <div class="gallery-tile-meta">Galaxy · Spiral</div>
+        </div></div>
+      </div>
+
     </div>
   </section>
 

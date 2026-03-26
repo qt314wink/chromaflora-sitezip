@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ChromaFlora · Design Tokens</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#04040f;--surface:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.08);
+    --purple:#a855f7;--aqua:#22d3ee;--pink:#ec4899;--orange:#f97316;--green:#10b981;
+    --t-snap:0.1s cubic-bezier(0.4,0,0.2,1);--t-spring:0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:#fff;min-height:100dvh}
+  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 70% 50% at 15% 30%,rgba(168,85,247,0.1) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 85% 70%,rgba(34,211,238,0.07) 0%,transparent 60%);pointer-events:none}
+  .header{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:60px;background:rgba(4,4,15,0.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+  .logo{font-weight:800;font-size:16px}.logo a{color:white;text-decoration:none}
+  .nav{display:flex;gap:4px}
+  .nav-link{padding:6px 14px;border-radius:8px;font-size:13px;font-weight:500;color:rgba(255,255,255,0.6);text-decoration:none;transition:var(--t-snap)}
+  .nav-link:hover,.nav-link.active{color:white;background:rgba(255,255,255,0.07)}
+  .page{max-width:1200px;margin:0 auto;padding:40px 24px 80px}
+  .page-title{font-size:38px;font-weight:900;margin-bottom:6px;background:linear-gradient(135deg,#a855f7,#22d3ee);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .page-sub{color:rgba(255,255,255,0.45);font-size:15px;margin-bottom:40px}
+
+  /* Token sections */
+  .token-section{margin-bottom:48px}
+  .section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:rgba(255,255,255,0.35);margin-bottom:20px;display:flex;align-items:center;gap:10px}
+  .section-title::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.07)}
+
+  /* Color tokens */
+  .color-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px}
+  .color-token{border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,0.07);cursor:pointer;transition:var(--t-spring)}
+  .color-token:hover{transform:translateY(-4px) scale(1.03);box-shadow:0 12px 40px rgba(0,0,0,0.5)}
+  .color-swatch{height:80px;position:relative}
+  .color-swatch::after{content:'✦';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:18px;color:rgba(255,255,255,0.3);opacity:0;transition:opacity 0.15s}
+  .color-token:hover .color-swatch::after{opacity:1}
+  .color-info{padding:10px 12px;background:rgba(0,0,0,0.3)}
+  .color-name{font-size:12px;font-weight:600;margin-bottom:2px}
+  .color-hex{font-size:10px;font-family:'JetBrains Mono',monospace;color:rgba(255,255,255,0.45)}
+  .copied{animation:copyFlash 0.35s ease}
+  @keyframes copyFlash{0%{background:rgba(168,85,247,0.3)}100%{background:rgba(0,0,0,0.3)}}
+
+  /* Spacing tokens */
+  .spacing-grid{display:flex;flex-direction:column;gap:8px}
+  .spacing-token{display:flex;align-items:center;gap:16px}
+  .spacing-bar{background:linear-gradient(90deg,var(--purple),var(--aqua));border-radius:3px;height:10px;transition:var(--t-spring)}
+  .spacing-token:hover .spacing-bar{filter:brightness(1.3);box-shadow:0 0 12px rgba(168,85,247,0.4)}
+  .spacing-label{font-size:12px;font-family:'JetBrains Mono',monospace;color:rgba(255,255,255,0.5);width:60px;flex-shrink:0}
+  .spacing-val{font-size:12px;color:rgba(255,255,255,0.4)}
+
+  /* Typography tokens */
+  .type-grid{display:flex;flex-direction:column;gap:16px}
+  .type-token{padding:20px 24px;border-radius:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);transition:var(--t-snap)}
+  .type-token:hover{border-color:rgba(168,85,247,0.2);background:rgba(168,85,247,0.05)}
+  .type-meta{font-size:10px;font-family:'JetBrains Mono',monospace;color:rgba(255,255,255,0.3);margin-bottom:6px}
+
+  /* Shadow tokens */
+  .shadow-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+  .shadow-token{padding:28px;border-radius:16px;background:rgba(255,255,255,0.04);transition:var(--t-smooth);cursor:default;text-align:center}
+  .shadow-name{font-size:12px;color:rgba(255,255,255,0.5);margin-top:12px;font-family:'JetBrains Mono',monospace}
+
+  /* Border radius */
+  .radius-grid{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-end}
+  .radius-token{display:flex;flex-direction:column;align-items:center;gap:8px}
+  .radius-box{background:linear-gradient(135deg,rgba(168,85,247,0.25),rgba(34,211,238,0.15));border:1px solid rgba(168,85,247,0.3);width:60px;height:60px;transition:var(--t-snap)}
+  .radius-token:hover .radius-box{background:linear-gradient(135deg,rgba(168,85,247,0.4),rgba(34,211,238,0.25))}
+  .radius-label{font-size:10px;font-family:'JetBrains Mono',monospace;color:rgba(255,255,255,0.4)}
+
+  /* Easing tokens */
+  .easing-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+  .easing-token{padding:18px 20px;border-radius:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);cursor:pointer;transition:var(--t-snap)}
+  .easing-token:hover{border-color:rgba(168,85,247,0.25)}
+  .easing-demo{height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;margin:10px 0;position:relative}
+  .easing-ball{position:absolute;top:-2px;left:0;width:10px;height:10px;border-radius:50%;background:var(--purple)}
+  .easing-token:hover .easing-ball{left:calc(100% - 10px)}
+  .easing-name{font-size:12px;font-weight:600;color:rgba(255,255,255,0.8)}
+  .easing-value{font-size:10px;font-family:'JetBrains Mono',monospace;color:rgba(255,255,255,0.35);margin-top:4px}
+
+  /* Copy toast */
+  .copy-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.3);color:white;font-size:13px;padding:10px 20px;border-radius:12px;opacity:0;transition:all 0.22s ease;z-index:999;pointer-events:none;backdrop-filter:blur(12px)}
+  .copy-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo"><a href="index.html">ChromaFlora</a></div>
+  <nav class="nav">
+    <a href="index.html" class="nav-link">System</a>
+    <a href="projects.html" class="nav-link">Projects</a>
+    <a href="player.html" class="nav-link">Player</a>
+    <a href="studio.html" class="nav-link">Studio</a>
+    <a href="tokens.html" class="nav-link active">Tokens</a>
+    <a href="components.html" class="nav-link">Components</a>
+  </nav>
+</header>
+
+<div class="page">
+  <div class="page-title">Design Tokens</div>
+  <div class="page-sub">The atomic design language powering ChromaFlora · Click any token to copy its value</div>
+
+  <!-- Colors -->
+  <div class="token-section">
+    <div class="section-title">Color Primitives</div>
+    <div class="color-grid" id="colorGrid"></div>
+  </div>
+
+  <!-- Semantic Colors -->
+  <div class="token-section">
+    <div class="section-title">Semantic Colors</div>
+    <div class="color-grid" id="semanticGrid"></div>
+  </div>
+
+  <!-- Typography -->
+  <div class="token-section">
+    <div class="section-title">Typography Scale</div>
+    <div class="type-grid" id="typeGrid"></div>
+  </div>
+
+  <!-- Spacing -->
+  <div class="token-section">
+    <div class="section-title">Spacing Scale</div>
+    <div class="spacing-grid" id="spacingGrid"></div>
+  </div>
+
+  <!-- Border Radius -->
+  <div class="token-section">
+    <div class="section-title">Border Radius</div>
+    <div class="radius-grid" id="radiusGrid"></div>
+  </div>
+
+  <!-- Shadows -->
+  <div class="token-section">
+    <div class="section-title">Glow Shadows</div>
+    <div class="shadow-grid" id="shadowGrid"></div>
+  </div>
+
+  <!-- Easings -->
+  <div class="token-section">
+    <div class="section-title">Motion Easings</div>
+    <div class="easing-grid" id="easingGrid"></div>
+  </div>
+</div>
+
+<div class="copy-toast" id="copyToast">Copied!</div>
+
+<script src="drawer.js"></script>
+<script>
+const TOKENS = {
+  colors: [
+    { name:'Purple 400', hex:'#c084fc', var:'--purple-400' },
+    { name:'Purple 500', hex:'#a855f7', var:'--purple' },
+    { name:'Purple 700', hex:'#7e22ce', var:'--purple-700' },
+    { name:'Pink 400', hex:'#f472b6', var:'--pink-400' },
+    { name:'Pink 500', hex:'#ec4899', var:'--pink' },
+    { name:'Aqua 400', hex:'#38bdf8', var:'--aqua-400' },
+    { name:'Aqua 500', hex:'#22d3ee', var:'--aqua' },
+    { name:'Orange 400', hex:'#fb923c', var:'--orange-400' },
+    { name:'Orange 500', hex:'#f97316', var:'--orange' },
+    { name:'Green 400', hex:'#34d399', var:'--green-400' },
+    { name:'Green 500', hex:'#10b981', var:'--green' },
+    { name:'Indigo 500', hex:'#6366f1', var:'--indigo' },
+    { name:'Yellow 400', hex:'#fbbf24', var:'--yellow' },
+    { name:'Red 400', hex:'#f87171', var:'--red' },
+    { name:'Neutral 900', hex:'#04040f', var:'--bg' },
+    { name:'Neutral 800', hex:'#07061a', var:'--surface-1' },
+  ],
+  semantic: [
+    { name:'Primary', hex:'#a855f7', var:'--primary', note:'Buttons, focus rings' },
+    { name:'Secondary', hex:'#22d3ee', var:'--secondary', note:'Accents, highlights' },
+    { name:'Accent', hex:'#ec4899', var:'--accent', note:'CTAs, alerts' },
+    { name:'Surface', hex:'#0d0822', var:'--surface', note:'Card backgrounds' },
+    { name:'Border', hex:'rgba(255,255,255,0.08)', var:'--border', note:'Dividers' },
+    { name:'Text Primary', hex:'#ffffff', var:'--text-1', note:'Headings' },
+    { name:'Text Secondary', hex:'rgba(255,255,255,0.7)', var:'--text-2', note:'Body' },
+    { name:'Text Muted', hex:'rgba(255,255,255,0.4)', var:'--text-3', note:'Captions' },
+    { name:'Success', hex:'#10b981', var:'--success', note:'Positive states' },
+    { name:'Warning', hex:'#f59e0b', var:'--warning', note:'Caution states' },
+    { name:'Error', hex:'#ef4444', var:'--error', note:'Error states' },
+    { name:'Info', hex:'#38bdf8', var:'--info', note:'Information' },
+  ],
+  typography: [
+    { name:'Display', size:'72px', weight:'900', tracking:'-0.04em', sample:'Cosmic Design' },
+    { name:'H1', size:'48px', weight:'800', tracking:'-0.03em', sample:'Bioluminescent System' },
+    { name:'H2', size:'36px', weight:'700', tracking:'-0.02em', sample:'Component Library' },
+    { name:'H3', size:'24px', weight:'600', tracking:'-0.01em', sample:'Design Tokens v3' },
+    { name:'H4', size:'18px', weight:'600', tracking:'0', sample:'Interactive Effects Engine' },
+    { name:'Body Large', size:'16px', weight:'400', tracking:'0', sample:'A state-of-the-art morphism-fused visual system for deep-space interfaces.' },
+    { name:'Body', size:'14px', weight:'400', tracking:'0', sample:'Combining glassmorphism, claymorphism, and neumorphism.' },
+    { name:'Caption', size:'12px', weight:'500', tracking:'0.02em', sample:'Biolume · Cosmic · Organic · Procedural' },
+    { name:'Mono', size:'13px', weight:'400', tracking:'0', sample:'const chroma = new ChromaFlora({ mode: "biolume" });', mono: true },
+  ],
+  spacing: [
+    { name:'s1', val:'4px' },{ name:'s2', val:'8px' },{ name:'s3', val:'12px' },
+    { name:'s4', val:'16px' },{ name:'s5', val:'20px' },{ name:'s6', val:'24px' },
+    { name:'s7', val:'32px' },{ name:'s8', val:'40px' },{ name:'s9', val:'48px' },
+    { name:'s10', val:'64px' },{ name:'s11', val:'80px' },{ name:'s12', val:'96px' },
+  ],
+  radius: [
+    { name:'r1', val:'4px' },{ name:'r2', val:'8px' },{ name:'r3', val:'12px' },
+    { name:'r4', val:'16px' },{ name:'r5', val:'20px' },{ name:'r6', val:'24px' },
+    { name:'r-full', val:'9999px' },
+  ],
+  shadows: [
+    { name:'Glow SM', val:'0 0 12px rgba(168,85,247,0.3)', bg:'rgba(168,85,247,0.08)' },
+    { name:'Glow MD', val:'0 0 30px rgba(168,85,247,0.4)', bg:'rgba(168,85,247,0.1)' },
+    { name:'Glow LG', val:'0 0 60px rgba(168,85,247,0.5)', bg:'rgba(168,85,247,0.12)' },
+    { name:'Aqua Glow', val:'0 0 20px rgba(34,211,238,0.4)', bg:'rgba(34,211,238,0.08)' },
+    { name:'Pink Glow', val:'0 0 20px rgba(236,72,153,0.4)', bg:'rgba(236,72,153,0.08)' },
+    { name:'Elevation 1', val:'0 4px 16px rgba(0,0,0,0.5)', bg:'rgba(255,255,255,0.03)' },
+    { name:'Elevation 2', val:'0 8px 32px rgba(0,0,0,0.6)', bg:'rgba(255,255,255,0.04)' },
+    { name:'Elevation 3', val:'0 20px 60px rgba(0,0,0,0.8)', bg:'rgba(255,255,255,0.05)' },
+  ],
+  easings: [
+    { name:'Snap', val:'0.1s cubic-bezier(0.4,0,0.2,1)', var:'--t-snap' },
+    { name:'Smooth', val:'0.28s cubic-bezier(0.4,0,0.2,1)', var:'--t-smooth' },
+    { name:'Spring', val:'0.4s cubic-bezier(0.34,1.56,0.64,1)', var:'--t-spring' },
+    { name:'Bounce', val:'0.5s cubic-bezier(0.68,-0.55,0.27,1.55)', var:'--t-bounce' },
+    { name:'Ease Out', val:'0.3s cubic-bezier(0,0,0.2,1)', var:'--t-ease-out' },
+    { name:'Ease In', val:'0.25s cubic-bezier(0.4,0,1,1)', var:'--t-ease-in' },
+  ],
+};
+
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).catch(() => {});
+  const t = document.getElementById('copyToast');
+  t.textContent = `Copied: ${text}`;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+/* ── Build Color Grid ── */
+function buildColors(tokens, gridId) {
+  const grid = document.getElementById(gridId);
+  tokens.forEach(tok => {
+    const el = document.createElement('div');
+    el.className = 'color-token';
+    el.innerHTML = `
+      <div class="color-swatch" style="background:${tok.hex}"></div>
+      <div class="color-info">
+        <div class="color-name">${tok.name}</div>
+        <div class="color-hex">${tok.var}</div>
+        <div class="color-hex" style="margin-top:1px">${tok.hex}</div>
+        ${tok.note ? `<div class="color-hex" style="color:rgba(255,255,255,0.25)">${tok.note}</div>` : ''}
+      </div>
+    `;
+    el.addEventListener('click', () => {
+      copyToClipboard(tok.hex);
+      const ci = el.querySelector('.color-info'); ci.classList.add('copied');
+      setTimeout(() => ci.classList.remove('copied'), 400);
+    });
+    grid.appendChild(el);
+  });
+}
+
+/* ── Typography ── */
+function buildType() {
+  const grid = document.getElementById('typeGrid');
+  TOKENS.typography.forEach(tok => {
+    const el = document.createElement('div');
+    el.className = 'type-token';
+    el.innerHTML = `
+      <div class="type-meta">${tok.name} · ${tok.size} · weight ${tok.weight} · tracking ${tok.tracking}</div>
+      <div style="font-size:${tok.size};font-weight:${tok.weight};letter-spacing:${tok.tracking};font-family:${tok.mono ? "'JetBrains Mono',monospace" : "'Inter',sans-serif"};line-height:1.2;color:rgba(255,255,255,0.9)">${tok.sample}</div>
+    `;
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', () => copyToClipboard(`font-size:${tok.size};font-weight:${tok.weight}`));
+    grid.appendChild(el);
+  });
+}
+
+/* ── Spacing ── */
+function buildSpacing() {
+  const grid = document.getElementById('spacingGrid');
+  TOKENS.spacing.forEach(tok => {
+    const el = document.createElement('div');
+    el.className = 'spacing-token';
+    el.innerHTML = `
+      <div class="spacing-label">${tok.name}</div>
+      <div class="spacing-bar" style="width:${tok.val}"></div>
+      <div class="spacing-val">${tok.val}</div>
+    `;
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', () => copyToClipboard(tok.val));
+    grid.appendChild(el);
+  });
+}
+
+/* ── Border Radius ── */
+function buildRadius() {
+  const grid = document.getElementById('radiusGrid');
+  TOKENS.radius.forEach(tok => {
+    const el = document.createElement('div');
+    el.className = 'radius-token';
+    el.innerHTML = `
+      <div class="radius-box" style="border-radius:${tok.val}"></div>
+      <div class="radius-label">${tok.name}<br>${tok.val}</div>
+    `;
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', () => copyToClipboard(tok.val));
+    grid.appendChild(el);
+  });
+}
+
+/* ── Shadows ── */
+function buildShadows() {
+  const grid = document.getElementById('shadowGrid');
+  TOKENS.shadows.forEach(tok => {
+    const el = document.createElement('div');
+    el.className = 'shadow-token';
+    el.style.background = tok.bg;
+    el.style.boxShadow = tok.val;
+    el.innerHTML = `<div class="shadow-name">${tok.name}</div>`;
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', () => copyToClipboard(tok.val));
+    grid.appendChild(el);
+  });
+}
+
+/* ── Easings ── */
+function buildEasings() {
+  const grid = document.getElementById('easingGrid');
+  TOKENS.easings.forEach(tok => {
+    const el = document.createElement('div');
+    el.className = 'easing-token';
+    const dur = parseFloat(tok.val) * 1000;
+    const curve = tok.val.replace(/[\d.]+s\s/, '');
+    el.innerHTML = `
+      <div class="easing-name">${tok.name}</div>
+      <div class="easing-demo">
+        <div class="easing-ball" style="transition:left ${tok.val}"></div>
+      </div>
+      <div class="easing-value">${tok.var}</div>
+      <div class="easing-value" style="margin-top:2px">${tok.val}</div>
+    `;
+    el.addEventListener('click', () => copyToClipboard(tok.val));
+    grid.appendChild(el);
+  });
+}
+
+buildColors(TOKENS.colors, 'colorGrid');
+buildColors(TOKENS.semantic, 'semanticGrid');
+buildType();
+buildSpacing();
+buildRadius();
+buildShadows();
+buildEasings();
+</script>
+</body>
+</html>

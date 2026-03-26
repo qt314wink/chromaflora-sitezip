@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ChromaFlora · Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #04040f; --surface: rgba(255,255,255,0.04); --border: rgba(255,255,255,0.08);
+    --purple: #a855f7; --aqua: #22d3ee; --pink: #ec4899;
+    --t-snap: 0.1s cubic-bezier(0.4,0,0.2,1);
+    --t-spring: 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; display: flex; flex-direction: column; }
+
+  /* ── Header ── */
+  .header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 16px; height: 52px; flex-shrink: 0;
+    background: rgba(4,4,15,0.95); border-bottom: 1px solid var(--border);
+    z-index: 100;
+  }
+  .logo { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 15px; }
+  .logo a { color: white; text-decoration: none; }
+  .nav { display: flex; gap: 3px; }
+  .nav-link { padding: 5px 11px; border-radius: 7px; font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.6); text-decoration: none; transition: var(--t-snap); }
+  .nav-link:hover, .nav-link.active { color: white; background: rgba(255,255,255,0.07); }
+
+  /* ── Studio Layout ── */
+  .studio {
+    flex: 1; display: grid;
+    grid-template-columns: 52px 1fr 260px;
+    grid-template-rows: 1fr 220px;
+    gap: 0; min-height: 0;
+  }
+
+  /* ── Toolbar (left) ── */
+  .toolbar {
+    grid-row: 1 / 3;
+    background: rgba(6,4,20,0.95);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; align-items: center;
+    padding: 10px 0; gap: 4px;
+  }
+  .tool-sep { width: 32px; height: 1px; background: var(--border); margin: 6px 0; }
+  .tool-btn {
+    width: 38px; height: 38px; border-radius: 10px; border: none; cursor: pointer;
+    background: transparent; color: rgba(255,255,255,0.55); font-size: 18px;
+    display: flex; align-items: center; justify-content: center;
+    transition: var(--t-snap); position: relative;
+  }
+  .tool-btn:hover { background: rgba(255,255,255,0.08); color: white; }
+  .tool-btn.active { background: rgba(168,85,247,0.2); color: var(--purple); box-shadow: 0 0 12px rgba(168,85,247,0.25); }
+  .tool-btn[title]:hover::after {
+    content: attr(title); position: absolute; left: 48px; top: 50%; transform: translateY(-50%);
+    background: rgba(10,6,28,0.95); border: 1px solid rgba(168,85,247,0.25);
+    color: white; font-size: 11px; white-space: nowrap; padding: 4px 10px; border-radius: 6px; z-index: 200;
+  }
+
+  /* ── Canvas area ── */
+  .canvas-area {
+    grid-column: 2; grid-row: 1;
+    position: relative; overflow: hidden; background: #0a0a1a;
+    cursor: crosshair;
+  }
+  #studioCanvas {
+    position: absolute; top: 0; left: 0;
+    display: block; touch-action: none;
+  }
+  .canvas-crosshair {
+    position: absolute; pointer-events: none; z-index: 50;
+    width: 24px; height: 24px; border-radius: 50%;
+    border: 2px solid rgba(168,85,247,0.8);
+    transform: translate(-50%,-50%); transition: width 0.1s, height 0.1s;
+    mix-blend-mode: difference;
+  }
+
+  /* ── Right panel ── */
+  .panel {
+    grid-column: 3; grid-row: 1;
+    background: rgba(6,4,20,0.95); border-left: 1px solid var(--border);
+    overflow-y: auto; display: flex; flex-direction: column;
+  }
+  .panel-section { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .panel-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.35); margin-bottom: 12px; }
+
+  /* Layers */
+  .layer-list { display: flex; flex-direction: column; gap: 4px; }
+  .layer-item {
+    display: flex; align-items: center; gap: 8px; padding: 7px 8px; border-radius: 8px;
+    background: rgba(255,255,255,0.03); border: 1px solid transparent;
+    cursor: pointer; transition: var(--t-snap);
+  }
+  .layer-item:hover { background: rgba(255,255,255,0.06); }
+  .layer-item.active { border-color: rgba(168,85,247,0.35); background: rgba(168,85,247,0.08); }
+  .layer-thumb { width: 30px; height: 22px; border-radius: 4px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; overflow: hidden; }
+  .layer-thumb canvas { width: 100%; height: 100%; }
+  .layer-name { font-size: 11px; flex: 1; color: rgba(255,255,255,0.8); }
+  .layer-vis { font-size: 14px; cursor: pointer; opacity: 0.5; transition: var(--t-snap); }
+  .layer-vis:hover { opacity: 1; }
+  .layer-actions { display: flex; gap: 6px; margin-top: 8px; }
+  .layer-btn {
+    flex: 1; padding: 6px; border-radius: 7px; border: 1px solid var(--border);
+    background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.7);
+    font-size: 11px; cursor: pointer; transition: var(--t-snap);
+  }
+  .layer-btn:hover { background: rgba(168,85,247,0.15); border-color: rgba(168,85,247,0.3); color: white; }
+
+  /* Color picker */
+  .color-swatches { display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; }
+  .swatch {
+    width: 100%; aspect-ratio: 1; border-radius: 5px; cursor: pointer;
+    border: 2px solid transparent; transition: var(--t-snap);
+  }
+  .swatch.active, .swatch:hover { border-color: white; transform: scale(1.15); }
+  .custom-color-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+  .custom-color-row input[type=color] {
+    width: 32px; height: 32px; border-radius: 8px; border: none; cursor: pointer;
+    background: none; padding: 0;
+  }
+  .custom-color-row label { font-size: 12px; color: rgba(255,255,255,0.5); }
+
+  /* Brush settings */
+  .brush-row { display: flex; flex-direction: column; gap: 10px; }
+  .mini-slider { display: flex; flex-direction: column; gap: 5px; }
+  .mini-slider-label { display: flex; justify-content: space-between; font-size: 11px; color: rgba(255,255,255,0.45); }
+  .mini-slider-label span { font-family: 'JetBrains Mono', monospace; color: var(--purple); }
+  input[type=range].mini {
+    width: 100%; height: 3px; -webkit-appearance: none; appearance: none;
+    background: linear-gradient(to right, var(--purple) var(--pct,50%), rgba(255,255,255,0.12) var(--pct,50%));
+    border-radius: 3px; cursor: pointer;
+  }
+  input[type=range].mini::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: white; }
+
+  /* Blend mode */
+  .blend-select {
+    width: 100%; padding: 7px 10px; border-radius: 8px;
+    background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+    color: white; font-size: 12px; cursor: pointer; margin-top: 8px;
+  }
+  .blend-select option { background: #0d0822; }
+
+  /* ── Bottom: Prompt builder ── */
+  .prompt-area {
+    grid-column: 2 / 4; grid-row: 2;
+    background: rgba(6,4,18,0.98); border-top: 1px solid var(--border);
+    display: flex; flex-direction: column; padding: 14px 18px; gap: 10px;
+    overflow-y: auto;
+  }
+  .prompt-header { display: flex; align-items: center; justify-content: space-between; }
+  .prompt-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.35); }
+  .prompt-params { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
+  .param-group { display: flex; flex-direction: column; gap: 4px; }
+  .param-label { font-size: 10px; color: rgba(255,255,255,0.4); }
+  .param-select, .param-input {
+    padding: 6px 10px; border-radius: 7px; font-size: 11px;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+    color: white; outline: none;
+  }
+  .param-select:focus, .param-input:focus { border-color: rgba(168,85,247,0.4); }
+  .param-select option { background: #0d0822; }
+
+  .prompt-text-row { display: flex; gap: 10px; align-items: flex-end; }
+  .prompt-input {
+    flex: 1; padding: 10px 14px; border-radius: 10px;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+    color: white; font-size: 13px; font-family: 'Inter', sans-serif;
+    resize: none; outline: none; min-height: 52px;
+    transition: border-color var(--t-snap);
+  }
+  .prompt-input:focus { border-color: rgba(168,85,247,0.45); }
+  .prompt-input::placeholder { color: rgba(255,255,255,0.25); }
+  .prompt-build-btn {
+    padding: 10px 20px; border-radius: 10px; border: none; cursor: pointer;
+    background: linear-gradient(135deg, var(--purple), var(--pink));
+    color: white; font-size: 13px; font-weight: 700;
+    box-shadow: 0 4px 18px rgba(168,85,247,0.35);
+    transition: var(--t-spring); white-space: nowrap;
+  }
+  .prompt-build-btn:hover { transform: translateY(-2px) scale(1.03); box-shadow: 0 8px 26px rgba(168,85,247,0.5); }
+  .prompt-build-btn:active { transform: scale(0.97); }
+  .schema-preview {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: rgba(100,200,180,0.8); background: rgba(0,0,0,0.3);
+    border-radius: 8px; padding: 8px 12px;
+    border: 1px solid rgba(100,200,180,0.12);
+    max-height: 80px; overflow-y: auto; line-height: 1.6;
+    display: none;
+  }
+  .schema-preview.visible { display: block; }
+
+  /* ── Pour mode indicator ── */
+  .pour-controls {
+    position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 8px; z-index: 50;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(12px);
+    padding: 6px 12px; border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.08);
+    opacity: 0; pointer-events: none; transition: opacity var(--t-snap);
+  }
+  .pour-controls.visible { opacity: 1; pointer-events: all; }
+  .pour-btn {
+    padding: 4px 12px; border-radius: 8px; border: none; cursor: pointer;
+    font-size: 11px; font-weight: 600; background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.8); transition: var(--t-snap);
+  }
+  .pour-btn:hover { background: rgba(168,85,247,0.2); color: white; }
+  .pour-btn.active { background: rgba(168,85,247,0.3); color: white; }
+
+  /* ── Undo toast ── */
+  .undo-toast {
+    position: fixed; bottom: 240px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: rgba(10,6,28,0.92); border: 1px solid rgba(168,85,247,0.25);
+    color: white; font-size: 12px; padding: 8px 18px; border-radius: 10px;
+    pointer-events: none; opacity: 0; transition: all 0.25s ease; z-index: 500;
+  }
+  .undo-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="logo"><a href="index.html">ChromaFlora</a> <span style="opacity:.3;font-weight:400;font-size:12px">/ Studio</span></div>
+  <nav class="nav">
+    <a href="index.html" class="nav-link">System</a>
+    <a href="projects.html" class="nav-link">Projects</a>
+    <a href="player.html" class="nav-link">Player</a>
+    <a href="studio.html" class="nav-link active">Studio</a>
+    <a href="tokens.html" class="nav-link">Tokens</a>
+  </nav>
+  <div style="display:flex;gap:8px">
+    <button class="layer-btn" onclick="studio.export()" style="padding:5px 14px">Export PNG</button>
+    <button class="layer-btn" onclick="studio.clear()" style="padding:5px 14px">Clear All</button>
+  </div>
+</header>
+
+<div class="studio">
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <button class="tool-btn active" data-tool="brush"   title="Brush (B)">🖌️</button>
+    <button class="tool-btn"        data-tool="eraser"  title="Eraser (E)">🧹</button>
+    <button class="tool-btn"        data-tool="pour"    title="Paint Pour (P)">🫗</button>
+    <button class="tool-btn"        data-tool="swirl"   title="Swirl (S)">🌀</button>
+    <button class="tool-btn"        data-tool="fill"    title="Flood Fill (F)">🪣</button>
+    <div class="tool-sep"></div>
+    <button class="tool-btn"        data-tool="rect"    title="Rectangle">⬜</button>
+    <button class="tool-btn"        data-tool="ellipse" title="Ellipse">⭕</button>
+    <button class="tool-btn"        data-tool="line"    title="Line">╱</button>
+    <button class="tool-btn"        data-tool="stamp"   title="Stamp">⭐</button>
+    <div class="tool-sep"></div>
+    <button class="tool-btn"        id="btnUndo"  title="Undo (Ctrl+Z)">↩</button>
+    <button class="tool-btn"        id="btnRedo"  title="Redo (Ctrl+Y)">↪</button>
+    <div class="tool-sep"></div>
+    <button class="tool-btn"        data-tool="select"  title="Select">⬚</button>
+    <button class="tool-btn"        id="btnImport" title="Import Image">📁</button>
+  </div>
+
+  <!-- Canvas area -->
+  <div class="canvas-area" id="canvasArea">
+    <canvas id="studioCanvas"></canvas>
+    <div class="canvas-crosshair" id="canvasCursor"></div>
+    <div class="pour-controls" id="pourControls">
+      <button class="pour-btn active" data-pour="drip">Drip</button>
+      <button class="pour-btn" data-pour="flood">Flood</button>
+      <button class="pour-btn" data-pour="splatter">Splatter</button>
+      <button class="pour-btn" data-pour="marbling">Marble</button>
+    </div>
+  </div>
+
+  <!-- Right Panel -->
+  <div class="panel">
+    <!-- Layers -->
+    <div class="panel-section">
+      <div class="panel-title">Layers</div>
+      <div class="layer-list" id="layerList"></div>
+      <div class="layer-actions">
+        <button class="layer-btn" id="btnAddLayer">+ Layer</button>
+        <button class="layer-btn" id="btnDelLayer">✕ Delete</button>
+        <button class="layer-btn" id="btnMerge">⊕ Merge</button>
+      </div>
+    </div>
+
+    <!-- Colors -->
+    <div class="panel-section">
+      <div class="panel-title">Color</div>
+      <div class="color-swatches" id="swatchGrid"></div>
+      <div class="custom-color-row">
+        <input type="color" id="colorPicker" value="#a855f7">
+        <label for="colorPicker">Custom color</label>
+      </div>
+    </div>
+
+    <!-- Brush -->
+    <div class="panel-section">
+      <div class="panel-title">Brush</div>
+      <div class="brush-row">
+        <div class="mini-slider">
+          <div class="mini-slider-label">Size <span id="sizeVal">12</span></div>
+          <input type="range" class="mini" id="brushSize" min="1" max="120" value="12">
+        </div>
+        <div class="mini-slider">
+          <div class="mini-slider-label">Opacity <span id="opacVal">80%</span></div>
+          <input type="range" class="mini" id="brushOpacity" min="5" max="100" value="80">
+        </div>
+        <div class="mini-slider">
+          <div class="mini-slider-label">Hardness <span id="hardVal">70%</span></div>
+          <input type="range" class="mini" id="brushHard" min="0" max="100" value="70">
+        </div>
+        <div class="mini-slider">
+          <div class="mini-slider-label">Flow <span id="flowVal">100%</span></div>
+          <input type="range" class="mini" id="brushFlow" min="1" max="100" value="100">
+        </div>
+        <select class="blend-select" id="blendMode">
+          <option value="source-over">Normal</option>
+          <option value="multiply">Multiply</option>
+          <option value="screen">Screen</option>
+          <option value="overlay">Overlay</option>
+          <option value="color-dodge">Color Dodge</option>
+          <option value="color-burn">Color Burn</option>
+          <option value="hard-light">Hard Light</option>
+          <option value="soft-light">Soft Light</option>
+          <option value="difference">Difference</option>
+          <option value="luminosity">Luminosity</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Pour settings -->
+    <div class="panel-section">
+      <div class="panel-title">Pour Settings</div>
+      <div class="brush-row">
+        <div class="mini-slider">
+          <div class="mini-slider-label">Viscosity <span id="viscVal">40%</span></div>
+          <input type="range" class="mini" id="viscosity" min="1" max="100" value="40">
+        </div>
+        <div class="mini-slider">
+          <div class="mini-slider-label">Gravity <span id="gravVal">70%</span></div>
+          <input type="range" class="mini" id="gravity" min="0" max="100" value="70">
+        </div>
+        <div class="mini-slider">
+          <div class="mini-slider-label">Surface Tension <span id="tensVal">50%</span></div>
+          <input type="range" class="mini" id="tension" min="0" max="100" value="50">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Prompt Builder -->
+  <div class="prompt-area">
+    <div class="prompt-header">
+      <div class="prompt-title">AI Image Prompt Builder</div>
+      <button class="pour-btn" id="toggleSchema">Show Schema</button>
+    </div>
+    <div class="prompt-params">
+      <div class="param-group">
+        <div class="param-label">Style</div>
+        <select class="param-select" id="pStyle">
+          <option>Bioluminescent</option><option>Cosmic</option><option>Abstract</option>
+          <option>Surrealist</option><option>Watercolor</option><option>Oil Painting</option>
+          <option>Digital Art</option><option>Concept Art</option><option>Photorealistic</option>
+        </select>
+      </div>
+      <div class="param-group">
+        <div class="param-label">Material</div>
+        <select class="param-select" id="pMaterial">
+          <option>Acrylic Pour</option><option>Oil Paint</option><option>Watercolor</option>
+          <option>Fabric/Textile</option><option>Clay/Ceramic</option><option>Glass</option>
+          <option>Neon Light</option><option>Liquid Mercury</option><option>Ink</option>
+        </select>
+      </div>
+      <div class="param-group">
+        <div class="param-label">Color Palette</div>
+        <select class="param-select" id="pColors">
+          <option>Iridescent Biolume</option><option>Neon Cosmic</option><option>Warm Sunset</option>
+          <option>Deep Ocean</option><option>Monochromatic</option><option>Complementary</option>
+          <option>Pastel Soft</option><option>Dark Moody</option>
+        </select>
+      </div>
+      <div class="param-group">
+        <div class="param-label">Shape / Form</div>
+        <select class="param-select" id="pShape">
+          <option>Organic Flowing</option><option>Geometric</option><option>Fractal</option>
+          <option>Mandala / Sacred</option><option>Floral</option><option>Abstract Blob</option>
+          <option>Crystalline</option><option>Spiral / Vortex</option>
+        </select>
+      </div>
+      <div class="param-group">
+        <div class="param-label">Lighting</div>
+        <select class="param-select" id="pLight">
+          <option>Glow / Neon</option><option>Soft Diffused</option><option>Dramatic Contrast</option>
+          <option>Backlit / Rim</option><option>Subsurface Scatter</option><option>Cinematic</option>
+        </select>
+      </div>
+      <div class="param-group">
+        <div class="param-label">Size (px)</div>
+        <select class="param-select" id="pSize">
+          <option>512×512</option><option>768×768</option><option>1024×1024</option>
+          <option>1024×576</option><option>576×1024</option><option>1920×1080</option>
+        </select>
+      </div>
+      <div class="param-group">
+        <div class="param-label">Steps</div>
+        <input class="param-input" id="pSteps" type="number" min="10" max="150" value="40">
+      </div>
+      <div class="param-group">
+        <div class="param-label">CFG Scale</div>
+        <input class="param-input" id="pCfg" type="number" min="1" max="20" step="0.5" value="7.5">
+      </div>
+    </div>
+    <div class="prompt-text-row">
+      <textarea class="prompt-input" id="promptInput" rows="2" placeholder="Describe your vision… e.g. glowing coral reef in deep space, liquid light, dripping neon…"></textarea>
+      <button class="prompt-build-btn" id="btnBuildPrompt">✦ Build Prompt</button>
+    </div>
+    <div class="schema-preview" id="schemaPreview"></div>
+  </div>
+
+</div>
+
+<div class="undo-toast" id="undoToast">Undo</div>
+<input type="file" id="fileImport" accept="image/*" style="display:none">
+
+<script src="drawer.js"></script>
+<script>
+/* ════════════════════════════════════════════════
+   ChromaStudio Engine
+   Canvas layers + Paint pour + Brush + Swirl + Shapes
+════════════════════════════════════════════════ */
+const studio = (function() {
+  const canvasEl = document.getElementById('studioCanvas');
+  const area = document.getElementById('canvasArea');
+  const cursor = document.getElementById('canvasCursor');
+  let ctx, W, H;
+
+  /* ── State ── */
+  let currentTool = 'brush';
+  let currentColor = '#a855f7';
+  let brushSize = 12, brushOpacity = 0.8, brushHardness = 0.7, brushFlow = 1.0;
+  let blendMode = 'source-over';
+  let pourMode = 'drip';
+  let viscosity = 0.4, gravityStr = 0.7, tension = 0.5;
+  let isDrawing = false;
+  let lastX = 0, lastY = 0;
+  let pressure = 1.0;
+
+  /* ── Layers ── */
+  let layers = [], activeLayer = 0;
+  const undoStack = [], redoStack = [];
+  const MAX_UNDO = 30;
+
+  /* ── Pour physics particles ── */
+  let pourParticles = [];
+  let pourAnimFrame = null;
+
+  /* ── Init ── */
+  function init() {
+    resize();
+    window.addEventListener('resize', resize);
+
+    // Create first layer
+    addLayer('Background');
+    addLayer('Layer 1');
+    setActiveLayer(1);
+
+    // Fill bg dark
+    const bgCtx = layers[0].canvas.getContext('2d');
+    bgCtx.fillStyle = '#0a0a1a';
+    bgCtx.fillRect(0, 0, W, H);
+
+    compositeAndDraw();
+
+    bindCanvas();
+    bindUI();
+    initSwatches();
+    initSliders();
+    initShortcuts();
+    buildLayerUI();
+  }
+
+  function resize() {
+    W = area.offsetWidth;
+    H = area.offsetHeight;
+    canvasEl.width = W;
+    canvasEl.height = H;
+    canvasEl.style.width = W + 'px';
+    canvasEl.style.height = H + 'px';
+    ctx = canvasEl.getContext('2d');
+    // Resize all layer canvases
+    layers.forEach(l => {
+      const tmp = document.createElement('canvas');
+      tmp.width = W; tmp.height = H;
+      const tc = tmp.getContext('2d');
+      tc.drawImage(l.canvas, 0, 0);
+      l.canvas = tmp;
+    });
+    compositeAndDraw();
+  }
+
+  /* ── Layer management ── */
+  function addLayer(name) {
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const layer = { canvas, name, visible: true, opacity: 1, blendMode: 'source-over' };
+    layers.push(layer);
+    buildLayerUI();
+    return layer;
+  }
+
+  function removeLayer() {
+    if (layers.length <= 1) return;
+    layers.splice(activeLayer, 1);
+    activeLayer = Math.min(activeLayer, layers.length - 1);
+    buildLayerUI();
+    compositeAndDraw();
+  }
+
+  function setActiveLayer(idx) {
+    activeLayer = Math.max(0, Math.min(layers.length - 1, idx));
+    buildLayerUI();
+  }
+
+  function buildLayerUI() {
+    const list = document.getElementById('layerList');
+    list.innerHTML = '';
+    [...layers].reverse().forEach((l, ri) => {
+      const i = layers.length - 1 - ri;
+      const item = document.createElement('div');
+      item.className = 'layer-item' + (i === activeLayer ? ' active' : '');
+      item.innerHTML = `
+        <div class="layer-thumb"><canvas width="30" height="22"></canvas></div>
+        <div class="layer-name">${l.name}</div>
+        <span class="layer-vis">${l.visible ? '👁' : '🚫'}</span>
+      `;
+      // Thumb preview
+      const th = item.querySelector('canvas');
+      th.getContext('2d').drawImage(l.canvas, 0, 0, 30, 22);
+      item.querySelector('.layer-vis').addEventListener('click', e => {
+        e.stopPropagation(); l.visible = !l.visible;
+        compositeAndDraw(); buildLayerUI();
+      });
+      item.addEventListener('click', () => setActiveLayer(i));
+      list.appendChild(item);
+    });
+  }
+
+  function mergeLayers() {
+    if (layers.length <= 1) return;
+    const bottom = layers[Math.max(0, activeLayer - 1)];
+    const top = layers[activeLayer];
+    const bc = bottom.canvas.getContext('2d');
+    bc.save(); bc.globalAlpha = top.opacity; bc.globalCompositeOperation = top.blendMode;
+    bc.drawImage(top.canvas, 0, 0); bc.restore();
+    layers.splice(activeLayer, 1);
+    activeLayer = Math.max(0, activeLayer - 1);
+    buildLayerUI(); compositeAndDraw();
+  }
+
+  /* ── Composite all layers to display canvas ── */
+  function compositeAndDraw() {
+    if (!ctx) return;
+    ctx.clearRect(0, 0, W, H);
+    // Checkerboard for transparency
+    const sz = 12;
+    for (let y = 0; y < H; y += sz) for (let x = 0; x < W; x += sz) {
+      ctx.fillStyle = ((x/sz + y/sz) % 2 === 0) ? '#1a1a2e' : '#141428';
+      ctx.fillRect(x, y, sz, sz);
+    }
+    layers.forEach(l => {
+      if (!l.visible) return;
+      ctx.save();
+      ctx.globalAlpha = l.opacity;
+      ctx.globalCompositeOperation = l.blendMode;
+      ctx.drawImage(l.canvas, 0, 0);
+      ctx.restore();
+    });
+    // Update all layer thumbs
+    buildLayerUI();
+  }
+
+  /* ── Get active layer context ── */
+  function getLayerCtx() {
+    if (!layers[activeLayer]) return ctx;
+    return layers[activeLayer].canvas.getContext('2d');
+  }
+
+  /* ── Undo/Redo ── */
+  function saveState() {
+    const snapshot = ctx.createImageData(W, H);
+    // Capture current composite
+    snapshot.data.set(ctx.getImageData(0, 0, W, H).data);
+    // Also capture the active layer
+    const lc = getLayerCtx();
+    const layerSnap = lc.getImageData(0, 0, W, H);
+    undoStack.push(layerSnap);
+    if (undoStack.length > MAX_UNDO) undoStack.shift();
+    redoStack.length = 0;
+  }
+
+  function undo() {
+    if (!undoStack.length) return;
+    const lc = getLayerCtx();
+    redoStack.push(lc.getImageData(0, 0, W, H));
+    lc.putImageData(undoStack.pop(), 0, 0);
+    compositeAndDraw();
+    showToast('Undone');
+  }
+
+  function redo() {
+    if (!redoStack.length) return;
+    const lc = getLayerCtx();
+    undoStack.push(lc.getImageData(0, 0, W, H));
+    lc.putImageData(redoStack.pop(), 0, 0);
+    compositeAndDraw();
+    showToast('Redone');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('undoToast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 1200);
+  }
+
+  /* ── Drawing ── */
+  function startDraw(e) {
+    const { x, y } = getPos(e);
+    isDrawing = true; lastX = x; lastY = y;
+    saveState();
+    if (currentTool === 'pour') { startPour(x, y); return; }
+    if (currentTool === 'fill') { floodFill(x, y); return; }
+    if (currentTool === 'stamp') { drawStamp(x, y); return; }
+    draw(x, y);
+  }
+
+  function moveDraw(e) {
+    const { x, y } = getPos(e);
+    updateCursor(x, y);
+    if (!isDrawing) return;
+    if (currentTool === 'pour') { addPourDrop(x, y); return; }
+    if (currentTool === 'swirl') { applySwirlAt(x, y, lastX, lastY); lastX = x; lastY = y; compositeAndDraw(); return; }
+    draw(x, y);
+    lastX = x; lastY = y;
+  }
+
+  function endDraw() {
+    isDrawing = false;
+    compositeAndDraw();
+  }
+
+  function getPos(e) {
+    const r = canvasEl.getBoundingClientRect();
+    const ev = e.touches ? e.touches[0] : e;
+    return { x: ev.clientX - r.left, y: ev.clientY - r.top };
+  }
+
+  function updateCursor(x, y) {
+    cursor.style.left = x + 'px'; cursor.style.top = y + 'px';
+    const size = brushSize + 4;
+    cursor.style.width = size + 'px'; cursor.style.height = size + 'px';
+    cursor.style.marginLeft = -size/2 + 'px'; cursor.style.marginTop = -size/2 + 'px';
+  }
+
+  /* ── Brush paint ── */
+  function draw(x, y) {
+    const lc = getLayerCtx();
+    lc.save();
+    lc.globalCompositeOperation = currentTool === 'eraser' ? 'destination-out' : blendMode;
+    lc.globalAlpha = brushOpacity * brushFlow;
+    lc.lineCap = 'round'; lc.lineJoin = 'round';
+    lc.lineWidth = brushSize;
+
+    if (brushHardness < 0.9 && currentTool !== 'eraser') {
+      // Soft brush via radial gradient
+      const r = brushSize / 2;
+      const grd = lc.createRadialGradient(x, y, r * brushHardness, x, y, r);
+      grd.addColorStop(0, hexToRgba(currentColor, 1));
+      grd.addColorStop(1, hexToRgba(currentColor, 0));
+      lc.fillStyle = grd;
+      lc.beginPath(); lc.arc(x, y, r, 0, Math.PI * 2); lc.fill();
+      // Also connect to last point
+      const steps = Math.ceil(Math.hypot(x - lastX, y - lastY) / (r * 0.3));
+      for (let s = 0; s <= steps; s++) {
+        const ix = lastX + (x - lastX) * s / steps;
+        const iy = lastY + (y - lastY) * s / steps;
+        const g2 = lc.createRadialGradient(ix, iy, r*brushHardness, ix, iy, r);
+        g2.addColorStop(0, hexToRgba(currentColor, 0.4));
+        g2.addColorStop(1, hexToRgba(currentColor, 0));
+        lc.fillStyle = g2;
+        lc.beginPath(); lc.arc(ix, iy, r, 0, Math.PI*2); lc.fill();
+      }
+    } else {
+      lc.strokeStyle = currentTool === 'eraser' ? 'rgba(0,0,0,1)' : currentColor;
+      lc.beginPath(); lc.moveTo(lastX, lastY); lc.lineTo(x, y); lc.stroke();
+    }
+
+    // Shape tools
+    if (currentTool === 'rect' || currentTool === 'ellipse' || currentTool === 'line') {
+      lc.strokeStyle = currentColor; lc.lineWidth = brushSize / 3;
+      lc.fillStyle = hexToRgba(currentColor, 0.15);
+    }
+    lc.restore();
+    compositeAndDraw();
+  }
+
+  /* ── Flood fill ── */
+  function floodFill(sx, sy) {
+    const lc = getLayerCtx();
+    const imgData = lc.getImageData(0, 0, W, H);
+    const d = imgData.data;
+    const fillColor = hexToRgbArray(currentColor);
+    const idx = (Math.round(sy) * W + Math.round(sx)) * 4;
+    const target = [d[idx], d[idx+1], d[idx+2], d[idx+3]];
+    if (colorMatch(fillColor, target)) return;
+    const stack = [[Math.round(sx), Math.round(sy)]];
+    const visited = new Uint8Array(W * H);
+    while (stack.length) {
+      const [x, y] = stack.pop();
+      if (x < 0 || x >= W || y < 0 || y >= H) continue;
+      const i = (y * W + x) * 4;
+      if (visited[y*W+x] || !colorMatch([d[i],d[i+1],d[i+2],d[i+3]], target)) continue;
+      visited[y*W+x] = 1;
+      d[i]=fillColor[0]; d[i+1]=fillColor[1]; d[i+2]=fillColor[2]; d[i+3]=Math.round(brushOpacity*255);
+      stack.push([x+1,y],[x-1,y],[x,y+1],[x,y-1]);
+    }
+    lc.putImageData(imgData, 0, 0);
+    compositeAndDraw();
+  }
+
+  function colorMatch(a, b, tol=32) {
+    return Math.abs(a[0]-b[0])<tol && Math.abs(a[1]-b[1])<tol && Math.abs(a[2]-b[2])<tol;
+  }
+
+  /* ── Stamp ── */
+  function drawStamp(x, y) {
+    const lc = getLayerCtx();
+    lc.save();
+    lc.translate(x, y);
+    lc.globalAlpha = brushOpacity;
+    const r = brushSize * 2;
+    // Glowing star stamp
+    const pts = 6;
+    lc.beginPath();
+    for (let p = 0; p < pts * 2; p++) {
+      const angle = (p / (pts*2)) * Math.PI * 2 - Math.PI/2;
+      const rad = p % 2 === 0 ? r : r * 0.4;
+      p === 0 ? lc.moveTo(Math.cos(angle)*rad, Math.sin(angle)*rad) : lc.lineTo(Math.cos(angle)*rad, Math.sin(angle)*rad);
+    }
+    lc.closePath();
+    const g = lc.createRadialGradient(0, 0, 0, 0, 0, r);
+    g.addColorStop(0, currentColor); g.addColorStop(1, hexToRgba(currentColor, 0));
+    lc.fillStyle = g; lc.fill();
+    lc.shadowColor = currentColor; lc.shadowBlur = r;
+    lc.strokeStyle = currentColor; lc.lineWidth = 1; lc.stroke();
+    lc.restore();
+    compositeAndDraw();
+  }
+
+  /* ════════════════════════════════
+     PAINT POUR PHYSICS
+  ════════════════════════════════ */
+  function startPour(x, y) {
+    stopPour();
+    const colors = [currentColor, shiftHue(currentColor, 40), shiftHue(currentColor, 80), shiftHue(currentColor, 140), '#ffffff'];
+    if (pourMode === 'drip') {
+      for (let i = 0; i < 6; i++) {
+        pourParticles.push({
+          x: x + (Math.random()-0.5)*brushSize*2,
+          y, vx: (Math.random()-0.5)*1.5, vy: Math.random()*1.5 + 0.5,
+          color: colors[i % colors.length],
+          r: brushSize*0.3 + Math.random()*brushSize*0.5,
+          alpha: 0.7 + Math.random()*0.3,
+          life: 1.0, trail: []
+        });
+      }
+    } else if (pourMode === 'flood') {
+      for (let i = 0; i < 20; i++) {
+        const angle = Math.random()*Math.PI*2;
+        pourParticles.push({
+          x, y, vx: Math.cos(angle)*(Math.random()*3), vy: Math.sin(angle)*(Math.random()*3),
+          color: colors[i % colors.length], r: brushSize*0.4 + Math.random()*brushSize*0.6,
+          alpha: 0.6, life: 1.0, trail: []
+        });
+      }
+    } else if (pourMode === 'splatter') {
+      for (let i = 0; i < 30; i++) {
+        const angle = Math.random()*Math.PI*2, speed = Math.random()*8+2;
+        pourParticles.push({
+          x, y, vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed,
+          color: colors[i % colors.length], r: 1+Math.random()*brushSize*0.4,
+          alpha: 0.8, life: 1.0, trail: []
+        });
+      }
+    } else if (pourMode === 'marbling') {
+      for (let i = 0; i < 15; i++) {
+        pourParticles.push({
+          x: x + (Math.random()-0.5)*W*0.3, y: y + (Math.random()-0.5)*20,
+          vx: (Math.random()-0.5)*2, vy: gravityStr * 0.8,
+          color: colors[i % colors.length], r: brushSize*0.15 + Math.random()*brushSize*0.2,
+          alpha: 0.6, life: 1.0, trail: [], marbling: true
+        });
+      }
+    }
+    animatePour();
+  }
+
+  function addPourDrop(x, y) {
+    const colors = [currentColor, shiftHue(currentColor, 60), shiftHue(currentColor, 120)];
+    pourParticles.push({
+      x, y, vx: (Math.random()-0.5)*1, vy: Math.random()*2+0.3,
+      color: colors[Math.floor(Math.random()*colors.length)],
+      r: brushSize*0.2 + Math.random()*brushSize*0.3,
+      alpha: 0.75, life: 1.0, trail: []
+    });
+  }
+
+  function animatePour() {
+    if (pourParticles.length === 0) return;
+    const lc = getLayerCtx();
+    lc.save();
+
+    pourParticles = pourParticles.filter(p => p.life > 0.01);
+    pourParticles.forEach(p => {
+      // Physics
+      p.vy += gravityStr * 0.12;
+      p.vx *= 1 - (1-viscosity) * 0.04;
+      p.vy *= 1 - (1-viscosity) * 0.02;
+
+      if (p.marbling) {
+        // Marbling: interact with other particles
+        pourParticles.forEach(q => {
+          if (p === q) return;
+          const dx = p.x - q.x, dy = p.y - q.y;
+          const dist = Math.hypot(dx, dy);
+          if (dist < 30 && dist > 0.1) {
+            p.vx += dx/dist * tension * 0.3;
+            p.vy += dy/dist * tension * 0.3;
+          }
+        });
+      }
+
+      p.x += p.vx; p.y += p.vy;
+      p.trail.push({ x: p.x, y: p.y });
+      if (p.trail.length > 20) p.trail.shift();
+      p.life -= 0.012;
+
+      // Bounce off edges
+      if (p.x < p.r) { p.x = p.r; p.vx = Math.abs(p.vx) * 0.5; }
+      if (p.x > W-p.r) { p.x = W-p.r; p.vx = -Math.abs(p.vx) * 0.5; }
+      if (p.y > H) { p.y = H; p.vy *= -0.2; p.life -= 0.08; }
+
+      // Draw trail
+      lc.globalAlpha = p.alpha * p.life;
+      lc.globalCompositeOperation = blendMode;
+      if (p.trail.length > 2) {
+        lc.beginPath();
+        lc.moveTo(p.trail[0].x, p.trail[0].y);
+        for (let i = 1; i < p.trail.length; i++) {
+          const mid = { x: (p.trail[i-1].x + p.trail[i].x)/2, y: (p.trail[i-1].y + p.trail[i].y)/2 };
+          lc.quadraticCurveTo(p.trail[i-1].x, p.trail[i-1].y, mid.x, mid.y);
+        }
+        const trailGrad = lc.createLinearGradient(p.trail[0].x, p.trail[0].y, p.x, p.y);
+        trailGrad.addColorStop(0, hexToRgba(p.color, 0));
+        trailGrad.addColorStop(1, hexToRgba(p.color, p.alpha * p.life));
+        lc.strokeStyle = trailGrad;
+        lc.lineWidth = p.r * 1.8;
+        lc.lineCap = 'round'; lc.lineJoin = 'round';
+        lc.stroke();
+      }
+      // Draw blob head
+      const g = lc.createRadialGradient(p.x-p.r*0.2, p.y-p.r*0.2, 0, p.x, p.y, p.r*2);
+      g.addColorStop(0, hexToRgba(p.color, 0.9));
+      g.addColorStop(0.5, hexToRgba(p.color, 0.5));
+      g.addColorStop(1, hexToRgba(p.color, 0));
+      lc.beginPath(); lc.arc(p.x, p.y, p.r*2, 0, Math.PI*2);
+      lc.fillStyle = g; lc.fill();
+    });
+
+    lc.restore();
+    compositeAndDraw();
+    pourAnimFrame = requestAnimationFrame(animatePour);
+  }
+
+  function stopPour() {
+    if (pourAnimFrame) { cancelAnimationFrame(pourAnimFrame); pourAnimFrame = null; }
+    pourParticles = [];
+  }
+
+  /* ════════════════════════════════
+     SWIRL TOOL
+  ════════════════════════════════ */
+  function applySwirlAt(x, y, lx, ly) {
+    const lc = getLayerCtx();
+    const radius = brushSize * 4;
+    const strength = 8;
+    const imgData = lc.getImageData(0, 0, W, H);
+    const src = new Uint8ClampedArray(imgData.data);
+    const dx = x - lx, dy = y - ly;
+    const dist = Math.hypot(dx, dy);
+    if (dist < 0.1) return;
+
+    for (let py = Math.max(0,y-radius); py < Math.min(H,y+radius); py++) {
+      for (let px = Math.max(0,x-radius); px < Math.min(W,x+radius); px++) {
+        const d = Math.hypot(px-x, py-y);
+        if (d >= radius) continue;
+        const falloff = (1 - d/radius) ** 2;
+        const angle = Math.atan2(dy, dx) + Math.PI/2;
+        const swx = px + Math.cos(angle) * strength * falloff;
+        const swy = py + Math.sin(angle) * strength * falloff;
+        const srcX = Math.max(0, Math.min(W-1, Math.round(swx)));
+        const srcY = Math.max(0, Math.min(H-1, Math.round(swy)));
+        const si = (srcY*W + srcX)*4;
+        const di = (py*W + px)*4;
+        imgData.data[di]   = src[si];
+        imgData.data[di+1] = src[si+1];
+        imgData.data[di+2] = src[si+2];
+        imgData.data[di+3] = src[si+3];
+      }
+    }
+    lc.putImageData(imgData, 0, 0);
+  }
+
+  /* ── Canvas event bindings ── */
+  function bindCanvas() {
+    canvasEl.addEventListener('mousedown', startDraw);
+    canvasEl.addEventListener('mousemove', moveDraw);
+    canvasEl.addEventListener('mouseup', endDraw);
+    canvasEl.addEventListener('mouseleave', endDraw);
+    canvasEl.addEventListener('touchstart', e => { e.preventDefault(); startDraw(e); }, { passive: false });
+    canvasEl.addEventListener('touchmove', e => { e.preventDefault(); moveDraw(e); }, { passive: false });
+    canvasEl.addEventListener('touchend', endDraw);
+  }
+
+  /* ── UI bindings ── */
+  function bindUI() {
+    // Tool buttons
+    document.querySelectorAll('.tool-btn[data-tool]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentTool = btn.dataset.tool;
+        const pourCtrl = document.getElementById('pourControls');
+        if (currentTool === 'pour') pourCtrl.classList.add('visible');
+        else { pourCtrl.classList.remove('visible'); stopPour(); }
+        updateCursorStyle();
+      });
+    });
+
+    document.getElementById('btnUndo').addEventListener('click', undo);
+    document.getElementById('btnRedo').addEventListener('click', redo);
+    document.getElementById('btnAddLayer').addEventListener('click', () => { addLayer('Layer ' + (layers.length+1)); setActiveLayer(layers.length-1); });
+    document.getElementById('btnDelLayer').addEventListener('click', removeLayer);
+    document.getElementById('btnMerge').addEventListener('click', mergeLayers);
+
+    // Pour mode
+    document.querySelectorAll('.pour-btn[data-pour]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.pour-btn[data-pour]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        pourMode = btn.dataset.pour;
+      });
+    });
+
+    // Color picker
+    document.getElementById('colorPicker').addEventListener('input', e => {
+      currentColor = e.target.value;
+      document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+    });
+
+    // Blend mode
+    document.getElementById('blendMode').addEventListener('change', e => { blendMode = e.target.value; });
+
+    // Import
+    document.getElementById('btnImport').addEventListener('click', () => document.getElementById('fileImport').click());
+    document.getElementById('fileImport').addEventListener('change', e => {
+      const file = e.target.files[0]; if (!file) return;
+      const img = new Image();
+      img.onload = () => {
+        addLayer('Import');
+        setActiveLayer(layers.length - 1);
+        const lc = getLayerCtx();
+        const scale = Math.min(W / img.width, H / img.height, 1);
+        const iw = img.width * scale, ih = img.height * scale;
+        lc.drawImage(img, (W-iw)/2, (H-ih)/2, iw, ih);
+        compositeAndDraw();
+      };
+      img.src = URL.createObjectURL(file);
+    });
+
+    // Prompt builder
+    document.getElementById('btnBuildPrompt').addEventListener('click', buildPrompt);
+    document.getElementById('toggleSchema').addEventListener('click', () => {
+      const el = document.getElementById('schemaPreview');
+      el.classList.toggle('visible');
+      document.getElementById('toggleSchema').textContent = el.classList.contains('visible') ? 'Hide Schema' : 'Show Schema';
+    });
+  }
+
+  function updateCursorStyle() {
+    const toolCursors = { brush: 'crosshair', eraser: 'cell', pour: 'crosshair', swirl: 'move', fill: 'copy', select: 'default' };
+    canvasEl.style.cursor = toolCursors[currentTool] || 'crosshair';
+  }
+
+  /* ── Swatches ── */
+  function initSwatches() {
+    const colors = [
+      '#a855f7','#ec4899','#22d3ee','#f97316','#10b981','#6366f1','#f59e0b','#ef4444',
+      '#ffffff','#d1d5db','#6b7280','#1f2937','#000000','#fbbf24','#34d399','#60a5fa',
+    ];
+    const grid = document.getElementById('swatchGrid');
+    colors.forEach(c => {
+      const sw = document.createElement('div');
+      sw.className = 'swatch' + (c === currentColor ? ' active' : '');
+      sw.style.background = c;
+      sw.addEventListener('click', () => {
+        currentColor = c;
+        document.getElementById('colorPicker').value = c;
+        document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+        sw.classList.add('active');
+      });
+      grid.appendChild(sw);
+    });
+  }
+
+  /* ── Sliders ── */
+  function initSliders() {
+    function bind(id, cb, valId, fmt) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('input', () => {
+        cb(+el.value);
+        if (valId) document.getElementById(valId).textContent = fmt ? fmt(+el.value) : el.value;
+        const pct = ((+el.value - +el.min) / (+el.max - +el.min)) * 100;
+        el.style.setProperty('--pct', pct + '%');
+      });
+      const pct = ((+el.value - +el.min) / (+el.max - +el.min)) * 100;
+      el.style.setProperty('--pct', pct + '%');
+    }
+    bind('brushSize',    v => brushSize = v,     'sizeVal');
+    bind('brushOpacity', v => brushOpacity = v/100, 'opacVal', v => v+'%');
+    bind('brushHard',    v => brushHardness = v/100,'hardVal', v => v+'%');
+    bind('brushFlow',    v => brushFlow = v/100,  'flowVal', v => v+'%');
+    bind('viscosity',    v => viscosity = v/100,  'viscVal', v => v+'%');
+    bind('gravity',      v => gravityStr = v/100, 'gravVal', v => v+'%');
+    bind('tension',      v => tension = v/100,    'tensVal', v => v+'%');
+  }
+
+  /* ── Keyboard shortcuts ── */
+  function initShortcuts() {
+    document.addEventListener('keydown', e => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      const map = { b:'brush', e:'eraser', p:'pour', s:'swirl', f:'fill' };
+      if (map[e.key]) {
+        document.querySelector(`[data-tool="${map[e.key]}"]`)?.click();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z') { e.preventDefault(); undo(); }
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.shiftKey && e.key === 'z'))) { e.preventDefault(); redo(); }
+      if (e.key === '[') brushSize = Math.max(1, brushSize - 2);
+      if (e.key === ']') brushSize = Math.min(120, brushSize + 2);
+    });
+  }
+
+  /* ── Prompt builder ── */
+  function buildPrompt() {
+    const style = document.getElementById('pStyle').value;
+    const material = document.getElementById('pMaterial').value;
+    const colors = document.getElementById('pColors').value;
+    const shape = document.getElementById('pShape').value;
+    const light = document.getElementById('pLight').value;
+    const size = document.getElementById('pSize').value;
+    const steps = document.getElementById('pSteps').value;
+    const cfg = document.getElementById('pCfg').value;
+    const userText = document.getElementById('promptInput').value.trim();
+
+    const styleMap = {
+      'Bioluminescent': 'bioluminescent neon, glowing organic forms, deep space atmosphere',
+      'Cosmic': 'cosmic nebula, galactic scale, stellar phenomena, aurora borealis',
+      'Abstract': 'abstract expressionist, gestural marks, chromatic fields',
+      'Watercolor': 'loose watercolor washes, wet-on-wet blooms, translucent layers',
+      'Oil Painting': 'impasto oil paint, rich textured brushwork, museum quality',
+    };
+    const styleStr = styleMap[style] || style.toLowerCase();
+
+    const fullPrompt = [
+      userText || 'ethereal flowing composition',
+      styleStr,
+      `${material.toLowerCase()} medium`,
+      `${colors.toLowerCase()} color scheme`,
+      `${shape.toLowerCase()} forms`,
+      `${light.toLowerCase()} lighting`,
+      `masterwork, ultra-detailed, 8k resolution, award-winning digital art`,
+      `negative: blurry, low quality, watermark, text`
+    ].join(', ');
+
+    document.getElementById('promptInput').value = fullPrompt;
+
+    const schema = {
+      prompt: fullPrompt,
+      negative_prompt: 'blurry, low quality, watermark, text, signature',
+      width: parseInt(size.split('×')[0]),
+      height: parseInt(size.split('×')[1]),
+      num_inference_steps: parseInt(steps),
+      guidance_scale: parseFloat(cfg),
+      scheduler: 'DPMSolverMultistep',
+      seed: Math.floor(Math.random() * 999999),
+    };
+
+    const preview = document.getElementById('schemaPreview');
+    preview.textContent = JSON.stringify(schema, null, 2);
+    preview.classList.add('visible');
+    document.getElementById('toggleSchema').textContent = 'Hide Schema';
+  }
+
+  /* ── Export ── */
+  function exportCanvas() {
+    const exp = document.createElement('canvas');
+    exp.width = W; exp.height = H;
+    const ec = exp.getContext('2d');
+    layers.forEach(l => { if (l.visible) { ec.save(); ec.globalAlpha = l.opacity; ec.globalCompositeOperation = l.blendMode; ec.drawImage(l.canvas,0,0); ec.restore(); }});
+    exp.toBlob(blob => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'chromaflora-studio.png';
+      a.click();
+    });
+  }
+
+  function clearAll() {
+    saveState();
+    layers.forEach(l => { const lc = l.canvas.getContext('2d'); lc.clearRect(0,0,W,H); });
+    const bgCtx = layers[0].canvas.getContext('2d');
+    bgCtx.fillStyle = '#0a0a1a'; bgCtx.fillRect(0,0,W,H);
+    compositeAndDraw();
+  }
+
+  /* ── Color utils ── */
+  function hexToRgba(hex, alpha) {
+    const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+  function hexToRgbArray(hex) {
+    return [parseInt(hex.slice(1,3),16), parseInt(hex.slice(3,5),16), parseInt(hex.slice(5,7),16)];
+  }
+  function shiftHue(hex, shift) {
+    let [r,g,b] = hexToRgbArray(hex);
+    r/=255; g/=255; b/=255;
+    const max=Math.max(r,g,b), min=Math.min(r,g,b), l=(max+min)/2;
+    let h,s;
+    if (max===min) { h=s=0; } else {
+      const d=max-min; s=l>0.5?d/(2-max-min):d/(max+min);
+      h=max===r?(g-b)/d+(g<b?6:0):max===g?(b-r)/d+2:(r-g)/d+4; h/=6;
+    }
+    h=(h*360+shift)%360/360;
+    function hue2rgb(p,q,t){if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<1/2)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p;}
+    const q=l<0.5?l*(1+s):l+s-l*s, p=2*l-q;
+    const nr=Math.round(hue2rgb(p,q,h+1/3)*255), ng=Math.round(hue2rgb(p,q,h)*255), nb=Math.round(hue2rgb(p,q,h-1/3)*255);
+    return '#'+[nr,ng,nb].map(v=>v.toString(16).padStart(2,'0')).join('');
+  }
+
+  init();
+  return { export: exportCanvas, clear: clearAll };
+})();
+</script>
+</body>
+</html>

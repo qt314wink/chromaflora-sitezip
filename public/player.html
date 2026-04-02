@@ -3,7 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ChromaFlora · Player</title>
+<title>ChromaSynth — 7-Genre Music Synthesizer · ChromaFlora</title>
+<meta name="description" content="ChromaSynth: procedural music synthesis across 7 genres — Lofi, Ambient, R&B, Techno, Jazz, House, and Liquid Dub. Web Audio API, no external services.">
+<meta name="author" content="Jennipher Troup">
+<meta property="og:title" content="ChromaSynth — Music Synthesizer · ChromaFlora">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:creator" content="@halcyonminx">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -291,6 +297,16 @@
       <div class="status-bar">
         <div class="status-dot stopped" id="statusDot"></div>
         <span id="statusText">Ready · Click Play</span>
+      </div>
+
+      <!-- Creator / Share row -->
+      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+        <button id="saveSongBtn" style="flex:1;padding:10px;border-radius:11px;border:none;cursor:pointer;background:linear-gradient(135deg,#a855f7,#ec4899);color:white;font-size:13px;font-weight:700;font-family:inherit;transition:transform 0.1s,box-shadow 0.1s">
+          ✦ Save Song
+        </button>
+        <button id="shareBtn" style="padding:10px 16px;border-radius:11px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.7);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:var(--t-snap)">
+          ↗ Share
+        </button>
       </div>
     </div>
 
@@ -875,6 +891,54 @@
     }
   }
   drawViz();
+
+  /* ── Creator / Share system ── */
+  function saveSong() {
+    const genreKey = currentGenre || 'lofi';
+    const g = GENRES[genreKey] || {};
+    const nickname = prompt('Your creator nickname (shown in the gallery):') || 'anonymous';
+    const title = prompt('Song title (optional):') || (g.name + ' Session');
+    const tags = prompt('Tags (comma-separated, optional):') || '';
+    const songs = JSON.parse(localStorage.getItem('cf_songs')||'[]');
+    songs.push({
+      id: Date.now().toString(),
+      nickname: nickname.replace(/[<>"']/g,'').trim().slice(0,40),
+      title: title.replace(/[<>"']/g,'').trim().slice(0,80),
+      genre: genreKey,
+      bpm: (g.bpm || 0) + parseInt(document.getElementById('sldBpm').value||0),
+      tags: tags.slice(0,100),
+      timestamp: Date.now(),
+    });
+    localStorage.setItem('cf_songs', JSON.stringify(songs));
+    const btn = document.getElementById('saveSongBtn');
+    btn.textContent = '✓ Saved to Gallery!';
+    btn.style.background = 'linear-gradient(135deg,#10b981,#22d3ee)';
+    setTimeout(()=>{btn.textContent='✦ Save Song';btn.style.background='linear-gradient(135deg,#a855f7,#ec4899)';},3000);
+    // Also save to persistent player state
+    localStorage.setItem('cf_player', JSON.stringify({genreIdx: ['lofi','ambient','rnb','techno','jazz','house','liquiddub'].indexOf(genreKey), isPlaying: true, volume: 0.7}));
+  }
+
+  function shareSong() {
+    const shareData = {
+      title: 'ChromaFlora Song',
+      text: `I just created a ${currentGenre} song with ChromaFlora by @halcyonminx! 🌌 #ChromaFlora #GenerativeMusic`,
+      url: location.href,
+    };
+    if (navigator.share) {
+      navigator.share(shareData).catch(()=>{});
+    } else {
+      navigator.clipboard.writeText(shareData.text + ' ' + shareData.url).then(()=>{
+        const btn = document.getElementById('shareBtn');
+        btn.textContent = '✓ Copied!';
+        setTimeout(()=>btn.textContent='↗ Share',2000);
+      });
+    }
+  }
+
+  document.getElementById('saveSongBtn').addEventListener('click', saveSong);
+  document.getElementById('shareBtn').addEventListener('click', shareSong);
+  document.getElementById('saveSongBtn').addEventListener('mouseenter', function(){ this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(168,85,247,0.4)'; });
+  document.getElementById('saveSongBtn').addEventListener('mouseleave', function(){ this.style.transform=''; this.style.boxShadow=''; });
 
 })();
 </script>

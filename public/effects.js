@@ -324,7 +324,6 @@ class TextScramble {
   constructor(el) {
     this.el = el;
     this.chars = 'ﾊﾐﾋｰｳｼﾅﾓﾆｻﾜﾂｵﾘｱﾛﾝﾀﾈｴｷﾃﾑﾕﾗｾﾈｽﾀﾂｷ01アイウエオカキクケコ∆Ωπ∑√∞≠≈';
-    this.update = this.update.bind(this);
   }
   setText(newText) {
     const old = this.el.innerText;

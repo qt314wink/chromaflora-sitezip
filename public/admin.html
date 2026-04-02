@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin · ChromaFlora</title>
+<meta name="robots" content="noindex, nofollow">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#02020a;--purple:#a855f7;--aqua:#22d3ee;--pink:#ec4899;--orange:#f97316;--green:#10b981;--red:#ef4444;--surface:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.08);--t-snap:0.1s cubic-bezier(0.4,0,0.2,1);--t-spring:0.4s cubic-bezier(0.34,1.56,0.64,1)}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:#fff;min-height:100dvh;overflow-x:hidden}
+
+  /* ── Login Screen ── */
+  .login-screen{position:fixed;inset:0;z-index:900;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse 80% 60% at 40% 50%,rgba(168,85,247,0.12),transparent 65%),#02020a;padding:24px}
+  .login-card{background:rgba(255,255,255,0.04);border:1px solid rgba(168,85,247,0.2);border-radius:24px;padding:48px 40px;max-width:400px;width:100%;text-align:center;position:relative;overflow:hidden}
+  .login-card::before{content:'';position:absolute;inset:-1px;border-radius:24px;padding:1px;background:linear-gradient(135deg,rgba(168,85,247,0.4),rgba(34,211,238,0.2));-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+  .login-logo{font-size:36px;margin-bottom:8px}
+  .login-title{font-size:22px;font-weight:800;margin-bottom:4px}
+  .login-sub{font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:32px}
+  .login-field{position:relative;margin-bottom:14px}
+  .login-input{width:100%;padding:13px 16px;border-radius:12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:white;font-size:15px;font-family:'Inter',sans-serif;outline:none;transition:border-color var(--t-snap);text-align:left}
+  .login-input:focus{border-color:rgba(168,85,247,0.5);box-shadow:0 0 0 3px rgba(168,85,247,0.12)}
+  .login-input::placeholder{color:rgba(255,255,255,0.25)}
+  .login-btn{width:100%;padding:14px;border-radius:12px;border:none;cursor:pointer;background:linear-gradient(135deg,#a855f7,#ec4899);color:white;font-size:15px;font-weight:700;font-family:'Inter',sans-serif;margin-top:8px;transition:var(--t-spring)}
+  .login-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(168,85,247,0.4)}
+  .login-btn:active{transform:scale(0.97)}
+  .login-err{font-size:12px;color:rgba(239,68,68,0.9);margin-top:10px;min-height:18px}
+
+  /* ── Dashboard ── */
+  .dashboard{display:none;min-height:100dvh}
+  .dashboard.active{display:flex;flex-direction:column}
+  .top-bar{height:60px;background:rgba(2,2,10,0.95);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:16px;position:sticky;top:0;z-index:100;backdrop-filter:blur(20px)}
+  .top-bar-logo{font-weight:800;font-size:16px;background:linear-gradient(135deg,#a855f7,#22d3ee);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .top-bar-badge{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;padding:3px 8px;border-radius:4px;background:rgba(168,85,247,0.2);color:rgba(200,150,255,0.9)}
+  .top-bar-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+  .logout-btn{padding:7px 16px;border-radius:8px;border:1px solid rgba(239,68,68,0.3);background:rgba(239,68,68,0.08);color:rgba(255,100,100,0.8);font-size:13px;font-weight:600;cursor:pointer;transition:var(--t-snap)}
+  .logout-btn:hover{background:rgba(239,68,68,0.15);color:white}
+
+  /* ── Layout ── */
+  .admin-body{display:flex;flex:1}
+  .sidebar{width:220px;flex-shrink:0;border-right:1px solid var(--border);padding:24px 12px;display:flex;flex-direction:column;gap:4px}
+  @media(max-width:700px){.sidebar{display:none}}
+  .sidebar-item{padding:9px 14px;border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;color:rgba(255,255,255,0.55);transition:var(--t-snap);display:flex;align-items:center;gap:10px}
+  .sidebar-item:hover,.sidebar-item.active{background:rgba(168,85,247,0.1);color:white}
+  .sidebar-item .icon{font-size:15px}
+  .sidebar-divider{height:1px;background:var(--border);margin:8px 0}
+  .content{flex:1;padding:32px;overflow-y:auto;max-width:1100px}
+
+  /* ── Panels ── */
+  .panel{display:none}.panel.active{display:block}
+
+  /* ── Stats row ── */
+  .stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-bottom:32px}
+  .stat{border-radius:16px;padding:20px;border:1px solid var(--border);background:var(--surface);text-align:center}
+  .stat-num{font-size:32px;font-weight:900;background:linear-gradient(135deg,var(--purple),var(--aqua));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .stat-label{font-size:12px;color:rgba(255,255,255,0.4);margin-top:4px}
+
+  /* ── Section headers ── */
+  .section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+  .section-title{font-size:20px;font-weight:800}
+  .section-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:rgba(255,255,255,0.3);margin-bottom:20px;display:flex;align-items:center;gap:10px}
+  .section-label::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.06)}
+
+  /* ── Content list ── */
+  .content-list{display:flex;flex-direction:column;gap:10px}
+  .content-item{border-radius:14px;border:1px solid var(--border);background:var(--surface);padding:16px 20px;display:flex;align-items:center;gap:16px;transition:var(--t-snap)}
+  .content-item:hover{border-color:rgba(168,85,247,0.2);background:rgba(168,85,247,0.04)}
+  .item-thumb{width:52px;height:52px;border-radius:10px;overflow:hidden;flex-shrink:0;background:#0a0a1a;display:flex;align-items:center;justify-content:center;font-size:22px}
+  .item-thumb canvas{width:100%;height:100%}
+  .item-info{flex:1;min-width:0}
+  .item-title{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .item-meta{font-size:12px;color:rgba(255,255,255,0.4);font-family:'JetBrains Mono',monospace;margin-top:3px}
+  .item-actions{display:flex;gap:8px;flex-shrink:0}
+  .action-btn{padding:6px 14px;border-radius:8px;border:none;cursor:pointer;font-size:12px;font-weight:600;transition:var(--t-snap)}
+  .delete-btn{background:rgba(239,68,68,0.12);color:rgba(239,68,68,0.8);border:1px solid rgba(239,68,68,0.2)}
+  .delete-btn:hover{background:rgba(239,68,68,0.25);color:white}
+  .approve-btn{background:rgba(16,185,129,0.12);color:rgba(16,185,129,0.8);border:1px solid rgba(16,185,129,0.2)}
+  .approve-btn:hover{background:rgba(16,185,129,0.25);color:white}
+
+  /* ── Blog CMS ── */
+  .blog-form{border-radius:18px;border:1px solid var(--border);background:var(--surface);padding:28px;margin-bottom:24px}
+  .form-row{margin-bottom:16px}
+  .form-label{font-size:12px;font-weight:600;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;display:block}
+  .form-input,.form-textarea,.form-select{width:100%;padding:11px 14px;border-radius:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:white;font-size:14px;font-family:'Inter',sans-serif;outline:none;transition:border-color var(--t-snap)}
+  .form-input:focus,.form-textarea:focus,.form-select:focus{border-color:rgba(168,85,247,0.45);box-shadow:0 0 0 3px rgba(168,85,247,0.1)}
+  .form-input::placeholder,.form-textarea::placeholder{color:rgba(255,255,255,0.2)}
+  .form-textarea{resize:vertical;min-height:160px}
+  .form-select option{background:#0d0d26}
+  .form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .submit-btn{padding:12px 28px;border-radius:12px;border:none;cursor:pointer;background:linear-gradient(135deg,var(--purple),var(--pink));color:white;font-size:14px;font-weight:700;font-family:'Inter',sans-serif;transition:var(--t-spring)}
+  .submit-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(168,85,247,0.35)}
+  .submit-btn:active{transform:scale(0.96)}
+
+  /* ── Email list ── */
+  .email-item{padding:12px 16px;border-radius:10px;border:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:space-between;font-size:13px;font-family:'JetBrains Mono',monospace;color:rgba(255,255,255,0.7);margin-bottom:8px}
+  .email-tag{font-size:10px;font-weight:700;text-transform:uppercase;padding:3px 8px;border-radius:4px;background:rgba(16,185,129,0.15);color:rgba(16,185,129,0.8)}
+
+  /* ── Tag ── */
+  .badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700}
+  .badge-art{background:rgba(168,85,247,0.12);color:rgba(168,85,247,0.8);border:1px solid rgba(168,85,247,0.2)}
+  .badge-song{background:rgba(249,115,22,0.12);color:rgba(249,115,22,0.8);border:1px solid rgba(249,115,22,0.2)}
+  .empty-state{text-align:center;padding:48px;color:rgba(255,255,255,0.3);font-size:14px}
+</style>
+</head>
+<body>
+
+<!-- Login Screen -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">🌌</div>
+    <div class="login-title">ChromaFlora Admin</div>
+    <div class="login-sub">Dashboard · CMS · Content Moderation</div>
+    <div class="login-field">
+      <input type="text" class="login-input" id="adminUser" placeholder="Username" autocomplete="username">
+    </div>
+    <div class="login-field">
+      <input type="password" class="login-input" id="adminPass" placeholder="Password" autocomplete="current-password">
+    </div>
+    <button class="login-btn" id="loginBtn">Enter Dashboard</button>
+    <div class="login-err" id="loginErr"></div>
+    <div style="margin-top:16px;font-size:11px;color:rgba(255,255,255,0.2)">First visit: use any username + set your password</div>
+  </div>
+</div>
+
+<!-- Dashboard -->
+<div class="dashboard" id="dashboard">
+  <div class="top-bar">
+    <span class="top-bar-logo">ChromaFlora</span>
+    <span class="top-bar-badge">Admin</span>
+    <div class="top-bar-right">
+      <span style="font-size:13px;color:rgba(255,255,255,0.4)" id="adminWelcome"></span>
+      <button class="logout-btn" id="logoutBtn">Logout</button>
+    </div>
+  </div>
+  <div class="admin-body">
+    <div class="sidebar">
+      <div class="sidebar-item active" data-panel="overview"><span class="icon">📊</span>Overview</div>
+      <div class="sidebar-item" data-panel="artworks"><span class="icon">🎨</span>Artworks</div>
+      <div class="sidebar-item" data-panel="songs"><span class="icon">🎵</span>Songs</div>
+      <div class="sidebar-item" data-panel="blog"><span class="icon">📝</span>Blog CMS</div>
+      <div class="sidebar-divider"></div>
+      <div class="sidebar-item" data-panel="emails"><span class="icon">✉</span>Subscribers</div>
+      <div class="sidebar-item" data-panel="settings"><span class="icon">⚙</span>Settings</div>
+      <div class="sidebar-divider"></div>
+      <a href="index.html" class="sidebar-item" style="text-decoration:none"><span class="icon">←</span>Back to Site</a>
+    </div>
+    <div class="content">
+
+      <!-- Overview -->
+      <div class="panel active" id="panel-overview">
+        <div class="section-label">Overview</div>
+        <div class="stats-row" id="statsRow"></div>
+        <div class="section-head">
+          <div class="section-title">Recent Activity</div>
+        </div>
+        <div class="content-list" id="recentList"></div>
+      </div>
+
+      <!-- Artworks -->
+      <div class="panel" id="panel-artworks">
+        <div class="section-label">Community Artworks</div>
+        <div class="content-list" id="artworksList"></div>
+      </div>
+
+      <!-- Songs -->
+      <div class="panel" id="panel-songs">
+        <div class="section-label">Community Songs</div>
+        <div class="content-list" id="songsList"></div>
+      </div>
+
+      <!-- Blog CMS -->
+      <div class="panel" id="panel-blog">
+        <div class="section-label">Blog Management</div>
+        <div class="blog-form">
+          <div style="font-size:16px;font-weight:800;margin-bottom:20px">New Blog Post</div>
+          <div class="form-row">
+            <label class="form-label">Title</label>
+            <input type="text" class="form-input" id="postTitle" placeholder="Article title…">
+          </div>
+          <div class="form-row-2">
+            <div>
+              <label class="form-label">Category</label>
+              <select class="form-select" id="postCat">
+                <option value="Design">Design</option>
+                <option value="Code">Code</option>
+                <option value="Art">Art</option>
+                <option value="Music">Music</option>
+                <option value="Physics">Physics</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Read Time</label>
+              <input type="text" class="form-input" id="postRead" placeholder="e.g. 6 min">
+            </div>
+          </div>
+          <div class="form-row">
+            <label class="form-label">Excerpt</label>
+            <input type="text" class="form-input" id="postExcerpt" placeholder="Short summary…">
+          </div>
+          <div class="form-row">
+            <label class="form-label">Body (HTML or plain text)</label>
+            <textarea class="form-textarea" id="postBody" placeholder="Write your article here… HTML tags like &lt;p&gt;, &lt;h3&gt;, &lt;blockquote&gt; are supported"></textarea>
+          </div>
+          <div class="form-row">
+            <label class="form-label">Tags (comma-separated)</label>
+            <input type="text" class="form-input" id="postTags" placeholder="Design, Canvas, Physics">
+          </div>
+          <div style="display:flex;gap:12px;align-items:center">
+            <button class="submit-btn" id="publishPost">Publish Post</button>
+            <span id="postMsg" style="font-size:13px;color:rgba(16,185,129,0.8)"></span>
+          </div>
+        </div>
+        <div class="section-label">Published Posts</div>
+        <div class="content-list" id="blogList"></div>
+      </div>
+
+      <!-- Subscribers -->
+      <div class="panel" id="panel-emails">
+        <div class="section-label">Email Subscribers</div>
+        <div style="margin-bottom:16px;display:flex;gap:12px;align-items:center">
+          <span style="font-size:14px;color:rgba(255,255,255,0.5)" id="emailCount"></span>
+          <button class="action-btn approve-btn" id="exportEmails">Export CSV</button>
+        </div>
+        <div id="emailList"></div>
+      </div>
+
+      <!-- Settings -->
+      <div class="panel" id="panel-settings">
+        <div class="section-label">Settings</div>
+        <div class="blog-form">
+          <div style="font-size:16px;font-weight:800;margin-bottom:20px">Change Password</div>
+          <div class="form-row">
+            <label class="form-label">New Password</label>
+            <input type="password" class="form-input" id="newPass" placeholder="New password">
+          </div>
+          <div class="form-row">
+            <label class="form-label">Confirm Password</label>
+            <input type="password" class="form-input" id="confirmPass" placeholder="Confirm password">
+          </div>
+          <button class="submit-btn" id="changePassBtn">Update Password</button>
+          <span id="passMsg" style="font-size:13px;margin-left:12px;color:rgba(16,185,129,0.8)"></span>
+        </div>
+        <div class="blog-form">
+          <div style="font-size:16px;font-weight:800;margin-bottom:20px">Danger Zone</div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <button class="action-btn delete-btn" id="clearArtworks">Clear All Artworks</button>
+            <button class="action-btn delete-btn" id="clearSongs">Clear All Songs</button>
+            <button class="action-btn delete-btn" id="clearSubscribers">Clear Subscribers</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════
+   Auth system (localStorage-based)
+══════════════════════════════════ */
+const ADMIN_KEY = 'cf_admin_creds';
+
+function getAdminCreds() {
+  try { return JSON.parse(localStorage.getItem(ADMIN_KEY)||'null'); } catch(e) { return null; }
+}
+function setAdminCreds(user, pass) {
+  localStorage.setItem(ADMIN_KEY, JSON.stringify({user, pass}));
+}
+
+document.getElementById('loginBtn').addEventListener('click', () => {
+  const user = document.getElementById('adminUser').value.trim();
+  const pass = document.getElementById('adminPass').value;
+  const err = document.getElementById('loginErr');
+  if (!user || !pass) { err.textContent = 'Enter both username and password.'; return; }
+  const creds = getAdminCreds();
+  if (!creds) {
+    // First time — create account
+    setAdminCreds(user, pass);
+    enterDashboard(user);
+  } else if (creds.user === user && creds.pass === pass) {
+    enterDashboard(user);
+  } else {
+    err.textContent = 'Incorrect username or password.';
+    document.getElementById('adminPass').style.borderColor = 'rgba(239,68,68,0.5)';
+  }
+});
+document.getElementById('adminPass').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('loginBtn').click(); });
+
+function enterDashboard(user) {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('dashboard').classList.add('active');
+  document.getElementById('adminWelcome').textContent = 'Welcome, '+user;
+  populateDashboard();
+}
+
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  document.getElementById('dashboard').classList.remove('active');
+  document.getElementById('loginScreen').style.display = 'flex';
+});
+
+/* ── Navigation ── */
+document.querySelectorAll('.sidebar-item[data-panel]').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.sidebar-item').forEach(i=>i.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    item.classList.add('active');
+    document.getElementById('panel-'+item.dataset.panel).classList.add('active');
+    if (item.dataset.panel==='artworks') renderArtworks();
+    if (item.dataset.panel==='songs') renderSongs();
+    if (item.dataset.panel==='emails') renderEmails();
+    if (item.dataset.panel==='blog') renderBlogList();
+  });
+});
+
+/* ── Data helpers ── */
+function getArtworks() { try { return JSON.parse(localStorage.getItem('cf_artworks')||'[]'); } catch(e){return[];} }
+function getSongs() { try { return JSON.parse(localStorage.getItem('cf_songs')||'[]'); } catch(e){return[];} }
+function getEmails() { try { return JSON.parse(localStorage.getItem('cf_subscribers')||'[]'); } catch(e){return[];} }
+function getBlogPosts() { try { return JSON.parse(localStorage.getItem('cf_blog_posts')||'[]'); } catch(e){return[];} }
+
+/* ── Populate overview ── */
+function populateDashboard() {
+  const artworks = getArtworks(), songs = getSongs(), emails = getEmails(), posts = getBlogPosts();
+  document.getElementById('statsRow').innerHTML = `
+    <div class="stat"><div class="stat-num">${artworks.length}</div><div class="stat-label">Artworks</div></div>
+    <div class="stat"><div class="stat-num">${songs.length}</div><div class="stat-label">Songs</div></div>
+    <div class="stat"><div class="stat-num">${emails.length}</div><div class="stat-label">Subscribers</div></div>
+    <div class="stat"><div class="stat-num">${posts.length}</div><div class="stat-label">Blog Posts</div></div>
+  `;
+  const recent = [...artworks.map(a=>({...a,type:'art'})), ...songs.map(s=>({...s,type:'song'}))]
+    .sort((a,b)=>b.timestamp-a.timestamp).slice(0,8);
+  const list = document.getElementById('recentList');
+  list.innerHTML = recent.length ? '' : '<div class="empty-state">No shared content yet.</div>';
+  recent.forEach(item => {
+    const el = document.createElement('div');
+    el.className='content-item';
+    el.innerHTML = `
+      <div class="item-thumb">${item.type==='art'?'🎨':'🎵'}</div>
+      <div class="item-info">
+        <div class="item-title">${item.type==='art' ? ('by @'+(item.username||'anon')) : ((item.nickname||'anon')+' · '+item.genre)}</div>
+        <div class="item-meta">${item.type==='art'?'Artwork':'Song'} · ${new Date(item.timestamp).toLocaleDateString()}</div>
+      </div>
+      <div class="item-actions">
+        <span class="badge ${item.type==='art'?'badge-art':'badge-song'}">${item.type}</span>
+        <button class="action-btn delete-btn" onclick="deleteItem('${item.type}','${item.id}')">Delete</button>
+      </div>
+    `;
+    list.appendChild(el);
+  });
+}
+
+/* ── Artworks ── */
+function renderArtworks() {
+  const artworks = getArtworks();
+  const list = document.getElementById('artworksList');
+  list.innerHTML = artworks.length ? '' : '<div class="empty-state">No artworks shared yet.</div>';
+  artworks.forEach(art => {
+    const el = document.createElement('div');
+    el.className='content-item';
+    el.innerHTML = `
+      <div class="item-thumb">🎨</div>
+      <div class="item-info">
+        <div class="item-title">@${art.username||'anonymous'}</div>
+        <div class="item-meta">${art.prompt||'No prompt'} · ${new Date(art.timestamp).toLocaleDateString()}</div>
+      </div>
+      <div class="item-actions">
+        <button class="action-btn delete-btn" onclick="deleteItem('art','${art.id}')">Delete</button>
+      </div>
+    `;
+    list.appendChild(el);
+  });
+}
+
+/* ── Songs ── */
+function renderSongs() {
+  const songs = getSongs();
+  const list = document.getElementById('songsList');
+  list.innerHTML = songs.length ? '' : '<div class="empty-state">No songs shared yet.</div>';
+  songs.forEach(song => {
+    const el = document.createElement('div');
+    el.className='content-item';
+    el.innerHTML = `
+      <div class="item-thumb">🎵</div>
+      <div class="item-info">
+        <div class="item-title">${song.nickname||'Anonymous'} · ${song.genre}</div>
+        <div class="item-meta">${song.bpm} BPM · ${new Date(song.timestamp).toLocaleDateString()}</div>
+      </div>
+      <div class="item-actions">
+        <button class="action-btn delete-btn" onclick="deleteItem('song','${song.id}')">Delete</button>
+      </div>
+    `;
+    list.appendChild(el);
+  });
+}
+
+/* ── Delete item ── */
+function deleteItem(type, id) {
+  if (!confirm(`Delete this ${type}? This cannot be undone.`)) return;
+  const key = type==='art' ? 'cf_artworks' : 'cf_songs';
+  const arr = JSON.parse(localStorage.getItem(key)||'[]');
+  const updated = arr.filter(x => x.id !== id);
+  localStorage.setItem(key, JSON.stringify(updated));
+  populateDashboard();
+  if (type==='art') renderArtworks();
+  else renderSongs();
+}
+window.deleteItem = deleteItem;
+
+/* ── Blog CMS ── */
+document.getElementById('publishPost').addEventListener('click', () => {
+  const title = document.getElementById('postTitle').value.trim();
+  const cat   = document.getElementById('postCat').value;
+  const read  = document.getElementById('postRead').value.trim() || '5 min';
+  const excerpt = document.getElementById('postExcerpt').value.trim();
+  const body  = document.getElementById('postBody').value.trim();
+  const tags  = document.getElementById('postTags').value.split(',').map(t=>t.trim()).filter(Boolean);
+  if (!title||!body) { document.getElementById('postMsg').textContent='Title and body are required.'; return; }
+  const posts = getBlogPosts();
+  posts.unshift({
+    id: Date.now().toString(), title, cat, read, excerpt,
+    body: body.includes('<') ? body : `<p>${body.replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>')}</p>`,
+    tags, date: new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),
+    colorA:'#a855f7', colorB:'#22d3ee'
+  });
+  localStorage.setItem('cf_blog_posts', JSON.stringify(posts));
+  ['postTitle','postExcerpt','postBody','postTags'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('postMsg').textContent = '✓ Published!';
+  setTimeout(()=>document.getElementById('postMsg').textContent='', 3000);
+  renderBlogList();
+});
+
+function renderBlogList() {
+  const posts = getBlogPosts();
+  const list = document.getElementById('blogList');
+  list.innerHTML = posts.length ? '' : '<div class="empty-state">No custom posts yet.</div>';
+  posts.forEach(post => {
+    const el = document.createElement('div');
+    el.className='content-item';
+    el.innerHTML = `
+      <div class="item-info">
+        <div class="item-title">${post.title} <span class="badge badge-art">${post.cat}</span></div>
+        <div class="item-meta">${post.date} · ${post.read}</div>
+      </div>
+      <div class="item-actions">
+        <button class="action-btn delete-btn" onclick="deleteBlogPost('${post.id}')">Delete</button>
+      </div>
+    `;
+    list.appendChild(el);
+  });
+}
+function deleteBlogPost(id) {
+  if (!confirm('Delete this blog post?')) return;
+  const posts = getBlogPosts().filter(p=>p.id!==id);
+  localStorage.setItem('cf_blog_posts', JSON.stringify(posts));
+  renderBlogList();
+}
+window.deleteBlogPost = deleteBlogPost;
+
+/* ── Emails ── */
+function renderEmails() {
+  const emails = getEmails();
+  document.getElementById('emailCount').textContent = `${emails.length} subscriber${emails.length===1?'':'s'}`;
+  const list = document.getElementById('emailList');
+  list.innerHTML = emails.length ? '' : '<div class="empty-state">No subscribers yet.</div>';
+  emails.forEach(email => {
+    const el = document.createElement('div');
+    el.className='email-item';
+    el.innerHTML = `<span>${email}</span><span class="email-tag">subscribed</span>`;
+    list.appendChild(el);
+  });
+}
+document.getElementById('exportEmails').addEventListener('click', () => {
+  const emails = getEmails();
+  const csv = 'Email\n'+emails.join('\n');
+  const blob = new Blob([csv],{type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download='chromaflora_subscribers.csv'; a.click();
+});
+
+/* ── Settings ── */
+document.getElementById('changePassBtn').addEventListener('click', () => {
+  const np=document.getElementById('newPass').value, cp=document.getElementById('confirmPass').value;
+  const msg=document.getElementById('passMsg');
+  if(np!==cp){msg.textContent='Passwords do not match.';msg.style.color='rgba(239,68,68,0.8)';return;}
+  if(np.length<6){msg.textContent='Minimum 6 characters.';msg.style.color='rgba(239,68,68,0.8)';return;}
+  const creds=getAdminCreds();
+  setAdminCreds(creds.user,np);
+  msg.textContent='✓ Password updated!';msg.style.color='rgba(16,185,129,0.8)';
+  document.getElementById('newPass').value='';document.getElementById('confirmPass').value='';
+  setTimeout(()=>msg.textContent='',3000);
+});
+
+['clearArtworks','clearSongs','clearSubscribers'].forEach(id=>{
+  document.getElementById(id).addEventListener('click',()=>{
+    const labels={clearArtworks:'all artworks',clearSongs:'all songs',clearSubscribers:'all subscribers'};
+    const keys={clearArtworks:'cf_artworks',clearSongs:'cf_songs',clearSubscribers:'cf_subscribers'};
+    if(!confirm(`Delete ${labels[id]}? This cannot be undone.`))return;
+    localStorage.removeItem(keys[id]);
+    populateDashboard();
+  });
+});
+</script>
+</body>
+</html>

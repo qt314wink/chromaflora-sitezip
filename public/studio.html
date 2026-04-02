@@ -3,7 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ChromaFlora · Studio</title>
+<title>Art Studio — Procedural Canvas Painting · ChromaFlora</title>
+<meta name="description" content="ChromaFlora Art Studio — layered canvas with paint pour physics, swirl tool, flood fill, and an AI image prompt builder. Share your creations with the community.">
+<meta name="author" content="Jennipher Troup">
+<meta property="og:title" content="Art Studio · ChromaFlora">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:creator" content="@halcyonminx">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -234,6 +240,7 @@
   </nav>
   <div style="display:flex;gap:8px">
     <button class="layer-btn" onclick="studio.export()" style="padding:5px 14px">Export PNG</button>
+    <button class="layer-btn" id="shareArtBtn" style="padding:5px 14px;background:linear-gradient(135deg,#a855f7,#ec4899);border-color:transparent;color:white" onclick="shareArtwork()">✦ Share to Gallery</button>
     <button class="layer-btn" onclick="studio.clear()" style="padding:5px 14px">Clear All</button>
   </div>
 </header>
@@ -674,8 +681,10 @@ const studio = (function() {
 
     if (brushHardness < 0.9 && currentTool !== 'eraser') {
       // Soft brush via radial gradient
-      const r = brushSize / 2;
-      const grd = lc.createRadialGradient(x, y, r * brushHardness, x, y, r);
+      const r = Math.max(brushSize / 2, 0.5);
+      const innerR = Math.max(r * brushHardness, 0);
+      if (!isFinite(r) || !isFinite(x) || !isFinite(y)) return;
+      const grd = lc.createRadialGradient(x, y, innerR < r ? innerR : 0, x, y, r);
       grd.addColorStop(0, hexToRgba(currentColor, 1));
       grd.addColorStop(1, hexToRgba(currentColor, 0));
       lc.fillStyle = grd;
@@ -685,7 +694,8 @@ const studio = (function() {
       for (let s = 0; s <= steps; s++) {
         const ix = lastX + (x - lastX) * s / steps;
         const iy = lastY + (y - lastY) * s / steps;
-        const g2 = lc.createRadialGradient(ix, iy, r*brushHardness, ix, iy, r);
+        if (!isFinite(ix) || !isFinite(iy)) continue;
+        const g2 = lc.createRadialGradient(ix, iy, Math.min(innerR, r*0.99), ix, iy, r);
         g2.addColorStop(0, hexToRgba(currentColor, 0.4));
         g2.addColorStop(1, hexToRgba(currentColor, 0));
         lc.fillStyle = g2;
@@ -1162,6 +1172,37 @@ const studio = (function() {
   init();
   return { export: exportCanvas, clear: clearAll };
 })();
+
+/* ── Creator / Share system ── */
+function shareArtwork() {
+  const username = (prompt('Your creator username (shown in the gallery):') || 'anonymous').replace(/[<>"']/g,'').trim().slice(0,40);
+  const prompt_text = (prompt('Describe your artwork (shown as caption):') || 'Untitled creation').replace(/[<>"']/g,'').trim().slice(0,200);
+  // Get canvas data URL
+  const mainCanvas = document.querySelector('#studioCanvas, canvas');
+  let dataUrl = null;
+  if (mainCanvas) {
+    try { dataUrl = mainCanvas.toDataURL('image/png'); } catch(e) {}
+  }
+  const artworks = JSON.parse(localStorage.getItem('cf_artworks')||'[]');
+  artworks.push({
+    id: Date.now().toString(),
+    username,
+    prompt: prompt_text,
+    dataUrl: dataUrl,
+    timestamp: Date.now(),
+  });
+  localStorage.setItem('cf_artworks', JSON.stringify(artworks));
+  const btn = document.getElementById('shareArtBtn');
+  btn.textContent = '✓ Shared!';
+  setTimeout(()=>btn.textContent='✦ Share to Gallery', 3000);
+  // Offer to download too
+  if (dataUrl) {
+    const a = document.createElement('a');
+    a.href = dataUrl; a.download = `chromaflora-${username}-${Date.now()}.png`; a.click();
+  }
+}
+window.shareArtwork = shareArtwork;
 </script>
+<script src="player-bar.js"></script>
 </body>
 </html>

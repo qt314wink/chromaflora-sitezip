@@ -3,7 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ChromaFlora — Projects / Void Drift</title>
+  <title>Projects — ChromaFlora Design System by Jennipher Troup</title>
+  <meta name="description" content="ChromaFlora project portfolio — void-drift case studies with physics animations, procedural canvas art, and bioluminescent interaction design.">
+  <meta name="author" content="Jennipher Troup">
+  <meta property="og:title" content="Projects — ChromaFlora">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:creator" content="@halcyonminx">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
@@ -1324,5 +1330,242 @@ window.addEventListener('load', () => {
 });
 </script>
 <script src="effects.js" defer></script>
+<script src="player-bar.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════════════
+   THEME PHYSICS — per-card particle systems on hover + click
+═══════════════════════════════════════════════════════════ */
+(function initThemePhysics() {
+  const THEMES = {
+    1: { // ChromaFlora Core — Abstract Flows / Glow orbs
+      colors: ['#a855f7','#22d3ee','#ec4899'],
+      hover(ctx,W,H,t,mx,my) {
+        for (let i=0;i<3;i++) {
+          const angle = t*0.02 + i*2.09;
+          const r = 40 + Math.sin(t*0.03+i)*20;
+          const x = W/2 + Math.cos(angle)*r, y = H/2 + Math.sin(angle)*r;
+          const g = ctx.createRadialGradient(x,y,0,x,y,22);
+          g.addColorStop(0,`hsla(${260+i*60},90%,70%,0.7)`); g.addColorStop(1,'transparent');
+          ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,22,0,Math.PI*2); ctx.fill();
+        }
+      },
+      click: spawnOrbs,
+    },
+    2: { // Neon Liquid — Drip streaks
+      colors: ['#22d3ee','#6366f1'],
+      hover(ctx,W,H,t,mx,my) {
+        const drops = 6;
+        for (let i=0;i<drops;i++) {
+          const x = (i/drops)*W + Math.sin(t*0.015+i)*8;
+          const progress = ((t*2 + i*40) % 100) / 100;
+          const y = progress * H;
+          const h = 20 + Math.sin(t*0.04+i)*10;
+          const g = ctx.createLinearGradient(x,y,x,y+h);
+          g.addColorStop(0,`rgba(34,211,238,0.8)`); g.addColorStop(1,'transparent');
+          ctx.fillStyle=g; ctx.beginPath();
+          ctx.ellipse(x+W/drops*0.5,y,W/drops*0.12,h/2,0,0,Math.PI*2); ctx.fill();
+        }
+      },
+      click: spawnDrips,
+    },
+    3: { // Plasma — Electric sparks
+      colors: ['#6366f1','#22d3ee','#fff'],
+      hover(ctx,W,H,t,mx,my) {
+        ctx.save();
+        ctx.shadowColor='#22d3ee'; ctx.shadowBlur=8;
+        for (let i=0;i<4;i++) {
+          const angle = t*0.03 + i*1.57;
+          ctx.strokeStyle=`hsla(${200+i*40},100%,70%,${0.4+Math.sin(t*0.05+i)*0.3})`;
+          ctx.lineWidth=1.5; ctx.beginPath();
+          let lx=W/2, ly=H/2;
+          ctx.moveTo(lx,ly);
+          for (let s=0;s<8;s++) {
+            lx += (Math.random()-0.5)*30 + Math.cos(angle+s)*15;
+            ly += Math.sin(angle+s)*12;
+            ctx.lineTo(lx,ly);
+          }
+          ctx.stroke();
+        }
+        ctx.restore();
+      },
+      click: spawnSparks,
+    },
+    4: { // Cosmic Tide — Orbital rings
+      colors: ['#22d3ee','#a855f7'],
+      hover(ctx,W,H,t) {
+        ctx.save();
+        ctx.translate(W/2, H/2);
+        [30,50,70].forEach((r,i)=>{
+          ctx.rotate(0.01 * (i%2===0?1:-1));
+          ctx.strokeStyle=`hsla(${180+i*40},90%,60%,${0.2+Math.sin(t*0.04+i)*0.15})`;
+          ctx.lineWidth=1; ctx.setLineDash([4,8]);
+          ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2); ctx.stroke();
+          const dotAngle = t*0.025*(i+1);
+          ctx.fillStyle=`hsla(${220+i*30},100%,75%,0.9)`;
+          ctx.beginPath(); ctx.arc(Math.cos(dotAngle)*r,Math.sin(dotAngle)*r,3,0,Math.PI*2); ctx.fill();
+        });
+        ctx.restore();
+        ctx.setLineDash([]);
+      },
+      click: spawnOrbiters,
+    },
+    5: { // Acid Pour — Bubbles rising
+      colors: ['#ec4899','#f97316'],
+      hover(ctx,W,H,t) {
+        for (let i=0;i<5;i++) {
+          const x = 20 + ((t*0.8 + i*55) % (W-40));
+          const bT = (t*1.5 + i*20) % 100 / 100;
+          const y = H - bT * (H + 20);
+          const r = 4 + i*2.5;
+          const hue = (280+i*30+t*0.5)%360;
+          ctx.strokeStyle=`hsla(${hue},90%,65%,${0.7-bT*0.5})`;
+          ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.stroke();
+        }
+      },
+      click: spawnBubbles,
+    },
+    6: { // Crystal — Shard shatter
+      colors: ['#22d3ee','#a855f7','#fff'],
+      hover(ctx,W,H,t) {
+        const n=6;
+        ctx.save();
+        ctx.translate(W/2,H/2);
+        for (let i=0;i<n;i++) {
+          const a = (i/n)*Math.PI*2 + t*0.015;
+          const l = 20 + Math.sin(t*0.04+i)*8;
+          ctx.strokeStyle=`hsla(${i*60},80%,75%,${0.3+Math.sin(t*0.06+i)*0.2})`;
+          ctx.lineWidth=1; ctx.beginPath();
+          ctx.moveTo(Math.cos(a)*5, Math.sin(a)*5);
+          ctx.lineTo(Math.cos(a)*l, Math.sin(a)*l);
+          ctx.stroke();
+        }
+        ctx.restore();
+      },
+      click: spawnShards,
+    },
+    7: { // Deep Space — Star burst
+      colors: ['#fff','#a855f7','#22d3ee'],
+      hover(ctx,W,H,t) {
+        for (let i=0;i<12;i++) {
+          const angle = (i/12)*Math.PI*2 + t*0.005;
+          const r = 15 + Math.sin(t*0.04+i*0.7)*8;
+          const x = W/2+Math.cos(angle)*r, y = H/2+Math.sin(angle)*r;
+          const sz = 1+Math.sin(t*0.07+i)*0.8;
+          ctx.fillStyle=`hsla(${200+i*15},80%,85%,${0.5+Math.sin(t*0.06+i)*0.4})`;
+          ctx.beginPath(); ctx.arc(x,y,sz,0,Math.PI*2); ctx.fill();
+        }
+      },
+      click: spawnStars,
+    },
+    8: { // Watercolor — Bloom splash
+      colors: ['#ec4899','#a855f7','#22d3ee'],
+      hover(ctx,W,H,t) {
+        [0,0.33,0.67].forEach((offset,i)=>{
+          const a = t*0.012 + offset*Math.PI*2;
+          const r = 35 + Math.sin(t*0.025+i)*15;
+          const x = W/2+Math.cos(a)*r, y = H/2+Math.sin(a)*r;
+          const g = ctx.createRadialGradient(x,y,0,x,y,28);
+          const hue = (300+i*80+t*0.2)%360;
+          g.addColorStop(0,`hsla(${hue},90%,65%,0.35)`);
+          g.addColorStop(0.6,`hsla(${hue+30},80%,55%,0.15)`);
+          g.addColorStop(1,'transparent');
+          ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,28,0,Math.PI*2); ctx.fill();
+        });
+      },
+      click: spawnBloom,
+    },
+  };
+
+  /* ── Click burst factories ── */
+  function makeParticles(x,y,colors,count,opts={}) {
+    return Array.from({length:count},(_,i)=>({
+      x,y, vx:(Math.random()-0.5)*(opts.speed||3), vy:(Math.random()-0.5)*(opts.speed||3)-1,
+      life:1, decay:0.02+Math.random()*0.02,
+      color:colors[i%colors.length], r:opts.r||3,
+      grav:opts.grav||0, angle:Math.random()*Math.PI*2,
+    }));
+  }
+  function spawnOrbs(canvas,x,y) { addBurst(canvas,x,y,['#a855f7','#22d3ee','#ec4899'],16,{speed:4,r:8,grav:0.05}); }
+  function spawnDrips(canvas,x,y) { addBurst(canvas,x,y,['#22d3ee','#6366f1'],12,{speed:2,r:4,grav:0.15}); }
+  function spawnSparks(canvas,x,y) { addBurst(canvas,x,y,['#fff','#22d3ee','#6366f1'],20,{speed:6,r:2,grav:0.04}); }
+  function spawnOrbiters(canvas,x,y) { addBurst(canvas,x,y,['#22d3ee','#a855f7'],10,{speed:3,r:5,grav:0}); }
+  function spawnBubbles(canvas,x,y) { addBurst(canvas,x,y,['#ec4899','#f97316'],12,{speed:2,r:6,grav:-0.08}); }
+  function spawnShards(canvas,x,y) { addBurst(canvas,x,y,['#22d3ee','#fff','#a855f7'],18,{speed:5,r:3,grav:0.06}); }
+  function spawnStars(canvas,x,y) { addBurst(canvas,x,y,['#fff','#a855f7','#22d3ee'],24,{speed:4,r:2,grav:0.02}); }
+  function spawnBloom(canvas,x,y) { addBurst(canvas,x,y,['#ec4899','#a855f7','#22d3ee'],14,{speed:3,r:8,grav:0}); }
+
+  const burstParticles = new Map();
+  function addBurst(canvas, x, y, colors, count, opts) {
+    if (!burstParticles.has(canvas)) burstParticles.set(canvas, []);
+    burstParticles.get(canvas).push(...makeParticles(x, y, colors, count, opts));
+  }
+
+  /* ── Overlay canvas on each drift card ── */
+  document.querySelectorAll('.drift-card').forEach((card, idx) => {
+    const themeNum = idx + 1;
+    const theme = THEMES[themeNum];
+    if (!theme) return;
+
+    // Create overlay canvas
+    const oc = document.createElement('canvas');
+    oc.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:5;border-radius:24px;opacity:0;transition:opacity 0.3s';
+    card.style.position = 'relative';
+    card.appendChild(oc);
+
+    let t = 0, animFrame = null, isHovering = false;
+
+    function resize() {
+      oc.width = oc.offsetWidth * (window.devicePixelRatio||1);
+      oc.height = oc.offsetHeight * (window.devicePixelRatio||1);
+    }
+    resize();
+
+    function animate() {
+      if (!isHovering && (!burstParticles.get(oc) || burstParticles.get(oc).length === 0)) {
+        animFrame = null; return;
+      }
+      animFrame = requestAnimationFrame(animate);
+      const W = oc.offsetWidth, H = oc.offsetHeight;
+      const ctx = oc.getContext('2d');
+      ctx.save();
+      ctx.scale(window.devicePixelRatio||1, window.devicePixelRatio||1);
+      ctx.clearRect(0, 0, W, H);
+
+      if (isHovering && theme.hover) theme.hover(ctx, W, H, t);
+
+      // Draw burst particles
+      const parts = burstParticles.get(oc) || [];
+      for (let i = parts.length - 1; i >= 0; i--) {
+        const p = parts[i];
+        p.x += p.vx; p.y += p.vy; p.vy += p.grav; p.life -= p.decay;
+        if (p.life <= 0) { parts.splice(i, 1); continue; }
+        const g = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r);
+        g.addColorStop(0, p.color.replace('#','') === p.color ? p.color : p.color+Math.round(p.life*255).toString(16).padStart(2,'0'));
+        g.addColorStop(1, 'transparent');
+        ctx.globalAlpha = p.life;
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+      ctx.restore();
+      t++;
+    }
+
+    card.addEventListener('mouseenter', () => {
+      isHovering = true; oc.style.opacity = '1';
+      if (!animFrame) animate();
+    });
+    card.addEventListener('mouseleave', () => {
+      isHovering = false; oc.style.opacity = '0';
+    });
+    card.addEventListener('click', (e) => {
+      const rect = oc.getBoundingClientRect();
+      const x = e.clientX - rect.left, y = e.clientY - rect.top;
+      if (theme.click) theme.click(oc, x, y);
+      if (!animFrame) animate();
+    });
+  });
+})();
+</script>
 </body>
 </html>

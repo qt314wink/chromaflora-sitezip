@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About · ChromaFlora Design System by Jennipher Troup</title>
+<meta name="description" content="ChromaFlora is a bioluminescent cosmic design system created by Jennipher Troup — blending glassmorphism, claymorphism, neumorphism, and procedural art into one living interface language.">
+<meta name="keywords" content="Jennipher Troup, ChromaFlora, design system, bioluminescent UI, creative developer, interactive web design, glassmorphism">
+<meta name="author" content="Jennipher Troup">
+<meta property="og:title" content="About · ChromaFlora by Jennipher Troup">
+<meta property="og:description" content="A cosmic bioluminescent design system fusing procedural art, glassmorphism, and interactive physics.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#04040f;--purple:#a855f7;--aqua:#22d3ee;--pink:#ec4899;--orange:#f97316;--green:#10b981;
+    --border:rgba(255,255,255,0.08);
+    --t-snap:0.1s cubic-bezier(0.4,0,0.2,1);
+    --t-spring:0.4s cubic-bezier(0.34,1.56,0.64,1);
+    --t-smooth:0.28s cubic-bezier(0.4,0,0.2,1);
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:#fff;min-height:100dvh;overflow-x:hidden}
+  body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:radial-gradient(ellipse 80% 60% at 15% 20%,rgba(168,85,247,0.14) 0%,transparent 60%),
+               radial-gradient(ellipse 60% 50% at 85% 80%,rgba(34,211,238,0.09) 0%,transparent 60%),
+               radial-gradient(ellipse 40% 40% at 50% 50%,rgba(236,72,153,0.05) 0%,transparent 70%)}
+
+  .header{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:60px;background:rgba(4,4,15,0.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+  .logo{font-weight:800;font-size:16px}.logo a{color:white;text-decoration:none}
+  .nav{display:flex;gap:4px}
+  .nav-link{padding:6px 14px;border-radius:8px;font-size:13px;font-weight:500;color:rgba(255,255,255,0.6);text-decoration:none;transition:var(--t-snap)}
+  .nav-link:hover,.nav-link.active{color:white;background:rgba(255,255,255,0.07)}
+
+  /* ── Scroll reveal ── */
+  .reveal{opacity:0;transform:translateY(24px);transition:opacity 0.6s ease,transform 0.6s cubic-bezier(0.34,1.56,0.64,1)}
+  .reveal.visible{opacity:1;transform:translateY(0)}
+
+  /* ── Hero ── */
+  .hero{position:relative;min-height:92dvh;display:flex;align-items:center;justify-content:center;text-align:center;padding:60px 24px;overflow:hidden}
+  .hero-canvas{position:absolute;inset:0;z-index:0}
+  .hero-content{position:relative;z-index:2;max-width:800px}
+  .hero-badge{display:inline-flex;align-items:center;gap:8px;padding:7px 18px;border-radius:99px;background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.25);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:rgba(200,150,255,0.9);margin-bottom:28px}
+  .hero-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--purple);box-shadow:0 0 8px var(--purple);animation:dotPulse 2s ease-in-out infinite}
+  @keyframes dotPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.7)}}
+  .hero-name{font-size:clamp(48px,10vw,100px);font-weight:900;line-height:0.95;letter-spacing:-3px;margin-bottom:16px;background:linear-gradient(135deg,#fff 0%,rgba(168,85,247,0.9) 45%,rgba(34,211,238,0.8) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .hero-role{font-size:clamp(16px,3vw,22px);color:rgba(255,255,255,0.6);font-weight:400;margin-bottom:32px;line-height:1.5}
+  .hero-role span{color:rgba(168,85,247,0.9);font-weight:600}
+  .hero-ctas{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:12px;font-size:14px;font-weight:600;border:none;cursor:pointer;text-decoration:none;transition:var(--t-spring);position:relative;overflow:hidden}
+  .btn:active{transform:scale(0.96)}
+  .btn-primary{background:linear-gradient(135deg,#a855f7,#ec4899);color:white;box-shadow:0 4px 20px rgba(168,85,247,0.35)}
+  .btn-primary:hover{box-shadow:0 8px 30px rgba(168,85,247,0.55);transform:translateY(-2px) scale(1.02)}
+  .btn-social{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.85);border:1px solid rgba(255,255,255,0.12)}
+  .btn-social:hover{background:rgba(255,255,255,0.11);border-color:rgba(255,255,255,0.22);transform:translateY(-2px)}
+  .btn-inquiry{background:linear-gradient(135deg,#22d3ee,#6366f1);color:white;box-shadow:0 4px 20px rgba(34,211,238,0.3)}
+  .btn-inquiry:hover{box-shadow:0 8px 30px rgba(34,211,238,0.5);transform:translateY(-2px) scale(1.02)}
+  .btn-outline{background:transparent;color:rgba(168,85,247,0.9);border:1px solid rgba(168,85,247,0.35)}
+  .btn-outline:hover{background:rgba(168,85,247,0.1);border-color:rgba(168,85,247,0.6);color:white}
+
+  /* ── Page sections ── */
+  .section{max-width:1100px;margin:0 auto;padding:80px 24px}
+  .section-title{font-size:clamp(28px,5vw,44px);font-weight:900;margin-bottom:12px;background:linear-gradient(135deg,#fff,rgba(168,85,247,0.85));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .section-sub{color:rgba(255,255,255,0.5);font-size:16px;max-width:580px;line-height:1.65;margin-bottom:40px}
+  .section-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:rgba(255,255,255,0.3);margin-bottom:20px;display:flex;align-items:center;gap:10px}
+  .section-label::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.06)}
+
+  /* ── Bio card ── */
+  .bio-grid{display:grid;grid-template-columns:1fr 2fr;gap:48px;align-items:start}
+  @media(max-width:700px){.bio-grid{grid-template-columns:1fr}}
+  .bio-avatar{border-radius:24px;overflow:hidden;aspect-ratio:1;background:linear-gradient(135deg,rgba(168,85,247,0.25),rgba(34,211,238,0.15));border:1px solid rgba(168,85,247,0.2);display:flex;align-items:center;justify-content:center;font-size:80px;position:relative}
+  .bio-avatar canvas{position:absolute;inset:0;width:100%;height:100%}
+  .bio-avatar-label{position:relative;z-index:2;font-size:64px}
+  .bio-text h2{font-size:32px;font-weight:800;margin-bottom:16px}
+  .bio-text p{color:rgba(255,255,255,0.65);font-size:15px;line-height:1.75;margin-bottom:16px}
+  .bio-tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px}
+  .bio-tag{padding:5px 12px;border-radius:999px;font-size:11px;font-weight:600;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.65)}
+
+  /* ── Socials ── */
+  .socials-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+  .social-card{border-radius:16px;padding:22px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);text-decoration:none;display:flex;align-items:center;gap:14px;transition:var(--t-spring)}
+  .social-card:hover{transform:translateY(-4px) scale(1.02);border-color:var(--social-color, rgba(168,85,247,0.35));background:rgba(255,255,255,0.06);box-shadow:0 12px 40px rgba(0,0,0,0.4)}
+  .social-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);flex-shrink:0;transition:var(--t-snap)}
+  .social-card:hover .social-icon{background:rgba(var(--social-rgb,168,85,247),0.15)}
+  .social-name{font-size:14px;font-weight:700;color:white}
+  .social-handle{font-size:12px;color:rgba(255,255,255,0.4)}
+
+  /* ── Services ── */
+  .services-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:40px}
+  .service-card{border-radius:18px;padding:26px;border:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.03);transition:var(--t-smooth)}
+  .service-card:hover{transform:translateY(-4px);border-color:rgba(168,85,247,0.2);background:rgba(168,85,247,0.05);box-shadow:0 16px 48px rgba(0,0,0,0.4)}
+  .service-icon{font-size:28px;margin-bottom:12px}
+  .service-title{font-size:17px;font-weight:700;margin-bottom:8px}
+  .service-desc{font-size:13px;color:rgba(255,255,255,0.55);line-height:1.65}
+
+  /* ── Stats ── */
+  .stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;margin-bottom:48px}
+  .stat-card{padding:24px;border-radius:16px;border:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.03);text-align:center}
+  .stat-num{font-size:36px;font-weight:900;background:linear-gradient(135deg,var(--purple),var(--aqua));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .stat-label{font-size:12px;color:rgba(255,255,255,0.45);margin-top:4px}
+
+  /* ── Inquiry CTA ── */
+  .inquiry-card{border-radius:24px;padding:48px;background:linear-gradient(135deg,rgba(168,85,247,0.12),rgba(34,211,238,0.08));border:1px solid rgba(168,85,247,0.2);text-align:center;position:relative;overflow:hidden}
+  .inquiry-card::before{content:'';position:absolute;inset:-1px;border-radius:24px;padding:1px;background:linear-gradient(135deg,rgba(168,85,247,0.4),rgba(34,211,238,0.3),rgba(236,72,153,0.3));-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+  .inquiry-title{font-size:32px;font-weight:900;margin-bottom:12px}
+  .inquiry-sub{color:rgba(255,255,255,0.55);font-size:15px;margin-bottom:32px;max-width:500px;margin-left:auto;margin-right:auto}
+  .inquiry-details{font-size:12px;color:rgba(255,255,255,0.3);margin-top:16px;font-family:'JetBrains Mono',monospace}
+
+  /* ── Footer ── */
+  footer{border-top:1px solid rgba(255,255,255,0.06);padding:32px 24px;text-align:center;color:rgba(255,255,255,0.3);font-size:13px}
+  footer a{color:rgba(168,85,247,0.7);text-decoration:none}
+  footer a:hover{color:var(--purple)}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo"><a href="index.html">ChromaFlora</a></div>
+  <nav class="nav">
+    <a href="index.html" class="nav-link">System</a>
+    <a href="projects.html" class="nav-link">Projects</a>
+    <a href="blog.html" class="nav-link">Blog</a>
+    <a href="player.html" class="nav-link">Player</a>
+    <a href="studio.html" class="nav-link">Studio</a>
+    <a href="about.html" class="nav-link active">About</a>
+  </nav>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <canvas class="hero-canvas" id="heroCanvas"></canvas>
+  <div class="hero-content">
+    <div class="hero-badge">Creative Developer · Design Systems · Bioluminescent Art</div>
+    <h1 class="hero-name">Jennipher<br>Troup</h1>
+    <p class="hero-role">Creator of <span>ChromaFlora</span> — a living, breathing<br>design language for the cosmic digital age</p>
+    <div class="hero-ctas">
+      <a href="#services" class="btn btn-primary">✦ Hire Me</a>
+      <a href="https://instagram.com/halcyonminx" target="_blank" rel="noopener" class="btn btn-social">📸 Instagram</a>
+      <a href="https://www.linkedin.com/in/jennipher-troup" target="_blank" rel="noopener" class="btn btn-social">in LinkedIn</a>
+      <a href="https://www.facebook.com/halcyonminx" target="_blank" rel="noopener" class="btn btn-social">f Facebook</a>
+    </div>
+  </div>
+</section>
+
+<!-- Stats -->
+<div class="section" style="padding-top:0">
+  <div class="stats-row reveal">
+    <div class="stat-card"><div class="stat-num">18</div><div class="stat-label">Canvas Effects</div></div>
+    <div class="stat-card"><div class="stat-num">7</div><div class="stat-label">Music Genres</div></div>
+    <div class="stat-card"><div class="stat-num">48+</div><div class="stat-label">Components</div></div>
+    <div class="stat-card"><div class="stat-num">0</div><div class="stat-label">Dependencies</div></div>
+    <div class="stat-card"><div class="stat-num">100ms</div><div class="stat-label">Reactivity Target</div></div>
+  </div>
+</div>
+
+<!-- Bio -->
+<div class="section" style="padding-top:0">
+  <div class="section-label">About</div>
+  <div class="bio-grid">
+    <div class="reveal">
+      <div class="bio-avatar">
+        <canvas id="bioCanvas"></canvas>
+        <div class="bio-avatar-label">✦</div>
+      </div>
+    </div>
+    <div class="bio-text reveal" style="transition-delay:0.1s">
+      <h2>Hello, I'm Jennipher.</h2>
+      <p>I build interfaces that live and breathe. ChromaFlora is my love letter to the intersection of technology and organic beauty — a design system that treats your screen as a window into a bioluminescent universe.</p>
+      <p>My work spans interactive design systems, generative art, procedural animation, and creative coding. I believe that the web should be felt, not just seen — every interaction should carry weight, warmth, and a little wonder.</p>
+      <p>ChromaFlora is built entirely with pure HTML, CSS, and JavaScript — no dependencies, no frameworks, no compromises. Every canvas effect, every physics simulation, every chord synthesized is handcrafted code running at native speed in your browser.</p>
+      <div class="bio-tags">
+        <span class="bio-tag">Creative Coding</span>
+        <span class="bio-tag">Design Systems</span>
+        <span class="bio-tag">Generative Art</span>
+        <span class="bio-tag">Web Audio API</span>
+        <span class="bio-tag">Canvas 2D</span>
+        <span class="bio-tag">Bioluminescent Aesthetic</span>
+        <span class="bio-tag">Motion Design</span>
+        <span class="bio-tag">Glassmorphism</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Socials -->
+<div class="section" style="padding-top:0">
+  <div class="section-label">Connect</div>
+  <div class="socials-grid">
+    <a href="https://instagram.com/halcyonminx" target="_blank" rel="noopener" class="social-card reveal"
+      style="--social-color:rgba(236,72,153,0.4);--social-rgb:236,72,153">
+      <div class="social-icon">📸</div>
+      <div><div class="social-name">Instagram</div><div class="social-handle">@halcyonminx</div></div>
+    </a>
+    <a href="https://www.facebook.com/halcyonminx" target="_blank" rel="noopener" class="social-card reveal" style="transition-delay:0.05s;--social-color:rgba(99,102,241,0.4);--social-rgb:99,102,241">
+      <div class="social-icon">f</div>
+      <div><div class="social-name">Facebook</div><div class="social-handle">/halcyonminx</div></div>
+    </a>
+    <a href="https://www.linkedin.com/in/jennipher-troup" target="_blank" rel="noopener" class="social-card reveal" style="transition-delay:0.1s;--social-color:rgba(34,211,238,0.4);--social-rgb:34,211,238">
+      <div class="social-icon">in</div>
+      <div><div class="social-name">LinkedIn</div><div class="social-handle">Jennipher Troup</div></div>
+    </a>
+    <a href="mailto:girlwithstarryeyes@outlook.com" class="social-card reveal" style="transition-delay:0.15s;--social-color:rgba(168,85,247,0.4);--social-rgb:168,85,247">
+      <div class="social-icon">✉</div>
+      <div><div class="social-name">Email</div><div class="social-handle">girlwithstarryeyes@outlook.com</div></div>
+    </a>
+    <a href="gallery.html" class="social-card reveal" style="transition-delay:0.2s;--social-color:rgba(249,115,22,0.4);--social-rgb:249,115,22">
+      <div class="social-icon">🎨</div>
+      <div><div class="social-name">Creator Gallery</div><div class="social-handle">Community art & music</div></div>
+    </a>
+    <a href="blog.html" class="social-card reveal" style="transition-delay:0.25s;--social-color:rgba(16,185,129,0.4);--social-rgb:16,185,129">
+      <div class="social-icon">📖</div>
+      <div><div class="social-name">Blog</div><div class="social-handle">Design · Code · Art</div></div>
+    </a>
+  </div>
+</div>
+
+<!-- Services -->
+<div class="section" id="services" style="padding-top:0">
+  <div class="section-label">Services</div>
+  <div class="section-title reveal">Custom Interactive Experiences</div>
+  <div class="section-sub reveal">I build bespoke websites, components, and modules that move, breathe, and surprise. Every pixel is intentional.</div>
+  <div class="services-grid">
+    <div class="service-card reveal">
+      <div class="service-icon">🌌</div>
+      <div class="service-title">Bespoke Design Systems</div>
+      <div class="service-desc">Custom token architecture, component libraries, and morphism-fused UI language built to your brand's cosmic frequency.</div>
+    </div>
+    <div class="service-card reveal" style="transition-delay:0.07s">
+      <div class="service-icon">⚡</div>
+      <div class="service-title">Interactive Modules</div>
+      <div class="service-desc">Physics-based UI widgets, animated data visualizations, generative art components, and custom canvas experiences.</div>
+    </div>
+    <div class="service-card reveal" style="transition-delay:0.14s">
+      <div class="service-icon">🎨</div>
+      <div class="service-title">Generative Art Integration</div>
+      <div class="service-desc">Procedural canvas art engines, paint pour simulations, and real-time effects embedded directly in your product.</div>
+    </div>
+    <div class="service-card reveal" style="transition-delay:0.21s">
+      <div class="service-icon">🎵</div>
+      <div class="service-title">Audio-Visual Experiences</div>
+      <div class="service-desc">Web Audio API synthesizers, music visualizers, reactive interfaces that respond to sound and motion.</div>
+    </div>
+    <div class="service-card reveal" style="transition-delay:0.28s">
+      <div class="service-icon">🌊</div>
+      <div class="service-title">Motion & Physics</div>
+      <div class="service-desc">Spring animations, particle systems, magnetic interactions, scroll-linked physics, and fluid simulations.</div>
+    </div>
+    <div class="service-card reveal" style="transition-delay:0.35s">
+      <div class="service-icon">🔮</div>
+      <div class="service-title">Full Sites & Portfolios</div>
+      <div class="service-desc">Complete website builds with your vision at the center — no templates, no compromises, all handcrafted.</div>
+    </div>
+  </div>
+
+  <!-- Inquiry CTA -->
+  <div class="inquiry-card reveal">
+    <div class="inquiry-title">Let's Build Something Extraordinary</div>
+    <div class="inquiry-sub">Whether you need a living design system, an interactive art installation, or a website that defies expectations — I'd love to hear about your vision.</div>
+    <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
+      <a href="mailto:girlwithstarryeyes@outlook.com?subject=Custom Interactive Website Inquiry&body=Hi Jennipher,%0A%0AI'm interested in commissioning a custom interactive website / component / module.%0A%0AProject overview:%0A%0ABudget range:%0A%0ATimeline:%0A%0AThank you!"
+         class="btn btn-inquiry">✉ Send an Inquiry</a>
+      <a href="https://instagram.com/halcyonminx" target="_blank" rel="noopener" class="btn btn-outline">📸 DM on Instagram</a>
+    </div>
+    <div class="inquiry-details">girlwithstarryeyes@outlook.com · @halcyonminx</div>
+  </div>
+</div>
+
+<!-- ChromaFlora Project -->
+<div class="section" style="padding-top:0">
+  <div class="section-label">The Project</div>
+  <div class="section-title reveal">ChromaFlora Design System</div>
+  <div class="section-sub reveal">A living, breathing interface language built entirely without dependencies — pure HTML, CSS, and JavaScript creating something that no framework could anticipate.</div>
+  <div style="display:flex;gap:14px;flex-wrap:wrap" class="reveal">
+    <a href="index.html" class="btn btn-primary">Explore the System</a>
+    <a href="studio.html" class="btn btn-outline">Open Art Studio</a>
+    <a href="player.html" class="btn btn-outline">ChromaSynth Player</a>
+    <a href="blog.html" class="btn btn-outline">Read the Blog</a>
+  </div>
+</div>
+
+<footer>
+  <p>© 2025–2026 <a href="about.html">Jennipher Troup</a> · ChromaFlora Design System</p>
+  <p style="margin-top:8px">
+    <a href="mailto:girlwithstarryeyes@outlook.com">girlwithstarryeyes@outlook.com</a> ·
+    <a href="https://instagram.com/halcyonminx" target="_blank">@halcyonminx</a>
+  </p>
+</footer>
+
+<script src="drawer.js"></script>
+<script src="player-bar.js"></script>
+<script>
+/* ── Hero canvas: bioluminescent particle field ── */
+(function(){
+  const c=document.getElementById('heroCanvas');
+  if(!c)return;
+  const ctx=c.getContext('2d');
+  let W,H;
+  function resize(){W=c.width=c.offsetWidth*devicePixelRatio;H=c.height=c.offsetHeight*devicePixelRatio;ctx.scale(devicePixelRatio,devicePixelRatio);W/=devicePixelRatio;H/=devicePixelRatio;}
+  resize();window.addEventListener('resize',resize);
+  const particles=Array.from({length:80},(_,i)=>({
+    x:Math.random()*W,y:Math.random()*H,
+    vx:(Math.random()-.5)*0.4,vy:(Math.random()-.5)*0.4,
+    hue:i*4.5,r:1+Math.random()*3,life:Math.random(),speed:0.003+Math.random()*0.005
+  }));
+  let t=0;
+  function frame(){
+    ctx.fillStyle='rgba(4,4,15,0.06)';ctx.fillRect(0,0,W,H);
+    particles.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;p.life+=p.speed;
+      if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0;
+      const alpha=(Math.sin(p.life*Math.PI*2)*0.5+0.5)*0.7+0.1;
+      const hue=(p.hue+t*0.3)%360;
+      const grd=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*4);
+      grd.addColorStop(0,`hsla(${hue},90%,70%,${alpha})`);
+      grd.addColorStop(1,`hsla(${hue},80%,50%,0)`);
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r*4,0,Math.PI*2);
+      ctx.fillStyle=grd;ctx.fill();
+    });
+    t++;requestAnimationFrame(frame);
+  }
+  frame();
+})();
+
+/* ── Bio avatar canvas: mini mandala ── */
+(function(){
+  const c=document.getElementById('bioCanvas');
+  if(!c)return;
+  c.width=c.offsetWidth*devicePixelRatio;c.height=c.offsetHeight*devicePixelRatio;
+  const ctx=c.getContext('2d');ctx.scale(devicePixelRatio,devicePixelRatio);
+  const W=c.offsetWidth,H=c.offsetHeight;let t=0;
+  function frame(){
+    ctx.clearRect(0,0,W,H);
+    ctx.save();ctx.translate(W/2,H/2);
+    const arms=8;
+    for(let a=0;a<arms;a++){
+      ctx.save();ctx.rotate((a/arms)*Math.PI*2+t*0.005);
+      for(let r=20;r<Math.min(W,H)/2-10;r+=18){
+        const hue=(a*45+r*2+t*0.3)%360;
+        const alpha=(Math.sin(t*0.04+r*0.1+a)*0.5+0.5)*0.6+0.2;
+        ctx.beginPath();ctx.arc(0,r,4+Math.sin(t*0.05+r*0.2)*3,0,Math.PI*2);
+        ctx.fillStyle=`hsla(${hue},90%,65%,${alpha})`;ctx.fill();
+      }
+      ctx.restore();
+    }
+    ctx.restore();t++;requestAnimationFrame(frame);
+  }
+  frame();
+})();
+
+/* ── Scroll reveal ── */
+const io=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');io.unobserve(e.target);}});
+},{threshold:0.12});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>

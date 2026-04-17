@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Project · ChromaFlora</title>
+<meta name="description" content="ChromaFlora procedural art project — live canvas preview and embed code.">
+<meta name="author" content="Jennipher Troup">
+<meta property="og:title" content="ChromaFlora Project">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:creator" content="@halcyonminx">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#04040f;--purple:#a855f7;--aqua:#22d3ee;--pink:#ec4899;--orange:#f97316;--green:#10b981;--border:rgba(255,255,255,0.08);--t-snap:0.1s cubic-bezier(0.4,0,0.2,1);--t-spring:0.4s cubic-bezier(0.34,1.56,0.64,1)}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:#fff;min-height:100dvh;overflow-x:hidden}
+
+  .header{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:60px;background:rgba(4,4,15,0.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+  .logo{font-weight:800;font-size:16px}.logo a{color:white;text-decoration:none}
+  .nav{display:flex;gap:4px}
+  .nav-link{padding:6px 14px;border-radius:8px;font-size:13px;font-weight:500;color:rgba(255,255,255,0.6);text-decoration:none;transition:var(--t-snap)}
+  .nav-link:hover,.nav-link.active{color:white;background:rgba(255,255,255,0.07)}
+
+  /* ── Canvas hero ── */
+  .canvas-hero{position:relative;width:100%;height:420px;overflow:hidden;background:#000}
+  .canvas-hero canvas{width:100%;height:100%;display:block}
+  .canvas-hero-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 50%,rgba(4,4,15,1) 100%);pointer-events:none}
+  .hero-back{position:absolute;top:16px;left:24px;display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:10px;background:rgba(0,0,0,0.55);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);font-size:13px;font-weight:600;text-decoration:none;transition:var(--t-snap)}
+  .hero-back:hover{color:white;border-color:rgba(255,255,255,0.2);background:rgba(0,0,0,0.8)}
+  .hero-badge{position:absolute;top:16px;right:24px;padding:5px 14px;border-radius:99px;font-size:11px;font-weight:800;background:rgba(168,85,247,0.3);border:1px solid rgba(168,85,247,0.4);color:rgba(200,150,255,0.9)}
+
+  /* ── Content ── */
+  .content{max-width:960px;margin:0 auto;padding:40px 24px 100px;display:grid;grid-template-columns:1fr 360px;gap:40px;align-items:start}
+  @media(max-width:800px){.content{grid-template-columns:1fr}}
+
+  .project-eyebrow{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;color:rgba(168,85,247,0.7);margin-bottom:10px}
+  .project-title{font-size:clamp(28px,5vw,46px);font-weight:900;letter-spacing:-2px;margin-bottom:14px;line-height:1.05}
+  .project-desc{font-size:15px;color:rgba(255,255,255,0.55);line-height:1.7;margin-bottom:24px}
+  .project-tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:32px}
+  .project-tag{padding:4px 12px;border-radius:99px;font-size:11px;font-weight:700;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.5)}
+
+  /* ── Specs table ── */
+  .specs{border-radius:16px;border:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.025);padding:22px;margin-bottom:24px}
+  .spec-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:13px}
+  .spec-row:last-child{border-bottom:none}
+  .spec-label{color:rgba(255,255,255,0.35);font-weight:500}
+  .spec-value{color:rgba(255,255,255,0.8);font-weight:700;font-family:'JetBrains Mono',monospace;font-size:12px;text-align:right}
+
+  /* ── Embed panel ── */
+  .embed-panel{border-radius:20px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.025);overflow:hidden;position:sticky;top:80px}
+  .embed-header{padding:20px 22px 0;display:flex;align-items:center;justify-content:space-between}
+  .embed-title{font-size:14px;font-weight:800}
+  .pro-badge{padding:3px 10px;border-radius:99px;font-size:10px;font-weight:800;background:linear-gradient(135deg,rgba(249,115,22,0.3),rgba(168,85,247,0.3));border:1px solid rgba(249,115,22,0.3);color:rgba(249,200,100,0.9)}
+
+  /* ── Lang tabs ── */
+  .lang-tabs{display:flex;gap:2px;padding:14px 22px 0}
+  .lang-tab{padding:5px 12px;border-radius:8px;border:1px solid transparent;background:transparent;font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace;color:rgba(255,255,255,0.4);cursor:pointer;transition:var(--t-snap)}
+  .lang-tab:hover{color:rgba(255,255,255,0.7)}
+  .lang-tab.active{background:rgba(168,85,247,0.15);border-color:rgba(168,85,247,0.3);color:rgba(200,150,255,0.9)}
+
+  /* ── Code block ── */
+  .code-wrap{position:relative;margin:12px}
+  .code-block{background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:18px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.7;color:rgba(255,255,255,0.65);max-height:220px;overflow:hidden;position:relative;white-space:pre;overflow-x:auto}
+  .code-lang{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.2);margin-bottom:8px}
+
+  /* ── Paywall overlay ── */
+  .paywall{position:absolute;bottom:0;left:0;right:0;height:160px;background:linear-gradient(to top,rgba(4,4,15,0.98) 60%,transparent);display:flex;align-items:flex-end;justify-content:center;padding-bottom:18px;border-radius:0 0 12px 12px}
+  .paywall-inner{text-align:center}
+  .paywall-lock{font-size:22px;margin-bottom:6px}
+  .paywall-msg{font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:12px;line-height:1.4}
+  .paywall-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 22px;border-radius:10px;border:none;cursor:pointer;background:linear-gradient(135deg,#f97316,#a855f7);color:white;font-size:13px;font-weight:800;transition:var(--t-spring);font-family:inherit}
+  .paywall-btn:hover{transform:scale(1.04);box-shadow:0 4px 20px rgba(168,85,247,0.4)}
+
+  /* ── Copy btn (unlocked state) ── */
+  .copy-btn{position:absolute;top:8px;right:8px;padding:5px 12px;border-radius:7px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.5);font-size:10px;font-weight:700;cursor:pointer;font-family:'JetBrains Mono',monospace;transition:var(--t-snap)}
+  .copy-btn:hover{background:rgba(255,255,255,0.12);color:white}
+  .copy-btn.copied{background:rgba(16,185,129,0.2);border-color:rgba(16,185,129,0.3);color:#10b981}
+
+  /* ── Pro modal ── */
+  .modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.85);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity 0.2s}
+  .modal-overlay.open{opacity:1;pointer-events:all}
+  .modal-box{background:linear-gradient(160deg,#0d0822,#07041a);border:1px solid rgba(168,85,247,0.25);border-radius:24px;max-width:420px;width:100%;padding:36px;position:relative;transform:scale(0.92);transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);text-align:center}
+  .modal-overlay.open .modal-box{transform:scale(1)}
+  .modal-close{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.6);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:var(--t-snap)}
+  .modal-close:hover{background:rgba(236,72,153,0.2);color:white}
+  .modal-crown{font-size:42px;margin-bottom:12px}
+  .modal-h{font-size:24px;font-weight:900;margin-bottom:8px;background:linear-gradient(135deg,#f97316,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .modal-sub{font-size:13px;color:rgba(255,255,255,0.45);line-height:1.6;margin-bottom:22px}
+  .modal-feats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:24px;text-align:left}
+  .modal-feat{padding:10px 12px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);font-size:12px;color:rgba(255,255,255,0.65)}
+  .modal-feat .feat-icon{font-size:14px;margin-bottom:4px}
+  .modal-cta{width:100%;padding:13px;border-radius:12px;border:none;cursor:pointer;background:linear-gradient(135deg,#f97316,#a855f7);color:white;font-size:15px;font-weight:800;transition:var(--t-spring);font-family:inherit;margin-bottom:10px}
+  .modal-cta:hover{transform:scale(1.02);box-shadow:0 6px 24px rgba(168,85,247,0.4)}
+  .modal-footer-text{font-size:11px;color:rgba(255,255,255,0.25);margin-top:8px}
+
+  /* ── CTA row ── */
+  .cta-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+  .cta-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:11px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.65);font-size:13px;font-weight:700;text-decoration:none;cursor:pointer;transition:var(--t-snap)}
+  .cta-btn:hover{background:rgba(255,255,255,0.1);color:white;border-color:rgba(255,255,255,0.2)}
+  .cta-btn.primary{background:linear-gradient(135deg,rgba(168,85,247,0.3),rgba(236,72,153,0.2));border-color:rgba(168,85,247,0.35);color:rgba(200,150,255,0.9)}
+  .cta-btn.primary:hover{background:linear-gradient(135deg,rgba(168,85,247,0.5),rgba(236,72,153,0.35));color:white}
+
+  /* ── Syntax colors ── */
+  .kw{color:#c792ea}.str{color:#c3e88d}.fn{color:#82aaff}.cm{color:rgba(255,255,255,0.3)}
+  .tag{color:#f07178}.attr{color:#ffcb6b}.val{color:#c3e88d}.num{color:#f78c6c}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo"><a href="index.html">ChromaFlora</a></div>
+  <nav class="nav">
+    <a href="index.html" class="nav-link">System</a>
+    <a href="projects.html" class="nav-link active">Projects</a>
+    <a href="studio.html" class="nav-link">Studio</a>
+    <a href="gallery.html" class="nav-link">Gallery</a>
+    <a href="challenges.html" class="nav-link">Challenges</a>
+    <a href="marketplace.html" class="nav-link">Market</a>
+  </nav>
+</header>
+
+<div class="canvas-hero">
+  <canvas id="heroCanvas" width="1600" height="600"></canvas>
+  <div class="canvas-hero-overlay"></div>
+  <a href="projects.html" class="hero-back">← Projects</a>
+  <div class="hero-badge" id="heroBadge">Design System</div>
+</div>
+
+<div class="content">
+  <div>
+    <div class="project-eyebrow" id="projectEyebrow">Generative Art</div>
+    <h1 class="project-title" id="projectTitle">Loading…</h1>
+    <p class="project-desc" id="projectDesc"></p>
+    <div class="project-tags" id="projectTags"></div>
+
+    <div class="specs" id="specsTable"></div>
+
+    <div class="cta-row">
+      <a href="studio.html" class="cta-btn primary">✦ Open in Studio</a>
+      <a href="gallery.html" class="cta-btn">View Gallery</a>
+      <button class="cta-btn" onclick="shareProject()">↗ Share</button>
+    </div>
+  </div>
+
+  <!-- Embed panel -->
+  <div class="embed-panel">
+    <div class="embed-header">
+      <div class="embed-title">Embed This Effect</div>
+      <div class="pro-badge">PRO</div>
+    </div>
+    <div class="lang-tabs">
+      <button class="lang-tab active" data-lang="html">HTML</button>
+      <button class="lang-tab" data-lang="react">React</button>
+      <button class="lang-tab" data-lang="vue">Vue</button>
+      <button class="lang-tab" data-lang="js">Vanilla JS</button>
+      <button class="lang-tab" data-lang="css">CSS</button>
+    </div>
+    <div class="code-wrap">
+      <div class="code-block" id="codeBlock">
+        <div class="code-lang" id="codeLang">HTML</div>
+        <div id="codeContent"></div>
+      </div>
+      <button class="copy-btn" id="copyBtn" style="display:none" onclick="copyCode()">Copy</button>
+      <div class="paywall" id="paywallOverlay">
+        <div class="paywall-inner">
+          <div class="paywall-lock">🔒</div>
+          <div class="paywall-msg">Embed code is a Pro feature.<br>Unlock for all 14 effects in all 5 languages.</div>
+          <button class="paywall-btn" onclick="openProModal()">✦ Unlock Pro Access</button>
+        </div>
+      </div>
+    </div>
+    <div style="padding:12px 22px 18px;font-size:11px;color:rgba(255,255,255,0.25);line-height:1.5">
+      Embed ChromaFlora effects on any website. Self-contained Canvas 2D — no build tools required.
+    </div>
+  </div>
+</div>
+
+<!-- Pro modal -->
+<div class="modal-overlay" id="proModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="document.getElementById('proModal').classList.remove('open')">✕</button>
+    <div class="modal-crown">✦</div>
+    <div class="modal-h">ChromaFlora Pro</div>
+    <div class="modal-sub">Unlock embed codes, batch export, animation presets, and the full asset library.</div>
+    <div class="modal-feats">
+      <div class="modal-feat"><div class="feat-icon">📦</div>All embed formats</div>
+      <div class="modal-feat"><div class="feat-icon">🎨</div>12 art presets</div>
+      <div class="modal-feat"><div class="feat-icon">⬇</div>Batch PNG export</div>
+      <div class="modal-feat"><div class="feat-icon">🎬</div>Animation recorder</div>
+      <div class="modal-feat"><div class="feat-icon">🛒</div>Asset pack access</div>
+      <div class="modal-feat"><div class="feat-icon">🏆</div>Challenge badges</div>
+      <div class="modal-feat"><div class="feat-icon">🔷</div>NFT mint priority</div>
+      <div class="modal-feat"><div class="feat-icon">📞</div>Creator support</div>
+    </div>
+    <button class="modal-cta" onclick="window.location.href='mailto:girlwithstarryeyes@outlook.com?subject=ChromaFlora%20Pro%20Access'">Get Pro Access →</button>
+    <div class="modal-footer-text">girlwithstarryeyes@outlook.com · @halcyonminx</div>
+  </div>
+</div>
+
+<script src="effects.js"></script>
+<script src="player-bar.js"></script>
+<script>
+/* ═══════════════════════════════════════════
+   PROJECT DATA
+═══════════════════════════════════════════ */
+const PROJECTS = {
+  'chromaflora': {
+    eyebrow: 'Design System',
+    title: 'ChromaFlora Design System',
+    desc: 'A living bioluminescent design system built entirely in pure CSS + Canvas 2D. No images, no external assets — every texture, glow, and gradient is computed procedurally at runtime. 18 canvas effects, 60+ design tokens, a full component library, and a generative art studio.',
+    tags: ['Design System','Generative','CSS','Canvas API','Pure Code'],
+    effect: 'abstract-flows',
+    badge: 'Design System',
+    accent: '#a855f7',
+    specs: { 'Tech Stack': 'HTML / CSS / Canvas 2D', 'Effects': '18 unique renderers', 'Design Tokens': '60+', 'External Assets': 'None (pure procedural)', 'License': 'Proprietary', 'Version': '5.0.0' }
+  },
+  'liquid-neon': {
+    eyebrow: 'Motion',
+    title: 'Liquid Neon',
+    desc: 'Organic neon-lit fluid paths flow across a dark void using Bézier curve noise fields. Each path is seeded with a unique hue offset and animated with layered perlin-style turbulence — no two frames are ever identical.',
+    tags: ['Motion','Canvas 2D','Fluid Sim','Neon'],
+    effect: 'liquid-neon',
+    badge: 'Motion',
+    accent: '#22d3ee',
+    specs: { 'Renderer': 'Canvas 2D requestAnimationFrame', 'Paths': '24 unique flow paths', 'Color Space': 'HSL with hue rotation', 'Frame Rate': '60 fps', 'External Assets': 'None', 'License': 'Proprietary' }
+  },
+  'plasma-drift': {
+    eyebrow: 'Interactive',
+    title: 'Plasma Drift',
+    desc: 'A cursor-reactive plasma field rendered as a parametric blend of sinusoidal color layers. Move your mouse and watch the interference patterns shift in real-time. Perfect for interactive backgrounds and installation art.',
+    tags: ['Interactive','Cursor','Plasma','Sine Fields'],
+    effect: 'plasma-drift',
+    badge: 'Interactive',
+    accent: '#ec4899',
+    specs: { 'Technique': 'Parametric sine-wave blending', 'Interaction': 'Cursor position reactive', 'Color Model': 'RGB sin mixing', 'Complexity': 'O(1) per pixel', 'External Assets': 'None', 'License': 'Proprietary' }
+  },
+  'cosmic-tide': {
+    eyebrow: 'Ambient',
+    title: 'Cosmic Tide',
+    desc: 'Deep space tidal flows — particle clouds orbit invisible gravity wells while star fields layer behind slow nebula color shifts. A meditative ambient background generator built for screens large and small.',
+    tags: ['Ambient','Particles','Space','Gravity'],
+    effect: 'cosmic-tide',
+    badge: 'Ambient',
+    accent: '#f97316',
+    specs: { 'Particles': '400 per frame', 'Gravity Wells': '3 dynamic', 'Background': 'Starfield (800 stars)', 'Color Palette': 'Deep space blues + gold', 'External Assets': 'None', 'License': 'Proprietary' }
+  },
+  'acid-pour': {
+    eyebrow: 'Generative',
+    title: 'Acid Pour Simulator',
+    desc: 'Real-time fluid acrylic pour with layered pigment cells, bubble physics, and drag-flow dynamics. Each render is seeded differently — exports are unique 1/1 digital art pieces ready for print or NFT.',
+    tags: ['Fluid','Generative','Pour Art','1/1','Print-ready'],
+    effect: 'acid-pour',
+    badge: 'Generative',
+    accent: '#10b981',
+    specs: { 'Physics': 'Custom fluid cell algorithm', 'Colors': 'Procedural palette seeding', 'Output': 'Up to 4K PNG export', 'Uniqueness': '1/1 per seed', 'External Assets': 'None', 'License': 'Proprietary' }
+  },
+  'crystallize': {
+    eyebrow: 'Texture',
+    title: 'Crystallize',
+    desc: 'Voronoi-based crystal growth simulation with anisotropic shading and edge glow. Crystals nucleate from random seeds and grow to fill the space — every run yields a completely different mineral-like texture.',
+    tags: ['Texture','Voronoi','Crystal','Shader'],
+    effect: 'crystallize',
+    badge: 'Texture',
+    accent: '#22d3ee',
+    specs: { 'Algorithm': 'Voronoi diagram + edge detection', 'Seeds': '40–80 nucleation points', 'Shading': 'Anisotropic glow blend', 'Output': 'Tileable PNG texture', 'External Assets': 'None', 'License': 'Proprietary' }
+  },
+  'deep-space': {
+    eyebrow: 'Cosmos',
+    title: 'Deep Space',
+    desc: 'A procedural deep-space diorama with layered nebula wisps, star clusters at multiple parallax depths, and slow rotation — built for use as ambient video backgrounds, stream overlays, and digital gallery walls.',
+    tags: ['Cosmos','Stars','Nebula','Parallax','Ambient'],
+    effect: 'deep-space',
+    badge: 'Cosmos',
+    accent: '#6366f1',
+    specs: { 'Stars': '1200 across 3 depth layers', 'Nebula': '6 procedural wisps', 'Animation': 'Slow drift + parallax', 'Use Cases': 'Backgrounds, overlays, walls', 'External Assets': 'None', 'License': 'Proprietary' }
+  },
+  'watercolor': {
+    eyebrow: 'Fine Art',
+    title: 'Watercolor Dream',
+    desc: 'Simulated watercolor bleeding — pigment feathers along wet paper textures using layered Gaussian splats and edge darkening. Each piece looks hand-painted and exports clean for fine art printing.',
+    tags: ['Fine Art','Watercolor','Print','Painting'],
+    effect: 'watercolor',
+    badge: 'Fine Art',
+    accent: '#a855f7',
+    specs: { 'Technique': 'Layered Gaussian splat diffusion', 'Paper Sim': 'Noise-driven edge darkening', 'Output': 'Print-quality PNG', 'Style': 'Hand-painted feel', 'External Assets': 'None', 'License': 'Proprietary' }
+  },
+  'mandala': {
+    eyebrow: 'Sacred Geometry',
+    title: 'Lasercut Mandala System',
+    desc: 'A generative system that produces infinitely varying sacred geometry patterns, layered mandalas, and geometric medallions optimized for lasercut fabrication and digital print. Every output is SVG-compatible.',
+    tags: ['Geometry','Mandala','Lasercut','SVG','Sacred'],
+    effect: 'mandala',
+    badge: 'Sacred Geometry',
+    accent: '#f59e0b',
+    specs: { 'Output': 'SVG + PNG', 'Symmetry': 'N-fold (3–24)', 'Layers': 'Up to 8 nested rings', 'Fabrication': 'Lasercut-ready toolpaths', 'External Assets': 'None', 'License': 'Proprietary' }
+  },
+  'ripple-field': {
+    eyebrow: 'Physics',
+    title: 'Ripple Field',
+    desc: 'Water surface physics with cursor-driven interference wave patterns and caustic light rendering. Each click creates a radial wave pulse that interacts with all other active waves — fully physics-based, no lookup tables.',
+    tags: ['Water','Physics','Interactive','Caustics'],
+    effect: 'plasma-drift',
+    badge: 'Physics',
+    accent: '#22d3ee',
+    specs: { 'Algorithm': 'Discrete wave equation', 'Interaction': 'Click / touch to create waves', 'Rendering': 'Caustic light approximation', 'Frame Rate': '60 fps', 'External Assets': 'None', 'License': 'Proprietary' }
+  },
+  'mercury': {
+    eyebrow: 'Fluid',
+    title: 'Mercury Surface',
+    desc: 'Metallic liquid simulation with reflective blob physics and surface tension rendering. Blobs merge and split according to proximity — the visual result is liquid mercury under a slow gravitational field.',
+    tags: ['Metal','Fluid','Simulation','Metaball'],
+    effect: 'crystallize',
+    badge: 'Fluid Sim',
+    accent: '#94a3b8',
+    specs: { 'Algorithm': 'Metaball marching squares', 'Blobs': '12 physics-driven', 'Surface': 'Specular highlight rendering', 'Interaction': 'Cursor attraction', 'External Assets': 'None', 'License': 'Proprietary' }
+  },
+  'quilling': {
+    eyebrow: 'Paper Art',
+    title: 'Quilling Garden',
+    desc: 'Digital paper quilling with coil springs, rolling strips, and gradient paper fills. Each element obeys quilling physics — strips curl under spring tension, forming rosettes, teardrops, and marquise shapes.',
+    tags: ['Paper','Quilling','Craft','Spring Physics'],
+    effect: 'watercolor',
+    badge: 'Craft Art',
+    accent: '#ec4899',
+    specs: { 'Elements': 'Coils, strips, rosettes, marquise', 'Physics': 'Spring-tension curling', 'Color': 'Gradient paper fill', 'Output': 'Print-quality PNG', 'External Assets': 'None', 'License': 'Proprietary' }
+  }
+};
+
+/* ═══════════════════════════════════════════
+   EMBED CODE TEMPLATES
+═══════════════════════════════════════════ */
+function getEmbedCode(lang, project, effectId) {
+  const effectName = effectId || 'abstract-flows';
+  switch(lang) {
+    case 'html': return `<span class="cm">&lt;!-- ChromaFlora · ${project} Effect --&gt;</span>
+<span class="cm">&lt;!-- Include effects.js from the ChromaFlora SDK --&gt;</span>
+<span class="tag">&lt;canvas</span> <span class="attr">id</span>=<span class="val">"cf-canvas"</span>
+        <span class="attr">width</span>=<span class="val">"800"</span>
+        <span class="attr">height</span>=<span class="val">"600"</span><span class="tag">&gt;&lt;/canvas&gt;</span>
+<span class="tag">&lt;script</span> <span class="attr">src</span>=<span class="val">"chromaflora-sdk.js"</span><span class="tag">&gt;&lt;/script&gt;</span>
+<span class="tag">&lt;script&gt;</span>
+  <span class="kw">const</span> <span class="fn">cf</span> = <span class="kw">new</span> <span class="fn">ChromaFlora</span>({
+    canvas: <span class="fn">document</span>.<span class="fn">getElementById</span>(<span class="str">'cf-canvas'</span>),
+    effect: <span class="str">'${effectName}'</span>,
+    interactive: <span class="kw">true</span>,
+    fps: <span class="num">60</span>
+  });
+  <span class="fn">cf</span>.<span class="fn">play</span>();
+<span class="tag">&lt;/script&gt;</span>`;
+
+    case 'react': return `<span class="cm">// ChromaFlora · ${project} Effect (React)</span>
+<span class="kw">import</span> { <span class="fn">useEffect</span>, <span class="fn">useRef</span> } <span class="kw">from</span> <span class="str">'react'</span>;
+<span class="kw">import</span> { <span class="fn">ChromaFlora</span> } <span class="kw">from</span> <span class="str">'chromaflora-sdk'</span>;
+
+<span class="kw">export function</span> <span class="fn">ChromaCanvas</span>() {
+  <span class="kw">const</span> ref = <span class="fn">useRef</span>(<span class="kw">null</span>);
+
+  <span class="fn">useEffect</span>(() => {
+    <span class="kw">const</span> cf = <span class="kw">new</span> <span class="fn">ChromaFlora</span>({
+      canvas: ref.current,
+      effect: <span class="str">'${effectName}'</span>,
+      interactive: <span class="kw">true</span>
+    });
+    cf.<span class="fn">play</span>();
+    <span class="kw">return</span> () => cf.<span class="fn">destroy</span>();
+  }, []);
+
+  <span class="kw">return</span> <span class="tag">&lt;canvas</span>
+    <span class="attr">ref</span>={ref}
+    <span class="attr">width</span>={<span class="num">800</span>}
+    <span class="attr">height</span>={<span class="num">600</span>}
+  <span class="tag">/&gt;</span>;
+}`;
+
+    case 'vue': return `<span class="cm">&lt;!-- ChromaFlora · ${project} Effect (Vue 3) --&gt;</span>
+<span class="tag">&lt;template&gt;</span>
+  <span class="tag">&lt;canvas</span>
+    <span class="attr">ref</span>=<span class="val">"canvas"</span>
+    <span class="attr">:width</span>=<span class="val">"800"</span>
+    <span class="attr">:height</span>=<span class="val">"600"</span>
+  <span class="tag">/&gt;</span>
+<span class="tag">&lt;/template&gt;</span>
+
+<span class="tag">&lt;script</span> <span class="attr">setup</span><span class="tag">&gt;</span>
+<span class="kw">import</span> { <span class="fn">ref</span>, <span class="fn">onMounted</span>, <span class="fn">onUnmounted</span> } <span class="kw">from</span> <span class="str">'vue'</span>;
+<span class="kw">import</span> { <span class="fn">ChromaFlora</span> } <span class="kw">from</span> <span class="str">'chromaflora-sdk'</span>;
+<span class="kw">const</span> canvas = <span class="fn">ref</span>(<span class="kw">null</span>); <span class="kw">let</span> cf;
+<span class="fn">onMounted</span>(() => {
+  cf = <span class="kw">new</span> <span class="fn">ChromaFlora</span>({
+    canvas: canvas.value,
+    effect: <span class="str">'${effectName}'</span>
+  });
+  cf.<span class="fn">play</span>();
+});
+<span class="fn">onUnmounted</span>(() => cf?.<span class="fn">destroy</span>());
+<span class="tag">&lt;/script&gt;</span>`;
+
+    case 'js': return `<span class="cm">// ChromaFlora · ${project} Effect (Vanilla JS)</span>
+<span class="kw">import</span> { <span class="fn">ChromaFlora</span> }
+  <span class="kw">from</span> <span class="str">'https://cdn.chromaflora.art/v5/sdk.esm.js'</span>;
+
+<span class="fn">document</span>.<span class="fn">addEventListener</span>(<span class="str">'DOMContentLoaded'</span>, () => {
+  <span class="kw">const</span> canvas = <span class="fn">document</span>
+    .<span class="fn">querySelector</span>(<span class="str">'#cf-canvas'</span>);
+
+  <span class="kw">const</span> cf = <span class="kw">new</span> <span class="fn">ChromaFlora</span>({
+    canvas,
+    effect: <span class="str">'${effectName}'</span>,
+    interactive: <span class="kw">true</span>,
+    fps: <span class="num">60</span>,
+    palette: <span class="str">'cosmic'</span>
+  });
+
+  cf.<span class="fn">play</span>();
+  <span class="cm">// cf.pause() / cf.destroy()</span>
+});`;
+
+    case 'css': return `<span class="cm">/* ChromaFlora · ${project} CSS Preset */</span>
+<span class="cm">/* Canvas fills and blends automatically */</span>
+
+<span class="tag">.chromaflora-host</span> {
+  <span class="attr">position</span>: <span class="val">relative</span>;
+  <span class="attr">overflow</span>: <span class="val">hidden</span>;
+  <span class="attr">border-radius</span>: <span class="val">16px</span>;
+  <span class="attr">isolation</span>: <span class="val">isolate</span>;
+}
+
+<span class="tag">.chromaflora-canvas</span> {
+  <span class="attr">width</span>: <span class="val">100%</span>;
+  <span class="attr">height</span>: <span class="val">100%</span>;
+  <span class="attr">display</span>: <span class="val">block</span>;
+  <span class="attr">mix-blend-mode</span>: <span class="val">normal</span>;
+}
+
+<span class="tag">/* Overlay blend variant */</span>
+<span class="tag">.cf-blend-overlay .chromaflora-canvas</span> {
+  <span class="attr">mix-blend-mode</span>: <span class="val">overlay</span>;
+  <span class="attr">opacity</span>: <span class="num">0.8</span>;
+}`;
+    default: return '';
+  }
+}
+
+/* ═══════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════ */
+const params = new URLSearchParams(location.search);
+const projectId = params.get('id') || 'chromaflora';
+const project = PROJECTS[projectId] || PROJECTS['chromaflora'];
+
+let currentLang = 'html';
+let isProUnlocked = false; // Always false in free tier — will check upgrade
+
+function init() {
+  document.title = `${project.title} · ChromaFlora`;
+
+  // Update meta
+  document.querySelector('meta[name=description]').setAttribute('content', project.desc.slice(0,150));
+
+  // Populate content
+  document.getElementById('projectEyebrow').textContent = project.eyebrow;
+  document.getElementById('projectTitle').textContent = project.title;
+  document.getElementById('projectDesc').textContent = project.desc;
+  document.getElementById('heroBadge').textContent = project.badge;
+
+  const tagEls = project.tags.map(t=>`<span class="project-tag">${t}</span>`).join('');
+  document.getElementById('projectTags').innerHTML = tagEls;
+
+  // Specs
+  const rows = Object.entries(project.specs).map(([k,v])=>`
+    <div class="spec-row"><span class="spec-label">${k}</span><span class="spec-value">${v}</span></div>`).join('');
+  document.getElementById('specsTable').innerHTML = rows;
+
+  // Hero canvas — run the effect
+  const heroCanvas = document.getElementById('heroCanvas');
+  heroCanvas.width = 1600; heroCanvas.height = 600;
+  if (window.effects && window.effects[project.effect]) {
+    try { window.effects[project.effect](heroCanvas); } catch(e) {
+      // Fallback procedural bg
+      const ctx = heroCanvas.getContext('2d');
+      const g = ctx.createLinearGradient(0,0,1600,600);
+      g.addColorStop(0,'#08001a'); g.addColorStop(1,'#001220');
+      ctx.fillStyle=g; ctx.fillRect(0,0,1600,600);
+    }
+  } else {
+    // Procedural fallback: gradient nebula
+    const ctx = heroCanvas.getContext('2d');
+    const hue = projectId.split('').reduce((a,c)=>a+c.charCodeAt(0),0) % 360;
+    ctx.fillStyle='#04040f'; ctx.fillRect(0,0,1600,600);
+    for (let i=0;i<8;i++) {
+      const cx=Math.random()*1600, cy=Math.random()*600, r=80+Math.random()*300;
+      const g=ctx.createRadialGradient(cx,cy,0,cx,cy,r);
+      g.addColorStop(0,`hsla(${(hue+i*30)%360},80%,55%,0.15)`);
+      g.addColorStop(1,'transparent');
+      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+    }
+  }
+
+  renderEmbed();
+}
+
+function renderEmbed() {
+  document.getElementById('codeContent').innerHTML = getEmbedCode(currentLang, project.title, project.effect);
+  document.getElementById('codeLang').textContent = currentLang.toUpperCase();
+  // Paywall always shows unless Pro
+  document.getElementById('paywallOverlay').style.display = isProUnlocked ? 'none' : '';
+  document.getElementById('copyBtn').style.display = isProUnlocked ? '' : 'none';
+}
+
+// Lang tab switching
+document.querySelectorAll('.lang-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.lang-tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    currentLang = tab.dataset.lang;
+    renderEmbed();
+  });
+});
+
+function copyCode() {
+  const raw = document.getElementById('codeContent').textContent;
+  navigator.clipboard.writeText(raw).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = 'Copied!'; btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent='Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+window.copyCode = copyCode;
+
+function openProModal() { document.getElementById('proModal').classList.add('open'); }
+window.openProModal = openProModal;
+
+document.getElementById('proModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('proModal')) document.getElementById('proModal').classList.remove('open');
+});
+
+function shareProject() {
+  const url = location.href;
+  if (navigator.share) { navigator.share({ title: project.title, text: project.desc, url }); }
+  else { navigator.clipboard.writeText(url).then(()=>alert('Link copied!')); }
+}
+window.shareProject = shareProject;
+
+// Init after effects.js loads
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+</script>
+</body>
+</html>

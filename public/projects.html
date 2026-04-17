@@ -1567,5 +1567,61 @@ window.addEventListener('load', () => {
   });
 })();
 </script>
+
+<script>
+/* ── Project card click navigation ── */
+(function() {
+  // Map drift-card class index → project ID
+  const DRIFT_IDS = ['chromaflora','liquid-neon','plasma-drift','cosmic-tide','acid-pour','crystallize','deep-space','watercolor'];
+  document.querySelectorAll('.drift-card').forEach((card, i) => {
+    const id = DRIFT_IDS[i] || 'chromaflora';
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', (e) => {
+      // Don't navigate when user is just tilting
+      if (Math.abs(e.offsetX - card._lastX||0) < 5 && Math.abs(e.offsetY - card._lastY||0) < 5) {
+        window.location.href = `project.html?id=${id}`;
+      }
+    });
+    card.addEventListener('mousedown', (e) => { card._lastX = e.offsetX; card._lastY = e.offsetY; });
+    // Add subtle "View Project →" chip
+    const body = card.querySelector('.drift-body');
+    if (body) {
+      const chip = document.createElement('div');
+      chip.style.cssText = 'margin-top:10px;display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:rgba(168,85,247,0.7);opacity:0;transition:opacity 0.2s';
+      chip.textContent = 'View Project →';
+      body.appendChild(chip);
+      card.addEventListener('mouseenter', () => chip.style.opacity = '1');
+      card.addEventListener('mouseleave', () => chip.style.opacity = '0');
+    }
+  });
+
+  // Map project-cards by title
+  const PROJ_IDS = {
+    'Lasercut Mandala System': 'mandala',
+    'Acid Pour Simulator': 'acid-pour',
+    'Ripple Field': 'ripple-field',
+    'Mercury Surface': 'mercury',
+    'Quilling Garden': 'quilling'
+  };
+  document.querySelectorAll('.project-card').forEach(card => {
+    const titleEl = card.querySelector('.project-title');
+    if (!titleEl) return;
+    const id = PROJ_IDS[titleEl.textContent.trim()];
+    if (!id) return;
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', () => window.location.href = `project.html?id=${id}`);
+    // Add chip
+    const body = card.querySelector('.project-body');
+    if (body) {
+      const chip = document.createElement('div');
+      chip.style.cssText = 'margin-top:14px;display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:99px;background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.2);font-size:11px;font-weight:700;color:rgba(168,85,247,0.8);opacity:0;transition:opacity 0.2s';
+      chip.textContent = '✦ View Project →';
+      body.appendChild(chip);
+      card.addEventListener('mouseenter', () => chip.style.opacity = '1');
+      card.addEventListener('mouseleave', () => chip.style.opacity = '0');
+    }
+  });
+})();
+</script>
 </body>
 </html>

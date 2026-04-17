@@ -22,6 +22,7 @@ A cosmic bioluminescent design system and portfolio — pure HTML/CSS/JS, no ext
 | `marketplace.html` | Marketplace — asset packs (4), commission board, NFT callout |
 | `challenges.html` | Challenges + leaderboard — 4 challenges, entry system, ranked creators |
 | `admin.html` | Password-protected CMS dashboard |
+| `project.html` | Individual project detail page (URL: `project.html?id=X`) — live canvas, specs, paywall-gated embed code in 5 languages |
 | `swirl-generator.html` | Procedural swirl art generator |
 
 ## Core JS

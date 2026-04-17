@@ -4,8 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Creator Gallery · ChromaFlora</title>
-<meta name="description" content="Community-created art and music from the ChromaFlora universe — share your procedural art and synthesized songs.">
+<meta name="description" content="Community-created art and music from the ChromaFlora universe — upvote, comment, remix, and share procedural creations.">
 <meta name="author" content="Jennipher Troup">
+<meta property="og:title" content="Creator Gallery · ChromaFlora">
+<meta property="og:description" content="Community art & music — upvote, comment, remix procedural creations.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:creator" content="@halcyonminx">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{--bg:#04040f;--purple:#a855f7;--aqua:#22d3ee;--pink:#ec4899;--orange:#f97316;--green:#10b981;--border:rgba(255,255,255,0.08);--t-snap:0.1s cubic-bezier(0.4,0,0.2,1);--t-spring:0.4s cubic-bezier(0.34,1.56,0.64,1)}
@@ -23,55 +28,77 @@
   .reveal.visible{opacity:1;transform:translateY(0)}
 
   /* ── Hero ── */
-  .hero{padding:80px 24px 48px;text-align:center}
-  .hero-title{font-size:clamp(36px,7vw,68px);font-weight:900;letter-spacing:-3px;margin-bottom:12px;background:linear-gradient(135deg,#fff,rgba(168,85,247,0.85),rgba(249,115,22,0.75));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-  .hero-sub{font-size:16px;color:rgba(255,255,255,0.45);max-width:500px;margin:0 auto 40px;line-height:1.65}
+  .hero{padding:70px 24px 36px;text-align:center;position:relative;z-index:1}
+  .hero-title{font-size:clamp(32px,6vw,60px);font-weight:900;letter-spacing:-2px;margin-bottom:10px;background:linear-gradient(135deg,#fff,rgba(168,85,247,0.85),rgba(249,115,22,0.75));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .hero-sub{font-size:15px;color:rgba(255,255,255,0.45);max-width:500px;margin:0 auto 24px;line-height:1.65}
 
-  /* ── Tabs ── */
-  .tabs{display:flex;justify-content:center;gap:6px;margin-bottom:40px}
-  .tab{padding:9px 22px;border-radius:99px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);font-size:13px;font-weight:600;cursor:pointer;color:rgba(255,255,255,0.55);transition:var(--t-snap)}
+  /* ── Sort + Tabs row ── */
+  .controls-row{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:32px}
+  .tab{padding:8px 20px;border-radius:99px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);font-size:13px;font-weight:600;cursor:pointer;color:rgba(255,255,255,0.55);transition:var(--t-snap)}
   .tab:hover,.tab.active{background:rgba(168,85,247,0.15);border-color:rgba(168,85,247,0.35);color:white}
+  .sort-btn{padding:7px 15px;border-radius:99px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);font-size:12px;font-weight:600;cursor:pointer;color:rgba(255,255,255,0.45);transition:var(--t-snap)}
+  .sort-btn:hover,.sort-btn.active{background:rgba(34,211,238,0.12);border-color:rgba(34,211,238,0.3);color:#22d3ee}
+  .divider{width:1px;height:24px;background:rgba(255,255,255,0.1)}
+
+  /* ── Featured creators strip ── */
+  .featured-strip{max-width:1200px;margin:0 auto 36px;padding:0 24px}
+  .featured-title{font-size:11px;font-weight:700;letter-spacing:0.1em;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:12px}
+  .featured-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none}
+  .featured-row::-webkit-scrollbar{display:none}
+  .creator-chip{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:99px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);cursor:pointer;white-space:nowrap;transition:var(--t-snap);flex-shrink:0;text-decoration:none}
+  .creator-chip:hover{border-color:rgba(168,85,247,0.3);background:rgba(168,85,247,0.07)}
+  .creator-avatar{width:24px;height:24px;border-radius:50%;overflow:hidden;flex-shrink:0}
+  .creator-name{font-size:12px;font-weight:600;color:rgba(255,255,255,0.8)}
+  .creator-count{font-size:10px;color:rgba(255,255,255,0.35);font-family:'JetBrains Mono',monospace}
 
   /* ── Gallery grids ── */
-  .gallery-section{max-width:1200px;margin:0 auto;padding:0 24px 80px}
+  .gallery-section{max-width:1200px;margin:0 auto;padding:0 24px 80px;position:relative;z-index:1}
   .art-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
   .song-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
 
   /* ── Art card ── */
-  .art-card{border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.025);transition:var(--t-smooth);cursor:pointer}
+  .art-card{border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.025);transition:transform 0.25s var(--t-spring),box-shadow 0.25s,border-color 0.25s}
   .art-card:hover{transform:translateY(-5px);border-color:rgba(168,85,247,0.25);box-shadow:0 16px 50px rgba(0,0,0,0.5),0 0 24px rgba(168,85,247,0.12)}
-  .art-thumb{height:200px;position:relative;overflow:hidden}
-  .art-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .art-thumb{height:200px;position:relative;overflow:hidden;cursor:pointer}
+  .art-thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.3s ease}
+  .art-card:hover .art-thumb img{transform:scale(1.04)}
   .art-thumb-canvas{width:100%;height:100%;display:block}
-  .art-info{padding:16px}
-  .art-user{font-size:13px;font-weight:700;color:rgba(255,255,255,0.9)}
-  .art-prompt{font-size:11px;color:rgba(255,255,255,0.4);margin-top:3px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-  .art-date{font-size:10px;color:rgba(255,255,255,0.25);font-family:'JetBrains Mono',monospace;margin-top:8px}
-  .art-actions{display:flex;gap:8px;margin-top:12px}
-  .art-btn{flex:1;padding:7px;border-radius:9px;border:none;cursor:pointer;font-size:11px;font-weight:600;transition:var(--t-snap)}
+  .art-info{padding:14px 16px}
+  .art-user-row{display:flex;align-items:center;justify-content:space-between}
+  .art-user{font-size:13px;font-weight:700;color:rgba(255,255,255,0.9);cursor:pointer;transition:var(--t-snap)}
+  .art-user:hover{color:var(--purple)}
+  .art-prompt{font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .art-date{font-size:10px;color:rgba(255,255,255,0.22);font-family:'JetBrains Mono',monospace;margin-top:6px}
+  .art-actions{display:flex;gap:6px;margin-top:10px;align-items:center}
+  .art-btn{padding:6px 10px;border-radius:8px;border:none;cursor:pointer;font-size:11px;font-weight:600;transition:var(--t-snap)}
   .art-btn-dl{background:rgba(168,85,247,0.12);color:rgba(168,85,247,0.85);border:1px solid rgba(168,85,247,0.2)}
   .art-btn-dl:hover{background:rgba(168,85,247,0.25);color:white}
   .art-btn-share{background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.1)}
   .art-btn-share:hover{background:rgba(255,255,255,0.1);color:white}
+  .art-btn-remix{background:rgba(34,211,238,0.1);color:rgba(34,211,238,0.8);border:1px solid rgba(34,211,238,0.2)}
+  .art-btn-remix:hover{background:rgba(34,211,238,0.22);color:white}
+  .upvote-btn{display:flex;align-items:center;gap:4px;padding:5px 9px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.5);cursor:pointer;font-size:11px;font-weight:700;transition:var(--t-snap);margin-left:auto;flex-shrink:0}
+  .upvote-btn:hover{border-color:rgba(236,72,153,0.4);background:rgba(236,72,153,0.1);color:#ec4899}
+  .upvote-btn.upvoted{border-color:rgba(236,72,153,0.5);background:rgba(236,72,153,0.15);color:#ec4899}
 
   /* ── Song card ── */
-  .song-card{border-radius:18px;border:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.025);padding:20px;transition:var(--t-smooth);display:flex;align-items:center;gap:16px}
+  .song-card{border-radius:18px;border:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.025);padding:18px;transition:transform 0.25s var(--t-spring),box-shadow 0.25s;display:flex;align-items:center;gap:14px}
   .song-card:hover{transform:translateY(-4px);border-color:rgba(249,115,22,0.25);box-shadow:0 12px 40px rgba(0,0,0,0.5),0 0 20px rgba(249,115,22,0.1)}
-  .song-icon{width:50px;height:50px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;position:relative;overflow:hidden}
+  .song-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;position:relative;overflow:hidden}
   .song-icon canvas{position:absolute;inset:0;width:100%;height:100%}
   .song-icon-emoji{position:relative;z-index:2}
   .song-info{flex:1;min-width:0}
   .song-title{font-size:14px;font-weight:700}
-  .song-meta{font-size:11px;color:rgba(255,255,255,0.4);font-family:'JetBrains Mono',monospace;margin-top:3px}
-  .song-actions{display:flex;gap:6px;flex-direction:column;flex-shrink:0}
-  .song-btn{padding:6px 12px;border-radius:8px;border:none;cursor:pointer;font-size:11px;font-weight:600;transition:var(--t-snap)}
+  .song-meta{font-size:11px;color:rgba(255,255,255,0.4);font-family:'JetBrains Mono',monospace;margin-top:2px}
+  .song-actions{display:flex;gap:5px;flex-direction:column;flex-shrink:0}
+  .song-btn{padding:5px 11px;border-radius:8px;border:none;cursor:pointer;font-size:11px;font-weight:600;transition:var(--t-snap)}
   .song-play-btn{background:linear-gradient(135deg,#f97316,#a855f7);color:white}
   .song-play-btn:hover{transform:scale(1.05)}
   .song-dl-btn{background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.1)}
   .song-dl-btn:hover{background:rgba(255,255,255,0.1);color:white}
 
   /* ── Empty state ── */
-  .empty-state{text-align:center;padding:80px 24px;color:rgba(255,255,255,0.25)}
+  .empty-state{text-align:center;padding:80px 24px;color:rgba(255,255,255,0.25);grid-column:1/-1}
   .empty-icon{font-size:56px;margin-bottom:16px}
   .empty-title{font-size:20px;font-weight:700;margin-bottom:8px;color:rgba(255,255,255,0.4)}
   .empty-sub{font-size:14px;line-height:1.6;max-width:380px;margin:0 auto 24px}
@@ -79,7 +106,7 @@
   .empty-link:hover{background:rgba(168,85,247,0.2);color:white}
 
   /* ── Share modal ── */
-  .share-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,10,0.8);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity 0.2s}
+  .share-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,10,0.82);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity 0.2s}
   .share-overlay.open{opacity:1;pointer-events:all}
   .share-modal{background:linear-gradient(160deg,#0d0822,#07041a);border:1px solid rgba(168,85,247,0.2);border-radius:22px;max-width:440px;width:100%;padding:32px;position:relative;transform:scale(0.92);transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1)}
   .share-overlay.open .share-modal{transform:scale(1)}
@@ -91,6 +118,24 @@
   .share-option:hover{border-color:rgba(168,85,247,0.3);background:rgba(168,85,247,0.08)}
   .share-option-icon{font-size:24px;margin-bottom:6px}
   .share-option-label{font-size:12px;font-weight:600;color:rgba(255,255,255,0.7)}
+
+  /* ── Comment modal ── */
+  .comment-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,10,0.82);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity 0.2s}
+  .comment-overlay.open{opacity:1;pointer-events:all}
+  .comment-modal{background:linear-gradient(160deg,#0d0822,#07041a);border:1px solid rgba(34,211,238,0.2);border-radius:22px;max-width:480px;width:100%;padding:28px;position:relative;max-height:80vh;display:flex;flex-direction:column;transform:scale(0.92);transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1)}
+  .comment-overlay.open .comment-modal{transform:scale(1)}
+  .comment-list{flex:1;overflow-y:auto;margin:16px 0;display:flex;flex-direction:column;gap:12px;min-height:80px;max-height:280px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.1) transparent}
+  .comment-item{display:flex;gap:10px}
+  .comment-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--aqua));flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+  .comment-body{background:rgba(255,255,255,0.04);border-radius:12px;padding:10px 12px;flex:1}
+  .comment-user{font-size:11px;font-weight:700;color:rgba(168,85,247,0.9);margin-bottom:3px}
+  .comment-text{font-size:13px;color:rgba(255,255,255,0.8);line-height:1.4}
+  .comment-time{font-size:10px;color:rgba(255,255,255,0.25);margin-top:4px;font-family:'JetBrains Mono',monospace}
+  .comment-form{display:flex;gap:8px;margin-top:8px}
+  .comment-input{flex:1;padding:10px 14px;border-radius:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:white;font-size:13px;font-family:inherit;outline:none;transition:border-color var(--t-snap)}
+  .comment-input:focus{border-color:rgba(34,211,238,0.4)}
+  .comment-submit{padding:10px 18px;border-radius:10px;border:none;cursor:pointer;background:linear-gradient(135deg,var(--aqua),var(--purple));color:white;font-size:13px;font-weight:700;transition:var(--t-spring)}
+  .comment-submit:hover{transform:scale(1.05)}
 </style>
 </head>
 <body>
@@ -102,6 +147,8 @@
     <a href="projects.html" class="nav-link">Projects</a>
     <a href="studio.html" class="nav-link">Studio</a>
     <a href="gallery.html" class="nav-link active">Gallery</a>
+    <a href="challenges.html" class="nav-link">Challenges</a>
+    <a href="marketplace.html" class="nav-link">Market</a>
     <a href="blog.html" class="nav-link">Blog</a>
     <a href="about.html" class="nav-link">About</a>
   </nav>
@@ -109,11 +156,21 @@
 
 <div class="hero">
   <h1 class="hero-title reveal">Creator Gallery</h1>
-  <p class="hero-sub reveal">Art and music born from the void — every piece made by the ChromaFlora community.</p>
-  <div class="tabs reveal">
+  <p class="hero-sub reveal">Art and music born from the void — upvote, comment, remix, and share with the ChromaFlora community.</p>
+  <div class="controls-row reveal">
     <button class="tab active" data-tab="art">🎨 Artworks</button>
     <button class="tab" data-tab="songs">🎵 Songs</button>
+    <div class="divider"></div>
+    <button class="sort-btn active" data-sort="newest">Newest</button>
+    <button class="sort-btn" data-sort="trending">Trending</button>
+    <button class="sort-btn" data-sort="featured">Featured</button>
   </div>
+</div>
+
+<!-- Featured creators strip -->
+<div class="featured-strip">
+  <div class="featured-title">Featured Creators</div>
+  <div class="featured-row" id="featuredRow"></div>
 </div>
 
 <div class="gallery-section">
@@ -131,219 +188,315 @@
     <button class="share-close" id="shareClose">✕</button>
     <div class="share-title">Share this creation</div>
     <div class="share-options">
-      <div class="share-option" id="shareIG">
-        <div class="share-option-icon">📸</div>
-        <div class="share-option-label">Instagram</div>
-      </div>
-      <div class="share-option" id="shareTwitter">
-        <div class="share-option-icon">🐦</div>
-        <div class="share-option-label">Twitter/X</div>
-      </div>
-      <div class="share-option" id="shareLink">
-        <div class="share-option-icon">🔗</div>
-        <div class="share-option-label">Copy Link</div>
-      </div>
-      <div class="share-option" id="shareDownload">
-        <div class="share-option-icon">⬇</div>
-        <div class="share-option-label">Download</div>
-      </div>
+      <div class="share-option" id="shareIG"><div class="share-option-icon">📸</div><div class="share-option-label">Instagram</div></div>
+      <div class="share-option" id="shareTwitter"><div class="share-option-icon">🐦</div><div class="share-option-label">Twitter/X</div></div>
+      <div class="share-option" id="shareLink"><div class="share-option-icon">🔗</div><div class="share-option-label">Copy Link</div></div>
+      <div class="share-option" id="shareDownload"><div class="share-option-icon">⬇</div><div class="share-option-label">Download</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Comment modal -->
+<div class="comment-overlay" id="commentOverlay">
+  <div class="comment-modal">
+    <button class="share-close" id="commentClose">✕</button>
+    <div class="share-title" id="commentTitle">Comments</div>
+    <div class="comment-list" id="commentList"></div>
+    <div class="comment-form">
+      <input class="comment-input" id="commentInput" placeholder="Leave a comment…" maxlength="200">
+      <button class="comment-submit" id="commentSubmit">Post</button>
     </div>
   </div>
 </div>
 
 <script src="player-bar.js"></script>
 <script>
-/* ── Genre icons ── */
 const GENRE_ICONS = {lofi:'☕',ambient:'🌌',rnb:'🎙',techno:'⚡',jazz:'🎷',house:'🏠',liquiddub:'🌊'};
-
-/* ── Load data ── */
 function getArtworks() { try{return JSON.parse(localStorage.getItem('cf_artworks')||'[]');}catch(e){return[];} }
 function getSongs() { try{return JSON.parse(localStorage.getItem('cf_songs')||'[]');}catch(e){return[];} }
+function getUpvotes() { try{return JSON.parse(localStorage.getItem('cf_upvotes')||'{}');}catch(e){return{};} }
+function getComments() { try{return JSON.parse(localStorage.getItem('cf_comments')||'{}');}catch(e){return{};} }
+function getMyUpvotes() { try{return JSON.parse(localStorage.getItem('cf_my_upvotes')||'[]');}catch(e){return[];} }
+
+let currentTab = 'art';
+let currentSort = 'newest';
 
 /* ── Tab switch ── */
 document.querySelectorAll('.tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
     tab.classList.add('active');
-    const t = tab.dataset.tab;
-    document.getElementById('artPanel').style.display = t==='art' ? '' : 'none';
-    document.getElementById('songPanel').style.display = t==='songs' ? '' : 'none';
-    if (t==='art') renderArt();
-    else renderSongs();
+    currentTab = tab.dataset.tab;
+    document.getElementById('artPanel').style.display = currentTab==='art' ? '' : 'none';
+    document.getElementById('songPanel').style.display = currentTab==='songs' ? '' : 'none';
+    render();
   });
 });
 
+/* ── Sort buttons ── */
+document.querySelectorAll('.sort-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    currentSort = btn.dataset.sort;
+    render();
+  });
+});
+
+/* ── Sort logic ── */
+function sortItems(items) {
+  const upvotes = getUpvotes();
+  if (currentSort === 'trending') {
+    return [...items].sort((a,b) => (upvotes[b.id]||0) - (upvotes[a.id]||0));
+  } else if (currentSort === 'featured') {
+    const featured = JSON.parse(localStorage.getItem('cf_featured')||'[]');
+    return [...items].sort((a,b) => (featured.includes(b.id)?1:0) - (featured.includes(a.id)?1:0));
+  }
+  return [...items].sort((a,b) => b.timestamp - a.timestamp);
+}
+
+/* ── Featured creators ── */
+function renderFeatured() {
+  const all = [...getArtworks(), ...getSongs()];
+  const byUser = {};
+  all.forEach(item => {
+    const u = item.username || item.nickname || 'anonymous';
+    byUser[u] = (byUser[u]||0) + 1;
+  });
+  const topCreators = Object.entries(byUser).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const row = document.getElementById('featuredRow');
+  if (!topCreators.length) { row.parentElement.style.display='none'; return; }
+  row.parentElement.style.display='';
+  row.innerHTML = '';
+  topCreators.forEach(([username, count]) => {
+    const chip = document.createElement('a');
+    chip.className = 'creator-chip';
+    chip.href = `profile.html?u=${encodeURIComponent(username)}`;
+    const av = document.createElement('div');
+    av.className = 'creator-avatar';
+    const ac = document.createElement('canvas'); ac.width=24; ac.height=24;
+    drawAvatar(ac.getContext('2d'), username, 24);
+    av.appendChild(ac);
+    chip.innerHTML = `<div class="creator-name">@${username}</div><div class="creator-count">${count} creation${count!==1?'s':''}</div>`;
+    chip.prepend(av);
+    row.appendChild(chip);
+  });
+}
+
+function drawAvatar(ctx, username, size) {
+  const hue = username.split('').reduce((a,c)=>a+c.charCodeAt(0),0) % 360;
+  const g = ctx.createLinearGradient(0,0,size,size);
+  g.addColorStop(0,`hsl(${hue},80%,55%)`); g.addColorStop(1,`hsl(${(hue+60)%360},80%,45%)`);
+  ctx.fillStyle=g; ctx.fillRect(0,0,size,size);
+}
+
 /* ── Render artworks ── */
 function renderArt() {
-  const artworks = getArtworks();
+  const artworks = sortItems(getArtworks());
+  const upvotes = getUpvotes();
+  const myUpvotes = getMyUpvotes();
   const grid = document.getElementById('artGrid');
   if (!artworks.length) {
-    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+    grid.innerHTML = `<div class="empty-state">
       <div class="empty-icon">🎨</div>
       <div class="empty-title">No artworks yet</div>
       <div class="empty-sub">Create something in the Art Studio and share it with the community!</div>
       <a href="studio.html" class="empty-link">✦ Open Art Studio</a>
-    </div>`;
-    return;
+    </div>`; return;
   }
   grid.innerHTML = '';
-  artworks.slice().reverse().forEach((art, i) => {
+  artworks.forEach((art, i) => {
+    const upvoteCount = upvotes[art.id]||0;
+    const isUpvoted = myUpvotes.includes(art.id);
     const card = document.createElement('div');
     card.className = 'art-card reveal';
-    card.style.transitionDelay = (i*0.05)+'s';
+    card.style.transitionDelay = (i*0.04)+'s';
     card.innerHTML = `
       <div class="art-thumb">
         ${art.dataUrl
-          ? `<img src="${art.dataUrl}" alt="Art by @${art.username||'anon'}">`
-          : `<canvas class="art-thumb-canvas" width="280" height="200"></canvas>`
-        }
+          ? `<img src="${art.dataUrl}" alt="Art by @${art.username||'anon'}" loading="lazy">`
+          : `<canvas class="art-thumb-canvas" width="280" height="200"></canvas>`}
       </div>
       <div class="art-info">
-        <div class="art-user">@${art.username||'anonymous'}</div>
+        <div class="art-user-row">
+          <span class="art-user" data-user="${art.username||'anonymous'}">@${art.username||'anonymous'}</span>
+          <button class="upvote-btn ${isUpvoted?'upvoted':''}" data-id="${art.id}">♥ ${upvoteCount}</button>
+        </div>
         <div class="art-prompt">${art.prompt||'Untitled creation'}</div>
         <div class="art-date">${new Date(art.timestamp).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>
         <div class="art-actions">
-          <button class="art-btn art-btn-dl">⬇ Download</button>
+          <button class="art-btn art-btn-dl">⬇</button>
+          <button class="art-btn art-btn-remix" data-id="${art.id}">🔀 Remix</button>
           <button class="art-btn art-btn-share">↗ Share</button>
+          <button class="art-btn" style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.1)" data-comment="${art.id}">💬</button>
         </div>
-      </div>
-    `;
+      </div>`;
     card.querySelector('.art-btn-dl').addEventListener('click', e => { e.stopPropagation(); downloadArt(art); });
     card.querySelector('.art-btn-share').addEventListener('click', e => { e.stopPropagation(); openShare(art.dataUrl,'art'); });
+    card.querySelector('.art-btn-remix').addEventListener('click', e => { e.stopPropagation(); remixArt(art); });
+    card.querySelector(`[data-comment]`).addEventListener('click', e => { e.stopPropagation(); openComments(art.id, art.username||'anon'); });
+    card.querySelector('.upvote-btn').addEventListener('click', e => { e.stopPropagation(); toggleUpvote(art.id, card.querySelector('.upvote-btn')); });
+    card.querySelector('.art-user').addEventListener('click', e => { e.stopPropagation(); window.location.href = `profile.html?u=${encodeURIComponent(art.username||'anonymous')}`; });
     grid.appendChild(card);
   });
-  revIO.disconnect();
-  document.querySelectorAll('.reveal').forEach(el=>revIO.observe(el));
+  revIO.disconnect(); document.querySelectorAll('.reveal').forEach(el=>revIO.observe(el));
 }
+
+/* ── Remix ── */
+function remixArt(art) {
+  sessionStorage.setItem('cf_remix', JSON.stringify({ dataUrl: art.dataUrl, prompt: art.prompt, source: art.username }));
+  window.location.href = 'studio.html?remix=1';
+}
+
+/* ── Upvote ── */
+function toggleUpvote(id, btn) {
+  const upvotes = getUpvotes();
+  const myUpvotes = getMyUpvotes();
+  const idx = myUpvotes.indexOf(id);
+  if (idx === -1) {
+    myUpvotes.push(id);
+    upvotes[id] = (upvotes[id]||0) + 1;
+    btn.classList.add('upvoted');
+  } else {
+    myUpvotes.splice(idx,1);
+    upvotes[id] = Math.max(0,(upvotes[id]||1) - 1);
+    btn.classList.remove('upvoted');
+  }
+  localStorage.setItem('cf_upvotes', JSON.stringify(upvotes));
+  localStorage.setItem('cf_my_upvotes', JSON.stringify(myUpvotes));
+  btn.textContent = `♥ ${upvotes[id]||0}`;
+}
+
+/* ── Comments ── */
+let commentTargetId = '';
+function openComments(artId, username) {
+  commentTargetId = artId;
+  document.getElementById('commentTitle').textContent = `Comments — @${username}`;
+  const all = getComments();
+  const list = all[artId]||[];
+  const listEl = document.getElementById('commentList');
+  listEl.innerHTML = list.length ? '' : `<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.25);font-size:13px">No comments yet. Be the first!</div>`;
+  list.forEach(c => {
+    const item = document.createElement('div');
+    item.className = 'comment-item';
+    const initials = (c.user||'A').slice(0,1).toUpperCase();
+    item.innerHTML = `
+      <div class="comment-avatar">${initials}</div>
+      <div class="comment-body">
+        <div class="comment-user">@${c.user}</div>
+        <div class="comment-text">${c.text}</div>
+        <div class="comment-time">${new Date(c.timestamp).toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+      </div>`;
+    listEl.appendChild(item);
+  });
+  document.getElementById('commentOverlay').classList.add('open');
+}
+document.getElementById('commentClose').addEventListener('click', () => document.getElementById('commentOverlay').classList.remove('open'));
+document.getElementById('commentOverlay').addEventListener('click', e => { if(e.target===document.getElementById('commentOverlay')) document.getElementById('commentOverlay').classList.remove('open'); });
+document.getElementById('commentSubmit').addEventListener('click', () => {
+  const input = document.getElementById('commentInput');
+  const text = input.value.trim().slice(0,200);
+  if (!text) return;
+  const user = (prompt('Your username for the comment:') || 'anonymous').replace(/[<>"']/g,'').trim().slice(0,30);
+  const all = getComments();
+  if (!all[commentTargetId]) all[commentTargetId] = [];
+  all[commentTargetId].push({ user, text, timestamp: Date.now() });
+  localStorage.setItem('cf_comments', JSON.stringify(all));
+  input.value = '';
+  openComments(commentTargetId, user);
+});
 
 /* ── Render songs ── */
 function renderSongs() {
-  const songs = getSongs();
+  const songs = sortItems(getSongs());
+  const upvotes = getUpvotes();
+  const myUpvotes = getMyUpvotes();
   const grid = document.getElementById('songGrid');
   if (!songs.length) {
-    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+    grid.innerHTML = `<div class="empty-state">
       <div class="empty-icon">🎵</div>
       <div class="empty-title">No songs yet</div>
-      <div class="empty-sub">Open the ChromaSynth player, create a session, and share it with the community!</div>
+      <div class="empty-sub">Open the ChromaSynth player, create a session, and share it!</div>
       <a href="player.html" class="empty-link">✦ Open ChromaSynth</a>
-    </div>`;
-    return;
+    </div>`; return;
   }
   grid.innerHTML = '';
-  songs.slice().reverse().forEach((song, i) => {
+  songs.forEach((song, i) => {
+    const upvoteCount = upvotes[song.id]||0;
+    const isUpvoted = myUpvotes.includes(song.id);
     const card = document.createElement('div');
     card.className = 'song-card reveal';
-    card.style.transitionDelay = (i*0.05)+'s';
+    card.style.transitionDelay = (i*0.04)+'s';
     card.innerHTML = `
       <div class="song-icon">
-        <canvas width="50" height="50"></canvas>
+        <canvas width="48" height="48"></canvas>
         <span class="song-icon-emoji">${GENRE_ICONS[song.genre]||'🎵'}</span>
       </div>
       <div class="song-info">
         <div class="song-title">${song.title||song.genre+' Session'}</div>
-        <div class="song-meta">by ${song.nickname||'anonymous'} · ${song.bpm} BPM · ${new Date(song.timestamp).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>
-        ${song.tags ? `<div style="margin-top:5px;font-size:10px;color:rgba(255,255,255,0.3)">${song.tags}</div>` : ''}
+        <div class="song-meta">by <a href="profile.html?u=${encodeURIComponent(song.nickname||'anonymous')}" style="color:rgba(168,85,247,0.8);text-decoration:none">@${song.nickname||'anonymous'}</a> · ${song.bpm} BPM</div>
+        ${song.tags?`<div style="margin-top:4px;font-size:10px;color:rgba(255,255,255,0.3)">${song.tags}</div>`:''}
+        <div style="margin-top:6px">
+          <button class="upvote-btn ${isUpvoted?'upvoted':''}" data-id="${song.id}" style="display:inline-flex;margin:0">♥ ${upvoteCount}</button>
+        </div>
       </div>
       <div class="song-actions">
         <button class="song-btn song-play-btn">▶ Play</button>
         <button class="song-btn song-dl-btn">⬇ Save</button>
-      </div>
-    `;
-    // Draw waveform
+      </div>`;
     drawWaveform(card.querySelector('canvas'), song.genre);
     card.querySelector('.song-play-btn').addEventListener('click', () => {
       if (window.CFPlayer) {
         const genreMap={lofi:0,ambient:1,rnb:2,techno:3,jazz:4,house:5,liquiddub:6};
         const idx = genreMap[song.genre];
         if(idx!==undefined) window.CFPlayer.setGenre(idx);
-        window.CFPlayer.init();
-        window.CFPlayer.play();
+        window.CFPlayer.init(); window.CFPlayer.play();
       }
     });
-    card.querySelector('.song-dl-btn').addEventListener('click', () => openShare(null,'song', song));
+    card.querySelector('.song-dl-btn').addEventListener('click', () => openShare(null,'song',song));
+    card.querySelector('.upvote-btn').addEventListener('click', e => { e.stopPropagation(); toggleUpvote(song.id, card.querySelector('.upvote-btn')); });
     grid.appendChild(card);
   });
-  revIO.disconnect();
-  document.querySelectorAll('.reveal').forEach(el=>revIO.observe(el));
+  revIO.disconnect(); document.querySelectorAll('.reveal').forEach(el=>revIO.observe(el));
+}
+
+function render() {
+  if (currentTab === 'art') renderArt(); else renderSongs();
 }
 
 function drawWaveform(canvas, genre) {
   if (!canvas) return;
-  const W=canvas.width=50, H=canvas.height=50;
+  const W=canvas.width=48, H=canvas.height=48;
   const ctx=canvas.getContext('2d');
   const colors={lofi:'#f97316',ambient:'#22d3ee',rnb:'#ec4899',techno:'#6366f1',jazz:'#f59e0b',house:'#10b981',liquiddub:'#a855f7'};
   const c=colors[genre]||'#a855f7';
-  ctx.clearRect(0,0,W,H);
   ctx.fillStyle=c+'22'; ctx.fillRect(0,0,W,H);
   ctx.strokeStyle=c; ctx.lineWidth=1.5; ctx.beginPath();
-  for(let x=0;x<W;x++){
-    const y=H/2+Math.sin(x*0.5)*8+Math.sin(x*0.2)*5;
-    x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
-  }
+  for(let x=0;x<W;x++){const y=H/2+Math.sin(x*0.5)*7+Math.sin(x*0.2)*4;x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}
   ctx.stroke();
 }
 
-/* ── Download art ── */
 function downloadArt(art) {
-  if (art.dataUrl) {
-    const a=document.createElement('a');
-    a.href=art.dataUrl;
-    a.download=`chromaflora-art-${art.username||'anon'}-${Date.now()}.png`;
-    a.click();
-  }
+  if (art.dataUrl) { const a=document.createElement('a');a.href=art.dataUrl;a.download=`chromaflora-art-${art.username||'anon'}-${Date.now()}.png`;a.click(); }
 }
 
 /* ── Share modal ── */
-let shareTarget = null, shareType = null, shareSong = null;
-function openShare(dataUrl, type, song=null) {
-  shareTarget=dataUrl; shareType=type; shareSong=song;
-  document.getElementById('shareOverlay').classList.add('open');
-}
-document.getElementById('shareClose').addEventListener('click', () => document.getElementById('shareOverlay').classList.remove('open'));
-document.getElementById('shareOverlay').addEventListener('click', e => { if(e.target===document.getElementById('shareOverlay')) document.getElementById('shareOverlay').classList.remove('open'); });
-
-document.getElementById('shareIG').addEventListener('click', () => {
-  if (shareTarget) {
-    const a=document.createElement('a');a.href=shareTarget;a.download='chromaflora-share.png';a.click();
-    setTimeout(()=>window.open('https://instagram.com','_blank'),500);
-  } else {
-    alert('Download the song file, then upload it to Instagram as a Reel!');
-  }
-  document.getElementById('shareOverlay').classList.remove('open');
-});
-
-document.getElementById('shareTwitter').addEventListener('click', () => {
-  const text = encodeURIComponent('Created with ChromaFlora Design System by @halcyonminx 🌌 #ChromaFlora #GenerativeArt');
-  window.open(`https://twitter.com/intent/tweet?text=${text}`,'_blank');
-  document.getElementById('shareOverlay').classList.remove('open');
-});
-
-document.getElementById('shareLink').addEventListener('click', () => {
-  navigator.clipboard.writeText(location.href).then(()=>{
-    document.getElementById('shareLink').querySelector('.share-option-label').textContent='✓ Copied!';
-    setTimeout(()=>document.getElementById('shareLink').querySelector('.share-option-label').textContent='Copy Link',2000);
-  });
-});
-
-document.getElementById('shareDownload').addEventListener('click', () => {
-  if (shareTarget) {
-    const a=document.createElement('a');a.href=shareTarget;a.download='chromaflora-creation.png';a.click();
-  } else if (shareSong) {
-    const meta = `ChromaFlora Song\nTitle: ${shareSong.title||'Untitled'}\nArtist: ${shareSong.nickname||'Anonymous'}\nGenre: ${shareSong.genre}\nBPM: ${shareSong.bpm}\nDate: ${new Date(shareSong.timestamp).toISOString()}\nCreated with ChromaFlora by Jennipher Troup`;
-    const blob=new Blob([meta],{type:'text/plain'});
-    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='chromaflora-song-info.txt';a.click();
-  }
-  document.getElementById('shareOverlay').classList.remove('open');
-});
+let shareTarget=null, shareType=null, shareSong=null;
+function openShare(dataUrl, type, song=null) { shareTarget=dataUrl;shareType=type;shareSong=song;document.getElementById('shareOverlay').classList.add('open'); }
+document.getElementById('shareClose').addEventListener('click', ()=>document.getElementById('shareOverlay').classList.remove('open'));
+document.getElementById('shareOverlay').addEventListener('click', e=>{ if(e.target===document.getElementById('shareOverlay'))document.getElementById('shareOverlay').classList.remove('open'); });
+document.getElementById('shareIG').addEventListener('click', ()=>{ if(shareTarget){const a=document.createElement('a');a.href=shareTarget;a.download='chromaflora-share.png';a.click();setTimeout(()=>window.open('https://instagram.com','_blank'),500);}else{alert('Download the song file, then upload to Instagram!');} document.getElementById('shareOverlay').classList.remove('open'); });
+document.getElementById('shareTwitter').addEventListener('click', ()=>{ window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent('Created with ChromaFlora Design System by @halcyonminx 🌌 #ChromaFlora #GenerativeArt')}`,'_blank');document.getElementById('shareOverlay').classList.remove('open'); });
+document.getElementById('shareLink').addEventListener('click', ()=>{ navigator.clipboard.writeText(location.href).then(()=>{ document.getElementById('shareLink').querySelector('.share-option-label').textContent='✓ Copied!';setTimeout(()=>document.getElementById('shareLink').querySelector('.share-option-label').textContent='Copy Link',2000); }); });
+document.getElementById('shareDownload').addEventListener('click', ()=>{ if(shareTarget){const a=document.createElement('a');a.href=shareTarget;a.download='chromaflora-creation.png';a.click();}else if(shareSong){const meta=`ChromaFlora Song\nTitle: ${shareSong.title||'Untitled'}\nArtist: ${shareSong.nickname||'Anonymous'}\nGenre: ${shareSong.genre}\nBPM: ${shareSong.bpm}\nDate: ${new Date(shareSong.timestamp).toISOString()}`;const blob=new Blob([meta],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='chromaflora-song-info.txt';a.click();}document.getElementById('shareOverlay').classList.remove('open'); });
 
 /* ── Scroll reveal ── */
-const revIO = new IntersectionObserver(entries=>{
-  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');revIO.unobserve(e.target);}});
-},{threshold:0.1});
+const revIO = new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');revIO.unobserve(e.target);}});},{threshold:0.1});
 document.querySelectorAll('.reveal').forEach(el=>revIO.observe(el));
 
 /* ── Init ── */
-renderArt();
+renderFeatured();
+render();
 </script>
 </body>
 </html>

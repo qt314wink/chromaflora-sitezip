@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marketplace · ChromaFlora</title>
+<meta name="description" content="ChromaFlora Marketplace — browse asset packs, commission procedural art, and connect with creators.">
+<meta name="author" content="Jennipher Troup">
+<meta property="og:title" content="Marketplace · ChromaFlora">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:creator" content="@halcyonminx">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#04040f;--purple:#a855f7;--aqua:#22d3ee;--pink:#ec4899;--orange:#f97316;--green:#10b981;--border:rgba(255,255,255,0.08);--t-snap:0.1s cubic-bezier(0.4,0,0.2,1);--t-spring:0.4s cubic-bezier(0.34,1.56,0.64,1)}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:#fff;min-height:100dvh;overflow-x:hidden}
+  body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 60% 40% at 70% 20%,rgba(249,115,22,0.1) 0%,transparent 60%),radial-gradient(ellipse 40% 30% at 20% 80%,rgba(168,85,247,0.08) 0%,transparent 60%)}
+
+  .header{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:60px;background:rgba(4,4,15,0.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+  .logo{font-weight:800;font-size:16px}.logo a{color:white;text-decoration:none}
+  .nav{display:flex;gap:4px}
+  .nav-link{padding:6px 14px;border-radius:8px;font-size:13px;font-weight:500;color:rgba(255,255,255,0.6);text-decoration:none;transition:var(--t-snap)}
+  .nav-link:hover,.nav-link.active{color:white;background:rgba(255,255,255,0.07)}
+
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity 0.5s ease,transform 0.5s cubic-bezier(0.34,1.56,0.64,1)}
+  .reveal.visible{opacity:1;transform:translateY(0)}
+
+  /* ── Hero ── */
+  .hero{padding:80px 24px 48px;text-align:center;position:relative;z-index:1}
+  .hero-eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;color:var(--orange);text-transform:uppercase;margin-bottom:12px}
+  .hero-title{font-size:clamp(36px,7vw,68px);font-weight:900;letter-spacing:-3px;margin-bottom:14px;background:linear-gradient(135deg,#fff,rgba(249,115,22,0.85),rgba(168,85,247,0.75));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .hero-sub{font-size:16px;color:rgba(255,255,255,0.45);max-width:520px;margin:0 auto 40px;line-height:1.65}
+  .coming-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 20px;border-radius:99px;background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.3);font-size:13px;font-weight:700;color:rgba(249,115,22,0.9)}
+
+  /* ── Section layout ── */
+  .section{max-width:1200px;margin:0 auto;padding:60px 24px;position:relative;z-index:1}
+  .section-title{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.35);margin-bottom:28px;display:flex;align-items:center;gap:10px}
+  .section-title::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.06)}
+
+  /* ── Asset packs grid ── */
+  .packs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px}
+  .pack-card{border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.025);transition:transform 0.25s var(--t-spring),box-shadow 0.25s,border-color 0.25s;cursor:pointer}
+  .pack-card:hover{transform:translateY(-6px);border-color:rgba(249,115,22,0.3);box-shadow:0 20px 60px rgba(0,0,0,0.5),0 0 30px rgba(249,115,22,0.1)}
+  .pack-thumb{height:160px;position:relative;overflow:hidden}
+  .pack-thumb canvas{display:block;width:100%;height:100%}
+  .pack-badge{position:absolute;top:10px;right:10px;padding:3px 10px;border-radius:99px;font-size:10px;font-weight:800;background:rgba(249,115,22,0.9);color:white}
+  .pack-badge.free{background:rgba(16,185,129,0.9)}
+  .pack-badge.pro{background:linear-gradient(135deg,#f97316,#a855f7)}
+  .pack-info{padding:18px}
+  .pack-name{font-size:16px;font-weight:800;margin-bottom:4px}
+  .pack-desc{font-size:12px;color:rgba(255,255,255,0.45);line-height:1.5;margin-bottom:12px}
+  .pack-meta{display:flex;align-items:center;justify-content:space-between}
+  .pack-price{font-size:18px;font-weight:900;color:var(--orange)}
+  .pack-price.free-price{color:var(--green);font-size:14px}
+  .pack-cta{padding:7px 16px;border-radius:9px;border:none;cursor:pointer;font-size:12px;font-weight:700;transition:var(--t-snap)}
+  .pack-cta.get{background:rgba(16,185,129,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.25)}
+  .pack-cta.get:hover{background:rgba(16,185,129,0.3);color:white}
+  .pack-cta.buy{background:linear-gradient(135deg,rgba(249,115,22,0.3),rgba(168,85,247,0.3));color:white;border:1px solid rgba(249,115,22,0.3)}
+  .pack-cta.buy:hover{background:linear-gradient(135deg,rgba(249,115,22,0.5),rgba(168,85,247,0.5))}
+
+  /* ── Commission board ── */
+  .commission-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  @media(max-width:640px){.commission-grid{grid-template-columns:1fr}}
+  .commission-panel{border-radius:20px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.025);padding:28px}
+  .commission-list{display:flex;flex-direction:column;gap:12px;max-height:400px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.1) transparent}
+  .commission-item{display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);transition:var(--t-snap)}
+  .commission-item:hover{border-color:rgba(168,85,247,0.2);background:rgba(168,85,247,0.05)}
+  .commission-avatar{width:36px;height:36px;border-radius:50%;overflow:hidden;flex-shrink:0}
+  .commission-avatar canvas{width:100%;height:100%;display:block}
+  .commission-body{flex:1;min-width:0}
+  .commission-user{font-size:12px;font-weight:700;color:rgba(168,85,247,0.9)}
+  .commission-desc{font-size:12px;color:rgba(255,255,255,0.65);margin-top:3px;line-height:1.4}
+  .commission-budget{font-size:10px;color:var(--orange);font-weight:700;margin-top:4px}
+  .commission-date{font-size:9px;color:rgba(255,255,255,0.25);font-family:'JetBrains Mono',monospace}
+  .commission-respond{padding:4px 10px;border-radius:7px;border:1px solid rgba(168,85,247,0.25);background:rgba(168,85,247,0.08);color:rgba(168,85,247,0.8);font-size:10px;font-weight:700;cursor:pointer;margin-top:6px;transition:var(--t-snap)}
+  .commission-respond:hover{background:rgba(168,85,247,0.2);color:white}
+
+  /* ── Post commission form ── */
+  .cf-form{display:flex;flex-direction:column;gap:12px}
+  .cf-label{font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.06em}
+  .cf-input,.cf-textarea,.cf-select{width:100%;padding:10px 14px;border-radius:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:white;font-size:13px;font-family:inherit;outline:none;transition:border-color var(--t-snap)}
+  .cf-input:focus,.cf-textarea:focus,.cf-select:focus{border-color:rgba(249,115,22,0.4)}
+  .cf-textarea{resize:vertical;min-height:80px}
+  .cf-select option{background:#0d0822}
+  .cf-submit{padding:11px;border-radius:10px;border:none;cursor:pointer;background:linear-gradient(135deg,#f97316,#a855f7);color:white;font-size:14px;font-weight:800;transition:var(--t-spring)}
+  .cf-submit:hover{transform:scale(1.02);box-shadow:0 4px 20px rgba(249,115,22,0.35)}
+
+  /* ── NFT callout ── */
+  .nft-callout{border-radius:20px;border:1px solid rgba(168,85,247,0.2);background:linear-gradient(135deg,rgba(168,85,247,0.06),rgba(249,115,22,0.04));padding:36px;text-align:center;margin-top:40px}
+  .nft-icon{font-size:48px;margin-bottom:16px}
+  .nft-title{font-size:22px;font-weight:900;margin-bottom:8px}
+  .nft-sub{font-size:14px;color:rgba(255,255,255,0.45);max-width:440px;margin:0 auto 24px;line-height:1.6}
+  .nft-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:12px;border:1px solid rgba(168,85,247,0.35);background:rgba(168,85,247,0.12);color:rgba(200,150,255,0.9);font-size:14px;font-weight:700;cursor:pointer;transition:var(--t-snap);text-decoration:none}
+  .nft-btn:hover{background:rgba(168,85,247,0.25);color:white}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo"><a href="index.html">ChromaFlora</a></div>
+  <nav class="nav">
+    <a href="index.html" class="nav-link">System</a>
+    <a href="gallery.html" class="nav-link">Gallery</a>
+    <a href="studio.html" class="nav-link">Studio</a>
+    <a href="challenges.html" class="nav-link">Challenges</a>
+    <a href="marketplace.html" class="nav-link active">Market</a>
+    <a href="blog.html" class="nav-link">Blog</a>
+    <a href="about.html" class="nav-link">About</a>
+  </nav>
+</header>
+
+<div class="hero">
+  <div class="hero-eyebrow reveal">ChromaFlora Marketplace</div>
+  <h1 class="hero-title reveal">Art, Assets &amp; Commissions</h1>
+  <p class="hero-sub reveal">Browse exclusive style packs, post commission requests, and connect with procedural art creators.</p>
+  <div class="coming-badge reveal">✦ Open Beta — Full launch coming soon</div>
+</div>
+
+<!-- Asset Packs -->
+<div class="section">
+  <div class="section-title">Asset Packs</div>
+  <div class="packs-grid" id="packsGrid"></div>
+
+  <!-- NFT callout -->
+  <div class="nft-callout reveal">
+    <div class="nft-icon">🔷</div>
+    <div class="nft-title">NFT Minting — Coming Soon</div>
+    <div class="nft-sub">Mint your ChromaFlora creations as NFTs directly from the studio or gallery. Wallet connect, on-chain provenance, and royalty splits — all baked in.</div>
+    <a href="mailto:girlwithstarryeyes@outlook.com?subject=NFT%20Early%20Access%20-%20ChromaFlora" class="nft-btn">✦ Request Early Access</a>
+  </div>
+</div>
+
+<!-- Commission Board -->
+<div class="section">
+  <div class="section-title">Commission Board</div>
+  <div class="commission-grid">
+    <div class="commission-panel">
+      <div style="font-size:16px;font-weight:800;margin-bottom:18px">Open Commissions</div>
+      <div class="commission-list" id="commissionList"></div>
+    </div>
+    <div class="commission-panel">
+      <div style="font-size:16px;font-weight:800;margin-bottom:18px">Post a Request</div>
+      <div class="cf-form" id="commissionForm">
+        <div>
+          <div class="cf-label">Your Username</div>
+          <input class="cf-input" id="cfUser" placeholder="@yourname" maxlength="40">
+        </div>
+        <div>
+          <div class="cf-label">What do you want?</div>
+          <textarea class="cf-textarea" id="cfDesc" placeholder="e.g. Bioluminescent portrait, cosmic mandala, neon pour painting…" maxlength="300"></textarea>
+        </div>
+        <div>
+          <div class="cf-label">Style Preference</div>
+          <select class="cf-select" id="cfStyle">
+            <option>Any ChromaFlora Style</option>
+            <option>Void Crystal</option><option>Nebula Flow</option><option>Acid Pour</option>
+            <option>Biolume Tide</option><option>Cosmic Mandala</option><option>Plasma Storm</option>
+            <option>Cherry Data</option><option>Dark Matter</option><option>Neon Garden</option>
+            <option>Space Rift</option><option>Electric Coral</option><option>Chrome Dreams</option>
+          </select>
+        </div>
+        <div>
+          <div class="cf-label">Budget (optional)</div>
+          <input class="cf-input" id="cfBudget" placeholder="e.g. $20–$50, open to negotiation" maxlength="60">
+        </div>
+        <button class="cf-submit" id="cfSubmit">Post Commission Request</button>
+        <div id="cfSuccess" style="display:none;text-align:center;color:#10b981;font-weight:700;font-size:13px">✓ Request posted! Creators can see it below.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="player-bar.js"></script>
+<script>
+/* ── Asset Packs ── */
+const PACKS = [
+  {
+    name: 'Void Crystal Pack',
+    desc: '6 procedural crystal style presets + 12 color palettes. Unique to ChromaFlora.',
+    price: 'FREE',
+    badge: 'free',
+    render(ctx, W, H) {
+      ctx.fillStyle='#000012'; ctx.fillRect(0,0,W,H);
+      for (let i=0;i<12;i++) {
+        const cx=Math.random()*W, cy=Math.random()*H, r=15+Math.random()*50;
+        ctx.save(); ctx.translate(cx,cy); ctx.rotate(Math.random()*Math.PI*2);
+        ctx.beginPath();
+        for (let k=0;k<12;k++) {
+          const ra=k%2===0?r:r*0.35, a=(k/6)*Math.PI*2;
+          k===0?ctx.moveTo(Math.cos(a)*ra,Math.sin(a)*ra):ctx.lineTo(Math.cos(a)*ra,Math.sin(a)*ra);
+        }
+        ctx.closePath();
+        ctx.strokeStyle=`hsla(${185+Math.random()*40},100%,70%,${0.3+Math.random()*0.5})`; ctx.lineWidth=0.8; ctx.stroke();
+        ctx.restore();
+      }
+    }
+  },
+  {
+    name: 'Nebula Ribbon Pack',
+    desc: '8 flowing nebula styles, glow presets, and 3 cosmic background generators.',
+    price: '$4.99',
+    badge: 'pro',
+    render(ctx, W, H) {
+      const bg=ctx.createRadialGradient(W*0.3,H*0.4,0,W/2,H/2,Math.max(W,H)*0.8);
+      bg.addColorStop(0,'#120824'); bg.addColorStop(1,'#020208');
+      ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+      [['#a855f7','#ec4899'],['#22d3ee','#6366f1'],['#f97316','#a855f7']].forEach(([c1,c2]) => {
+        const pts=[]; let cx=Math.random()*W, cy=Math.random()*H;
+        for (let s=0;s<6;s++) { pts.push([cx,cy]); cx+=(Math.random()-0.5)*W*0.3; cy+=(Math.random()-0.5)*H*0.3; }
+        ctx.beginPath(); ctx.moveTo(pts[0][0],pts[0][1]);
+        for (let s=1;s<pts.length-1;s++) ctx.quadraticCurveTo(pts[s][0],pts[s][1],(pts[s][0]+pts[s+1][0])/2,(pts[s][1]+pts[s+1][1])/2);
+        const g=ctx.createLinearGradient(pts[0][0],pts[0][1],pts[pts.length-1][0],pts[pts.length-1][1]);
+        g.addColorStop(0,c1+'44'); g.addColorStop(1,c2+'22');
+        ctx.strokeStyle=g; ctx.lineWidth=30+Math.random()*50; ctx.globalAlpha=0.25; ctx.stroke(); ctx.globalAlpha=1;
+      });
+    }
+  },
+  {
+    name: 'Acid Pour Collection',
+    desc: '10 acid pour flow presets with fine-tuned physics settings + 4 exclusive palettes.',
+    price: '$7.99',
+    badge: 'pro',
+    render(ctx, W, H) {
+      ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
+      const pal=['#00ffaa','#ff00cc','#ffcc00','#ff3300','#00ccff'];
+      for (let i=0;i<15;i++) {
+        const cx=Math.random()*W, cy=Math.random()*H, r=20+Math.random()*80;
+        const g=ctx.createRadialGradient(cx,cy,0,cx,cy,r);
+        const c=pal[i%pal.length];
+        g.addColorStop(0,c+'77'); g.addColorStop(1,'transparent');
+        ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+      }
+    }
+  },
+  {
+    name: 'Biolume Deep Sea',
+    desc: 'Underwater bioluminescent styles: 7 organism presets, floating tendrils + orb generators.',
+    price: '$5.99',
+    badge: 'pro',
+    render(ctx, W, H) {
+      ctx.fillStyle='#000d1a'; ctx.fillRect(0,0,W,H);
+      for (let i=0;i<20;i++) {
+        const cx=Math.random()*W, cy=Math.random()*H, r=10+Math.random()*50;
+        const hue=150+Math.random()*80;
+        const g=ctx.createRadialGradient(cx,cy,0,cx,cy,r);
+        g.addColorStop(0,`hsla(${hue},90%,65%,0.7)`); g.addColorStop(1,'transparent');
+        ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+      }
+    }
+  }
+];
+
+function initPacks() {
+  const grid = document.getElementById('packsGrid');
+  PACKS.forEach((pack, i) => {
+    const card = document.createElement('div');
+    card.className = 'pack-card reveal';
+    card.style.transitionDelay = (i*0.07)+'s';
+
+    const thumbDiv = document.createElement('div');
+    thumbDiv.className = 'pack-thumb';
+    const canvas = document.createElement('canvas');
+    canvas.width = 520; canvas.height = 320;
+    canvas.style.cssText = 'width:100%;height:100%;display:block';
+    pack.render(canvas.getContext('2d'), 520, 320);
+    const badge = document.createElement('div');
+    badge.className = `pack-badge ${pack.badge}`;
+    badge.textContent = pack.badge === 'free' ? 'FREE' : pack.badge === 'pro' ? 'PRO' : pack.badge.toUpperCase();
+    thumbDiv.appendChild(canvas); thumbDiv.appendChild(badge);
+
+    card.innerHTML = `
+      <div class="pack-info">
+        <div class="pack-name">${pack.name}</div>
+        <div class="pack-desc">${pack.desc}</div>
+        <div class="pack-meta">
+          <div class="${pack.badge==='free'?'pack-price free-price':'pack-price'}">${pack.price}</div>
+          <button class="pack-cta ${pack.badge==='free'?'get':'buy'}" onclick="handlePackCta('${pack.badge}','${pack.name.replace(/'/g,'')}')">
+            ${pack.badge==='free'?'Get Free':'Buy Now'}
+          </button>
+        </div>
+      </div>`;
+    card.prepend(thumbDiv);
+    grid.appendChild(card);
+  });
+  revIO.disconnect(); document.querySelectorAll('.reveal').forEach(el=>revIO.observe(el));
+}
+
+function handlePackCta(badge, name) {
+  if (badge === 'free') {
+    alert(`"${name}" pack applied! Your studio presets have been updated with this pack's styles.`);
+  } else {
+    alert(`Premium purchase coming soon! Email girlwithstarryeyes@outlook.com to get early access to "${name}".`);
+  }
+}
+window.handlePackCta = handlePackCta;
+
+/* ── Commission Board ── */
+function getCommissions() { try{return JSON.parse(localStorage.getItem('cf_commissions')||'[]');}catch(e){return[];} }
+
+function renderCommissions() {
+  const all = getCommissions();
+  const list = document.getElementById('commissionList');
+  const defaults = [
+    { user:'starweaver', desc:'I need a cosmic mandala with emerald and gold tones for my album cover.', budget:'$30–$60', style:'Cosmic Mandala', timestamp: Date.now()-86400000*2 },
+    { user:'voidpixel', desc:'Looking for an acid pour piece in neon pinks and blues, 1:1 ratio.', budget:'Open', style:'Acid Pour', timestamp: Date.now()-86400000 },
+    { user:'luma.arc', desc:'Portrait in Biolume Tide style — deep ocean blues with coral glows.', budget:'$20–$40', style:'Biolume Tide', timestamp: Date.now()-3600000*5 },
+  ];
+  const items = [...defaults, ...all].sort((a,b)=>b.timestamp-a.timestamp);
+  if (!items.length) { list.innerHTML = '<div style="text-align:center;padding:30px;color:rgba(255,255,255,0.25);font-size:13px">No commissions yet. Post one!</div>'; return; }
+  list.innerHTML = '';
+  items.forEach(c => {
+    const el = document.createElement('div');
+    el.className = 'commission-item';
+    const hue = (c.user||'a').split('').reduce((a,ch)=>a+ch.charCodeAt(0),0) % 360;
+    el.innerHTML = `
+      <div class="commission-avatar"><canvas width="36" height="36"></canvas></div>
+      <div class="commission-body">
+        <div class="commission-user">@${c.user}</div>
+        <div class="commission-desc">${c.desc}</div>
+        <div class="commission-budget">${c.budget} · ${c.style}</div>
+        <div class="commission-date">${new Date(c.timestamp).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>
+        <button class="commission-respond" onclick="respondCommission('${c.user}')">↗ Respond</button>
+      </div>`;
+    const av = el.querySelector('canvas'), actx = av.getContext('2d');
+    const g=actx.createLinearGradient(0,0,36,36);
+    g.addColorStop(0,`hsl(${hue},70%,45%)`); g.addColorStop(1,`hsl(${(hue+60)%360},80%,35%)`);
+    actx.fillStyle=g; actx.fillRect(0,0,36,36);
+    actx.fillStyle='rgba(255,255,255,0.9)'; actx.font='bold 14px Inter,sans-serif';
+    actx.textAlign='center'; actx.textBaseline='middle'; actx.fillText((c.user||'A').slice(0,1).toUpperCase(),18,18);
+    list.appendChild(el);
+  });
+}
+
+function respondCommission(user) {
+  window.location.href = `mailto:girlwithstarryeyes@outlook.com?subject=Commission%20Response%20for%20@${user}%20-%20ChromaFlora&body=Hello!%20I%20saw%20@${user}'s%20commission%20request%20on%20ChromaFlora%20and%20I%20would%20love%20to%20work%20on%20it.%20%0A%0AHere's%20my%20portfolio:%20`;
+}
+window.respondCommission = respondCommission;
+
+document.getElementById('cfSubmit').addEventListener('click', () => {
+  const user = (document.getElementById('cfUser').value.replace('@','')||'anonymous').replace(/[<>"']/g,'').trim().slice(0,40);
+  const desc = document.getElementById('cfDesc').value.trim().slice(0,300);
+  const style = document.getElementById('cfStyle').value;
+  const budget = document.getElementById('cfBudget').value.trim().slice(0,60);
+  if (!desc) { alert('Please describe what you want!'); return; }
+  const all = getCommissions();
+  all.push({ user, desc, style, budget: budget||'Open', timestamp: Date.now() });
+  localStorage.setItem('cf_commissions', JSON.stringify(all));
+  document.getElementById('cfSuccess').style.display='block';
+  document.getElementById('cfUser').value=''; document.getElementById('cfDesc').value='';
+  document.getElementById('cfBudget').value='';
+  setTimeout(()=>document.getElementById('cfSuccess').style.display='none', 4000);
+  renderCommissions();
+});
+
+/* ── Scroll reveal ── */
+const revIO = new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');revIO.unobserve(e.target);}});},{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>revIO.observe(el));
+
+initPacks();
+renderCommissions();
+</script>
+</body>
+</html>

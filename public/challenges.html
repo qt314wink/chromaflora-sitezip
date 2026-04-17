@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Challenges &amp; Leaderboard · ChromaFlora</title>
+<meta name="description" content="ChromaFlora community art challenges and creator leaderboard — compete, earn badges, and showcase your generative art.">
+<meta name="author" content="Jennipher Troup">
+<meta property="og:title" content="Challenges · ChromaFlora">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:creator" content="@halcyonminx">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#04040f;--purple:#a855f7;--aqua:#22d3ee;--pink:#ec4899;--orange:#f97316;--green:#10b981;--border:rgba(255,255,255,0.08);--t-snap:0.1s cubic-bezier(0.4,0,0.2,1);--t-spring:0.4s cubic-bezier(0.34,1.56,0.64,1)}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:#fff;min-height:100dvh;overflow-x:hidden}
+  body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 70% 50% at 50% -10%,rgba(168,85,247,0.15) 0%,transparent 60%),radial-gradient(ellipse 40% 30% at 90% 90%,rgba(34,211,238,0.07) 0%,transparent 60%)}
+
+  .header{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:60px;background:rgba(4,4,15,0.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+  .logo{font-weight:800;font-size:16px}.logo a{color:white;text-decoration:none}
+  .nav{display:flex;gap:4px}
+  .nav-link{padding:6px 14px;border-radius:8px;font-size:13px;font-weight:500;color:rgba(255,255,255,0.6);text-decoration:none;transition:var(--t-snap)}
+  .nav-link:hover,.nav-link.active{color:white;background:rgba(255,255,255,0.07)}
+
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity 0.5s ease,transform 0.5s cubic-bezier(0.34,1.56,0.64,1)}
+  .reveal.visible{opacity:1;transform:translateY(0)}
+
+  /* ── Hero ── */
+  .hero{padding:80px 24px 48px;text-align:center;position:relative;z-index:1}
+  .hero-title{font-size:clamp(36px,7vw,68px);font-weight:900;letter-spacing:-3px;margin-bottom:14px;background:linear-gradient(135deg,#fff,rgba(168,85,247,0.85),rgba(34,211,238,0.75));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .hero-sub{font-size:16px;color:rgba(255,255,255,0.45);max-width:520px;margin:0 auto;line-height:1.65}
+
+  /* ── Layout ── */
+  .layout{max-width:1200px;margin:0 auto;padding:40px 24px 80px;display:grid;grid-template-columns:1fr 340px;gap:28px;position:relative;z-index:1}
+  @media(max-width:800px){.layout{grid-template-columns:1fr}}
+
+  .section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.3);margin-bottom:18px;display:flex;align-items:center;justify-content:space-between}
+
+  /* ── Challenges ── */
+  .challenge-card{border-radius:18px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.025);padding:22px;margin-bottom:14px;transition:transform 0.25s var(--t-spring),border-color 0.25s,box-shadow 0.25s}
+  .challenge-card:hover{transform:translateY(-4px);border-color:rgba(168,85,247,0.25);box-shadow:0 12px 40px rgba(0,0,0,0.4)}
+  .challenge-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+  .challenge-title{font-size:18px;font-weight:800}
+  .challenge-status{padding:3px 10px;border-radius:99px;font-size:10px;font-weight:800;flex-shrink:0}
+  .status-live{background:rgba(16,185,129,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.25)}
+  .status-upcoming{background:rgba(249,115,22,0.12);color:#f97316;border:1px solid rgba(249,115,22,0.2)}
+  .status-ended{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.35);border:1px solid rgba(255,255,255,0.1)}
+  .challenge-desc{font-size:13px;color:rgba(255,255,255,0.55);line-height:1.5;margin-bottom:14px}
+  .challenge-meta{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+  .challenge-meta-item{font-size:11px;color:rgba(255,255,255,0.35);display:flex;align-items:center;gap:5px}
+  .challenge-meta-item strong{color:rgba(255,255,255,0.7)}
+  .challenge-thumb{height:80px;border-radius:10px;overflow:hidden;margin-bottom:14px}
+  .challenge-thumb canvas{width:100%;height:100%;display:block}
+  .challenge-actions{display:flex;gap:8px}
+  .challenge-btn{padding:8px 18px;border-radius:10px;border:none;cursor:pointer;font-size:13px;font-weight:700;transition:var(--t-snap)}
+  .challenge-btn-enter{background:linear-gradient(135deg,rgba(168,85,247,0.3),rgba(236,72,153,0.2));border:1px solid rgba(168,85,247,0.35);color:rgba(200,150,255,0.9)}
+  .challenge-btn-enter:hover{background:linear-gradient(135deg,rgba(168,85,247,0.5),rgba(236,72,153,0.35));color:white}
+  .challenge-btn-view{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.6)}
+  .challenge-btn-view:hover{background:rgba(255,255,255,0.1);color:white}
+  .challenge-entries{font-size:11px;color:rgba(255,255,255,0.3);margin-top:10px;font-family:'JetBrains Mono',monospace}
+
+  /* ── Submit modal ── */
+  .modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.85);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity 0.2s}
+  .modal-overlay.open{opacity:1;pointer-events:all}
+  .modal-box{background:linear-gradient(160deg,#0d0822,#07041a);border:1px solid rgba(168,85,247,0.25);border-radius:22px;max-width:460px;width:100%;padding:32px;position:relative;transform:scale(0.92);transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1)}
+  .modal-overlay.open .modal-box{transform:scale(1)}
+  .modal-close{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.6);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:var(--t-snap)}
+  .modal-close:hover{background:rgba(236,72,153,0.2);color:white}
+  .modal-title{font-size:20px;font-weight:800;margin-bottom:20px}
+  .cf-form{display:flex;flex-direction:column;gap:12px}
+  .cf-label{font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.06em}
+  .cf-input{width:100%;padding:10px 14px;border-radius:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:white;font-size:13px;font-family:inherit;outline:none;transition:border-color var(--t-snap)}
+  .cf-input:focus{border-color:rgba(168,85,247,0.4)}
+  .cf-submit{padding:11px;border-radius:10px;border:none;cursor:pointer;background:linear-gradient(135deg,#a855f7,#ec4899);color:white;font-size:14px;font-weight:800;transition:var(--t-spring)}
+  .cf-submit:hover{transform:scale(1.02);box-shadow:0 4px 20px rgba(168,85,247,0.35)}
+
+  /* ── Leaderboard ── */
+  .leaderboard-card{border-radius:18px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.025);padding:22px;position:sticky;top:80px}
+  .leaderboard-item{display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;transition:var(--t-snap);margin-bottom:6px}
+  .leaderboard-item:hover{background:rgba(255,255,255,0.04)}
+  .rank{width:24px;text-align:center;font-size:13px;font-weight:800;flex-shrink:0;color:rgba(255,255,255,0.3)}
+  .rank.gold{color:#ffd700}
+  .rank.silver{color:#c0c0c0}
+  .rank.bronze{color:#cd7f32}
+  .lb-avatar{width:36px;height:36px;border-radius:50%;overflow:hidden;flex-shrink:0}
+  .lb-avatar canvas{width:100%;height:100%;display:block}
+  .lb-info{flex:1;min-width:0}
+  .lb-name{font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;transition:var(--t-snap)}
+  .lb-name:hover{color:var(--purple)}
+  .lb-sub{font-size:10px;color:rgba(255,255,255,0.35);font-family:'JetBrains Mono',monospace}
+  .lb-score{font-size:14px;font-weight:800;color:var(--pink);flex-shrink:0}
+
+  /* ── Badges ── */
+  .badges-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}
+  .badge{padding:4px 10px;border-radius:99px;font-size:10px;font-weight:800;display:flex;align-items:center;gap:4px}
+  .badge-gold{background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.25);color:#ffd700}
+  .badge-purple{background:rgba(168,85,247,0.12);border:1px solid rgba(168,85,247,0.25);color:#a855f7}
+  .badge-aqua{background:rgba(34,211,238,0.12);border:1px solid rgba(34,211,238,0.25);color:#22d3ee}
+  .badge-pink{background:rgba(236,72,153,0.12);border:1px solid rgba(236,72,153,0.25);color:#ec4899}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo"><a href="index.html">ChromaFlora</a></div>
+  <nav class="nav">
+    <a href="index.html" class="nav-link">System</a>
+    <a href="gallery.html" class="nav-link">Gallery</a>
+    <a href="studio.html" class="nav-link">Studio</a>
+    <a href="challenges.html" class="nav-link active">Challenges</a>
+    <a href="marketplace.html" class="nav-link">Market</a>
+    <a href="blog.html" class="nav-link">Blog</a>
+    <a href="about.html" class="nav-link">About</a>
+  </nav>
+</header>
+
+<div class="hero">
+  <h1 class="hero-title reveal">Challenges</h1>
+  <p class="hero-sub reveal">Compete in weekly art and music challenges. Earn badges, climb the leaderboard, and get featured.</p>
+</div>
+
+<!-- Submit modal -->
+<div class="modal-overlay" id="submitModal">
+  <div class="modal-box">
+    <button class="modal-close" id="modalClose">✕</button>
+    <div class="modal-title" id="modalChallengeName">Enter Challenge</div>
+    <div class="cf-form">
+      <div>
+        <div class="cf-label">Your Username</div>
+        <input class="cf-input" id="entryUser" placeholder="@yourname" maxlength="40">
+      </div>
+      <div>
+        <div class="cf-label">Artwork or Studio Link</div>
+        <input class="cf-input" id="entryLink" placeholder="Paste gallery URL or describe your entry">
+      </div>
+      <div>
+        <div class="cf-label">Notes (optional)</div>
+        <input class="cf-input" id="entryNotes" placeholder="What inspired this piece?" maxlength="150">
+      </div>
+      <button class="cf-submit" id="entrySubmit">Submit Entry ✦</button>
+      <div id="entrySuccess" style="display:none;text-align:center;color:#10b981;font-weight:700;font-size:13px;margin-top:4px">✓ Entry submitted! We'll feature you in the gallery.</div>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+  <div>
+    <div class="section-title">
+      <span>Active &amp; Upcoming Challenges</span>
+      <span style="font-size:10px;font-family:'JetBrains Mono',monospace;color:rgba(255,255,255,0.25)" id="challengeCount"></span>
+    </div>
+    <div id="challengeList"></div>
+  </div>
+
+  <div>
+    <div class="leaderboard-card">
+      <div class="section-title">Creator Leaderboard</div>
+      <div class="badges-row">
+        <div class="badge badge-gold">🏆 Top Creator</div>
+        <div class="badge badge-purple">✦ Veteran</div>
+        <div class="badge badge-aqua">🌊 Fluid Master</div>
+        <div class="badge badge-pink">♥ Community Fave</div>
+      </div>
+      <div id="leaderboardList"></div>
+    </div>
+  </div>
+</div>
+
+<script src="player-bar.js"></script>
+<script>
+/* ── Challenge data ── */
+const CHALLENGES = [
+  {
+    id: 'ch-biolume',
+    title: 'Bioluminescent Depths',
+    status: 'live',
+    desc: 'Create an artwork using the Biolume Tide or Nebula Flow preset. Explore deep-sea organisms, glowing coral, and bioluminescent phenomena.',
+    deadline: new Date(Date.now() + 5*24*3600*1000),
+    prize: 'Gallery feature + Biolume Pack',
+    theme: 'Bioluminescent',
+    entries: 7,
+    render(ctx, W, H) {
+      ctx.fillStyle='#001a0d'; ctx.fillRect(0,0,W,H);
+      for (let i=0;i<15;i++) {
+        const cx=Math.random()*W, cy=Math.random()*H, r=8+Math.random()*30;
+        const hue=150+Math.random()*80;
+        const g=ctx.createRadialGradient(cx,cy,0,cx,cy,r);
+        g.addColorStop(0,`hsla(${hue},90%,65%,0.8)`); g.addColorStop(1,'transparent');
+        ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+      }
+    }
+  },
+  {
+    id: 'ch-crystal',
+    title: 'Void Crystal Formation',
+    status: 'live',
+    desc: 'Apply the Void Crystal preset and make it yours. Add layers, brush over it, remix it. Only rule: start with the crystal base.',
+    deadline: new Date(Date.now() + 3*24*3600*1000),
+    prize: 'ChromaFlora Pro 1 month',
+    theme: 'Crystal',
+    entries: 12,
+    render(ctx, W, H) {
+      ctx.fillStyle='#000010'; ctx.fillRect(0,0,W,H);
+      for (let i=0;i<10;i++) {
+        const cx=Math.random()*W, cy=Math.random()*H, r=10+Math.random()*40;
+        ctx.save(); ctx.translate(cx,cy); ctx.rotate(Math.random()*Math.PI*2);
+        ctx.beginPath();
+        for (let k=0;k<12;k++) { const ra=k%2===0?r:r*0.35, a=(k/6)*Math.PI*2; k===0?ctx.moveTo(Math.cos(a)*ra,Math.sin(a)*ra):ctx.lineTo(Math.cos(a)*ra,Math.sin(a)*ra); }
+        ctx.closePath();
+        ctx.strokeStyle=`hsla(${190+Math.random()*30},100%,72%,${0.4+Math.random()*0.5})`; ctx.lineWidth=0.8; ctx.stroke();
+        ctx.restore();
+      }
+    }
+  },
+  {
+    id: 'ch-nft-prep',
+    title: 'First Drop Collection',
+    status: 'upcoming',
+    desc: 'Prepare your best 1/1 generative piece for the upcoming ChromaFlora NFT launch. Winners get first minting rights.',
+    deadline: new Date(Date.now() + 14*24*3600*1000),
+    prize: 'Free NFT mint + 20% royalties',
+    theme: 'Open / Any Style',
+    entries: 3,
+    render(ctx, W, H) {
+      ctx.fillStyle='#04000f'; ctx.fillRect(0,0,W,H);
+      ctx.save(); ctx.translate(W/2,H/2);
+      for (let r=0;r<4;r++) {
+        const rad=(r+1)*(H*0.38/4), hue=260+r*25;
+        for (let p=0;p<6;p++) {
+          ctx.save(); ctx.rotate((p/6)*Math.PI*2);
+          const g=ctx.createRadialGradient(0,rad,0,0,rad,rad*0.25);
+          g.addColorStop(0,`hsla(${hue},90%,70%,0.2)`); g.addColorStop(1,'transparent');
+          ctx.fillStyle=g; ctx.beginPath(); ctx.ellipse(0,rad,rad*0.15,rad*0.3,0,0,Math.PI*2); ctx.fill();
+          ctx.restore();
+        }
+        ctx.strokeStyle=`hsla(${hue},70%,55%,0.12)`; ctx.lineWidth=0.8;
+        ctx.beginPath(); ctx.arc(0,0,rad,0,Math.PI*2); ctx.stroke();
+      }
+      ctx.restore();
+    }
+  },
+  {
+    id: 'ch-acid-collab',
+    title: 'Acid Pour Collab',
+    status: 'ended',
+    desc: 'Community acid pour challenge — remix, fork, and build on each other\'s pieces. Winners voted by community upvotes.',
+    deadline: new Date(Date.now() - 2*24*3600*1000),
+    prize: 'Marketplace feature',
+    theme: 'Acid Pour',
+    entries: 24,
+    render(ctx, W, H) {
+      ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
+      const pal=['#00ffaa','#ff00cc','#ffcc00'];
+      for (let i=0;i<12;i++) {
+        const cx=Math.random()*W, cy=Math.random()*H, r=15+Math.random()*60;
+        const g=ctx.createRadialGradient(cx,cy,0,cx,cy,r);
+        const c=pal[i%pal.length];
+        g.addColorStop(0,c+'66'); g.addColorStop(1,'transparent');
+        ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+      }
+    }
+  }
+];
+
+let submitTargetId = '';
+
+function timeLeft(deadline) {
+  const diff = deadline - Date.now();
+  if (diff < 0) return 'Ended';
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  if (days > 0) return `${days}d ${hours}h left`;
+  return `${hours}h left`;
+}
+
+function renderChallenges() {
+  const list = document.getElementById('challengeList');
+  const active = CHALLENGES.filter(c=>c.status!=='ended');
+  const ended = CHALLENGES.filter(c=>c.status==='ended');
+  document.getElementById('challengeCount').textContent = `${active.length} active`;
+  list.innerHTML = '';
+  [...CHALLENGES].forEach((ch, i) => {
+    const card = document.createElement('div');
+    card.className = 'challenge-card reveal';
+    card.style.transitionDelay = (i*0.06)+'s';
+
+    // Thumbnail canvas
+    const thumbCanvas = document.createElement('canvas');
+    thumbCanvas.width = 800; thumbCanvas.height = 160;
+    thumbCanvas.style.cssText = 'width:100%;height:100%;display:block';
+    ch.render(thumbCanvas.getContext('2d'), 800, 160);
+
+    const statusClass = {live:'status-live',upcoming:'status-upcoming',ended:'status-ended'}[ch.status];
+    const statusLabel = {live:'🟢 Live',upcoming:'🟡 Upcoming',ended:'⚫ Ended'}[ch.status];
+
+    card.innerHTML = `
+      <div class="challenge-thumb"></div>
+      <div class="challenge-header">
+        <div class="challenge-title">${ch.title}</div>
+        <div class="challenge-status ${statusClass}">${statusLabel}</div>
+      </div>
+      <div class="challenge-desc">${ch.desc}</div>
+      <div class="challenge-meta">
+        <div class="challenge-meta-item">⏳ <strong>${timeLeft(ch.deadline)}</strong></div>
+        <div class="challenge-meta-item">🏆 <strong>${ch.prize}</strong></div>
+        <div class="challenge-meta-item">🎨 Theme: <strong>${ch.theme}</strong></div>
+      </div>
+      <div class="challenge-actions">
+        ${ch.status!=='ended'?`<button class="challenge-btn challenge-btn-enter" data-id="${ch.id}">✦ Enter Challenge</button>`:''}
+        <button class="challenge-btn challenge-btn-view">View Entries (${ch.entries})</button>
+      </div>
+      <div class="challenge-entries">${ch.entries} entr${ch.entries===1?'y':'ies'} submitted</div>`;
+    card.querySelector('.challenge-thumb').appendChild(thumbCanvas);
+    if (ch.status !== 'ended') {
+      card.querySelector('.challenge-btn-enter').addEventListener('click', () => openSubmit(ch.id, ch.title));
+    }
+    card.querySelector('.challenge-btn-view').addEventListener('click', () => {
+      window.location.href = `gallery.html`;
+    });
+    list.appendChild(card);
+  });
+  revIO.disconnect(); document.querySelectorAll('.reveal').forEach(el=>revIO.observe(el));
+}
+
+function openSubmit(id, title) {
+  submitTargetId = id;
+  document.getElementById('modalChallengeName').textContent = `Enter: ${title}`;
+  document.getElementById('submitModal').classList.add('open');
+}
+document.getElementById('modalClose').addEventListener('click', ()=>document.getElementById('submitModal').classList.remove('open'));
+document.getElementById('submitModal').addEventListener('click', e=>{ if(e.target===document.getElementById('submitModal'))document.getElementById('submitModal').classList.remove('open'); });
+
+document.getElementById('entrySubmit').addEventListener('click', () => {
+  const user = (document.getElementById('entryUser').value.replace('@','')||'anonymous').trim().replace(/[<>"']/g,'').slice(0,40);
+  const link = document.getElementById('entryLink').value.trim().slice(0,200);
+  if (!user) { alert('Please enter your username!'); return; }
+  const entries = JSON.parse(localStorage.getItem('cf_challenge_entries')||'[]');
+  entries.push({ challengeId: submitTargetId, user, link, notes: document.getElementById('entryNotes').value.trim(), timestamp: Date.now() });
+  localStorage.setItem('cf_challenge_entries', JSON.stringify(entries));
+  document.getElementById('entrySuccess').style.display='block';
+  document.getElementById('entryUser').value=''; document.getElementById('entryLink').value=''; document.getElementById('entryNotes').value='';
+  setTimeout(()=>{ document.getElementById('entrySuccess').style.display='none'; document.getElementById('submitModal').classList.remove('open'); }, 3000);
+});
+
+/* ── Leaderboard ── */
+function renderLeaderboard() {
+  const artworks = JSON.parse(localStorage.getItem('cf_artworks')||'[]');
+  const songs = JSON.parse(localStorage.getItem('cf_songs')||'[]');
+  const upvotes = JSON.parse(localStorage.getItem('cf_upvotes')||'{}');
+  const byUser = {};
+  artworks.forEach(a => { const u=a.username||'anonymous'; byUser[u]=(byUser[u]||{artworks:0,songs:0,upvotes:0}); byUser[u].artworks++; byUser[u].upvotes+=(upvotes[a.id]||0); });
+  songs.forEach(s => { const u=s.nickname||'anonymous'; byUser[u]=(byUser[u]||{artworks:0,songs:0,upvotes:0}); byUser[u].songs++; byUser[u].upvotes+=(upvotes[s.id]||0); });
+  // Seed with default creators if no data
+  const defaults = [{n:'halcyonminx',a:18,s:12,u:234},{n:'voidpixel',a:9,s:5,u:87},{n:'starweaver',a:14,s:2,u:156},{n:'luma.arc',a:6,s:8,u:73},{n:'neonflux',a:11,s:3,u:92}];
+  const list = document.getElementById('leaderboardList');
+  let ranked = Object.entries(byUser).map(([n,d])=>({n,score:d.upvotes+d.artworks*2+d.songs*3,a:d.artworks,s:d.songs,u:d.upvotes}));
+  if (!ranked.length) ranked = defaults.map(d=>({n:d.n,score:d.u+d.a*2+d.s*3,a:d.a,s:d.s,u:d.u}));
+  ranked.sort((a,b)=>b.score-a.score);
+  list.innerHTML = '';
+  ranked.slice(0,10).forEach((creator, i) => {
+    const rankClass = i===0?'gold':i===1?'silver':i===2?'bronze':'';
+    const el = document.createElement('div');
+    el.className = 'leaderboard-item';
+    el.innerHTML = `
+      <div class="rank ${rankClass}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)}</div>
+      <div class="lb-avatar"><canvas width="36" height="36"></canvas></div>
+      <div class="lb-info">
+        <div class="lb-name">@${creator.n}</div>
+        <div class="lb-sub">${creator.a}art · ${creator.s}songs · ♥${creator.u}</div>
+      </div>
+      <div class="lb-score">♥${creator.u}</div>`;
+    const av = el.querySelector('canvas'), actx = av.getContext('2d');
+    const hue = creator.n.split('').reduce((a,c)=>a+c.charCodeAt(0),0)%360;
+    const g=actx.createLinearGradient(0,0,36,36);
+    g.addColorStop(0,`hsl(${hue},70%,45%)`); g.addColorStop(1,`hsl(${(hue+60)%360},80%,35%)`);
+    actx.fillStyle=g; actx.fillRect(0,0,36,36);
+    actx.fillStyle='rgba(255,255,255,0.9)'; actx.font='bold 14px Inter,sans-serif';
+    actx.textAlign='center'; actx.textBaseline='middle'; actx.fillText(creator.n.slice(0,1).toUpperCase(),18,18);
+    el.querySelector('.lb-name').addEventListener('click', () => window.location.href = `profile.html?u=${encodeURIComponent(creator.n)}`);
+    list.appendChild(el);
+  });
+}
+
+/* ── Scroll reveal ── */
+const revIO = new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');revIO.unobserve(e.target);}});},{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>revIO.observe(el));
+
+renderChallenges();
+renderLeaderboard();
+</script>
+</body>
+</html>

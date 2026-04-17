@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Creator Profile · ChromaFlora</title>
+<meta name="description" content="View a ChromaFlora creator's profile — their artworks, songs, upvotes, and bio.">
+<meta name="author" content="Jennipher Troup">
+<meta property="og:title" content="Creator Profile · ChromaFlora">
+<meta property="og:type" content="profile">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:creator" content="@halcyonminx">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#04040f;--purple:#a855f7;--aqua:#22d3ee;--pink:#ec4899;--orange:#f97316;--green:#10b981;--border:rgba(255,255,255,0.08);--t-snap:0.1s cubic-bezier(0.4,0,0.2,1);--t-spring:0.4s cubic-bezier(0.34,1.56,0.64,1)}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:#fff;min-height:100dvh;overflow-x:hidden}
+  body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 60% 50% at 30% 0%,rgba(168,85,247,0.12) 0%,transparent 65%),radial-gradient(ellipse 40% 30% at 80% 100%,rgba(34,211,238,0.07) 0%,transparent 60%)}
+
+  .header{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:60px;background:rgba(4,4,15,0.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+  .logo{font-weight:800;font-size:16px}.logo a{color:white;text-decoration:none}
+  .nav{display:flex;gap:4px}
+  .nav-link{padding:6px 14px;border-radius:8px;font-size:13px;font-weight:500;color:rgba(255,255,255,0.6);text-decoration:none;transition:var(--t-snap)}
+  .nav-link:hover,.nav-link.active{color:white;background:rgba(255,255,255,0.07)}
+
+  /* ── Profile hero ── */
+  .profile-hero{position:relative;z-index:1;padding:60px 24px 40px;max-width:800px;margin:0 auto;display:flex;align-items:flex-start;gap:32px;flex-wrap:wrap}
+  .profile-avatar-wrap{position:relative;flex-shrink:0}
+  .profile-avatar{width:100px;height:100px;border-radius:50%;overflow:hidden;border:2px solid rgba(168,85,247,0.4);box-shadow:0 0 40px rgba(168,85,247,0.2)}
+  .avatar-ring{position:absolute;inset:-6px;border-radius:50%;border:1px solid rgba(168,85,247,0.2);animation:spin 8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .profile-info{flex:1;min-width:240px}
+  .profile-username{font-size:28px;font-weight:900;letter-spacing:-1px;margin-bottom:4px}
+  .profile-bio{font-size:14px;color:rgba(255,255,255,0.5);line-height:1.6;margin-bottom:16px;max-width:420px}
+  .profile-stats{display:flex;gap:24px;flex-wrap:wrap}
+  .stat{text-align:center}
+  .stat-num{font-size:22px;font-weight:800;background:linear-gradient(135deg,var(--purple),var(--aqua));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .stat-label{font-size:10px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.08em;margin-top:2px}
+  .profile-actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+  .profile-btn{padding:8px 18px;border-radius:10px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.7);font-size:13px;font-weight:600;cursor:pointer;transition:var(--t-snap);text-decoration:none}
+  .profile-btn:hover,.profile-btn.primary{background:rgba(168,85,247,0.15);border-color:rgba(168,85,247,0.3);color:white}
+  .profile-btn.primary{background:linear-gradient(135deg,rgba(168,85,247,0.3),rgba(236,72,153,0.2));border-color:rgba(168,85,247,0.4)}
+
+  /* ── Bio edit ── */
+  .bio-edit-form{display:none;margin-top:10px}
+  .bio-edit-form.open{display:flex;gap:8px;align-items:center}
+  .bio-input{flex:1;padding:8px 12px;border-radius:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);color:white;font-size:13px;font-family:inherit;outline:none}
+  .bio-input:focus{border-color:rgba(168,85,247,0.4)}
+
+  /* ── Content tabs ── */
+  .content-tabs{display:flex;gap:6px;padding:0 24px;max-width:1200px;margin:0 auto 24px;position:relative;z-index:1}
+  .ctab{padding:8px 20px;border-radius:99px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);font-size:13px;font-weight:600;cursor:pointer;color:rgba(255,255,255,0.45);transition:var(--t-snap)}
+  .ctab:hover,.ctab.active{background:rgba(168,85,247,0.15);border-color:rgba(168,85,247,0.35);color:white}
+
+  /* ── Grid ── */
+  .profile-grid{max-width:1200px;margin:0 auto;padding:0 24px 80px;position:relative;z-index:1}
+  .art-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+  .song-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+
+  .art-card{border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.025);transition:transform 0.25s var(--t-spring),box-shadow 0.25s}
+  .art-card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,0.5),0 0 20px rgba(168,85,247,0.1)}
+  .art-thumb{height:170px;overflow:hidden}
+  .art-thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.3s}
+  .art-card:hover .art-thumb img{transform:scale(1.05)}
+  .art-info{padding:12px 14px}
+  .art-prompt{font-size:11px;color:rgba(255,255,255,0.5);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .art-date{font-size:10px;color:rgba(255,255,255,0.22);margin-top:6px;font-family:'JetBrains Mono',monospace}
+  .art-dl-btn{margin-top:8px;padding:5px 12px;border-radius:7px;border:1px solid rgba(168,85,247,0.2);background:rgba(168,85,247,0.08);color:rgba(168,85,247,0.8);font-size:11px;font-weight:600;cursor:pointer;transition:var(--t-snap)}
+  .art-dl-btn:hover{background:rgba(168,85,247,0.2);color:white}
+
+  .song-card{border-radius:14px;border:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.025);padding:16px;display:flex;align-items:center;gap:12px;transition:transform 0.25s var(--t-spring),box-shadow 0.25s}
+  .song-card:hover{transform:translateY(-3px);box-shadow:0 10px 32px rgba(0,0,0,0.5)}
+  .song-icon{width:44px;height:44px;border-radius:11px;overflow:hidden;flex-shrink:0;position:relative}
+  .song-icon canvas{width:100%;height:100%;position:absolute;inset:0}
+  .song-icon-emoji{position:relative;z-index:2;display:flex;align-items:center;justify-content:center;height:100%;font-size:20px}
+  .song-info{flex:1;min-width:0}
+  .song-title{font-size:13px;font-weight:700}
+  .song-meta{font-size:10px;color:rgba(255,255,255,0.35);margin-top:2px;font-family:'JetBrains Mono',monospace}
+  .song-play-btn{padding:6px 12px;border-radius:8px;border:none;cursor:pointer;background:linear-gradient(135deg,#f97316,#a855f7);color:white;font-size:11px;font-weight:700;transition:var(--t-snap);flex-shrink:0}
+  .song-play-btn:hover{transform:scale(1.06)}
+
+  .empty-state{text-align:center;padding:60px 24px;color:rgba(255,255,255,0.25)}
+  .empty-icon{font-size:48px;margin-bottom:12px}
+  .empty-title{font-size:18px;font-weight:700;color:rgba(255,255,255,0.35);margin-bottom:8px}
+  .empty-link{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:10px;border:1px solid rgba(168,85,247,0.3);background:rgba(168,85,247,0.1);color:rgba(200,150,255,0.9);text-decoration:none;font-size:13px;font-weight:600;transition:var(--t-snap);margin-top:12px}
+  .empty-link:hover{background:rgba(168,85,247,0.2);color:white}
+
+  /* ── Upvote tally ── */
+  .upvote-tally{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:99px;background:rgba(236,72,153,0.1);border:1px solid rgba(236,72,153,0.2);font-size:11px;color:rgba(236,72,153,0.8);font-weight:700}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo"><a href="index.html">ChromaFlora</a></div>
+  <nav class="nav">
+    <a href="index.html" class="nav-link">System</a>
+    <a href="gallery.html" class="nav-link">Gallery</a>
+    <a href="studio.html" class="nav-link">Studio</a>
+    <a href="challenges.html" class="nav-link">Challenges</a>
+    <a href="marketplace.html" class="nav-link">Market</a>
+    <a href="blog.html" class="nav-link">Blog</a>
+    <a href="about.html" class="nav-link">About</a>
+  </nav>
+</header>
+
+<div class="profile-hero" id="profileHero">
+  <div class="profile-avatar-wrap">
+    <div class="profile-avatar"><canvas id="avatarCanvas" width="100" height="100"></canvas></div>
+    <div class="avatar-ring"></div>
+  </div>
+  <div class="profile-info">
+    <div class="profile-username" id="profileUsername">Loading…</div>
+    <div class="profile-bio" id="profileBio">ChromaFlora creator — making art with code and chaos.</div>
+    <div class="bio-edit-form" id="bioEditForm">
+      <input class="bio-input" id="bioInput" maxlength="120" placeholder="Your bio (120 chars)">
+      <button class="profile-btn primary" id="bioSave">Save</button>
+      <button class="profile-btn" id="bioCancel">Cancel</button>
+    </div>
+    <div class="profile-stats" id="profileStats"></div>
+    <div class="profile-actions" id="profileActions"></div>
+  </div>
+</div>
+
+<div class="content-tabs">
+  <button class="ctab active" data-ctab="artworks">🎨 Artworks</button>
+  <button class="ctab" data-ctab="songs">🎵 Songs</button>
+</div>
+
+<div class="profile-grid">
+  <div id="artworksPanel"><div class="art-grid" id="artGrid"></div></div>
+  <div id="songsPanel" style="display:none"><div class="song-grid" id="songGrid"></div></div>
+</div>
+
+<script src="player-bar.js"></script>
+<script>
+const GENRE_ICONS = {lofi:'☕',ambient:'🌌',rnb:'🎙',techno:'⚡',jazz:'🎷',house:'🏠',liquiddub:'🌊'};
+const params = new URLSearchParams(location.search);
+const username = decodeURIComponent(params.get('u')||'anonymous');
+const isOwn = !params.get('u');
+
+function getArtworks() { try{return JSON.parse(localStorage.getItem('cf_artworks')||'[]');}catch(e){return[];} }
+function getSongs() { try{return JSON.parse(localStorage.getItem('cf_songs')||'[]');}catch(e){return[];} }
+function getUpvotes() { try{return JSON.parse(localStorage.getItem('cf_upvotes')||'{}');}catch(e){return{};} }
+function getBios() { try{return JSON.parse(localStorage.getItem('cf_bios')||'{}');}catch(e){return{};} }
+
+/* ── Avatar ── */
+function drawAvatar(canvas, name) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const hue = name.split('').reduce((a,c)=>a+c.charCodeAt(0),0) % 360;
+  const g = ctx.createLinearGradient(0,0,W,H);
+  g.addColorStop(0,`hsl(${hue},70%,45%)`); g.addColorStop(1,`hsl(${(hue+80)%360},80%,35%)`);
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  // Mandala rings
+  ctx.save(); ctx.translate(W/2,H/2);
+  [20,32,44].forEach((r,i) => {
+    ctx.strokeStyle=`hsla(${(hue+i*40)%360},90%,70%,${0.2+i*0.05})`;
+    ctx.lineWidth=1; ctx.setLineDash([3,5]);
+    ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2); ctx.stroke();
+  });
+  ctx.setLineDash([]);
+  ctx.fillStyle='rgba(255,255,255,0.9)';
+  ctx.font='bold 28px Inter,sans-serif';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(name.slice(0,1).toUpperCase(), 0, 0);
+  ctx.restore();
+}
+
+/* ── Load profile ── */
+function loadProfile() {
+  const artworks = getArtworks().filter(a => (a.username||'anonymous') === username);
+  const songs = getSongs().filter(s => (s.nickname||'anonymous') === username);
+  const upvotes = getUpvotes();
+  const bios = getBios();
+  const totalUpvotes = [...artworks,...songs].reduce((sum,item)=>sum+(upvotes[item.id]||0),0);
+
+  document.getElementById('profileUsername').textContent = '@' + username;
+  document.title = `@${username} · ChromaFlora`;
+  const bio = bios[username] || 'ChromaFlora creator — making art with code and chaos.';
+  document.getElementById('profileBio').textContent = bio;
+  document.getElementById('bioInput').value = bio;
+
+  drawAvatar(document.getElementById('avatarCanvas'), username);
+
+  const stats = document.getElementById('profileStats');
+  stats.innerHTML = [
+    ['artworks',artworks.length],['songs',songs.length],['♥ upvotes',totalUpvotes]
+  ].map(([label,num])=>`<div class="stat"><div class="stat-num">${num}</div><div class="stat-label">${label}</div></div>`).join('');
+
+  const actions = document.getElementById('profileActions');
+  if (isOwn || !params.get('u')) {
+    actions.innerHTML = `
+      <button class="profile-btn primary" id="editBioBtn">Edit Bio</button>
+      <a href="studio.html" class="profile-btn">+ New Art</a>
+      <a href="player.html" class="profile-btn">+ New Song</a>`;
+    document.getElementById('editBioBtn').addEventListener('click', () => {
+      document.getElementById('bioEditForm').classList.toggle('open');
+    });
+  } else {
+    actions.innerHTML = `
+      <a href="gallery.html?u=${encodeURIComponent(username)}" class="profile-btn">View in Gallery</a>`;
+  }
+
+  renderArt(artworks, upvotes);
+  renderSongs(songs);
+}
+
+/* ── Bio save ── */
+document.getElementById('bioSave').addEventListener('click', () => {
+  const val = document.getElementById('bioInput').value.trim().slice(0,120);
+  const bios = getBios();
+  bios[username] = val;
+  localStorage.setItem('cf_bios', JSON.stringify(bios));
+  document.getElementById('profileBio').textContent = val;
+  document.getElementById('bioEditForm').classList.remove('open');
+});
+document.getElementById('bioCancel').addEventListener('click', () => {
+  document.getElementById('bioEditForm').classList.remove('open');
+});
+
+/* ── Render artworks ── */
+function renderArt(artworks, upvotes) {
+  const grid = document.getElementById('artGrid');
+  if (!artworks.length) {
+    grid.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">🎨</div>
+      <div class="empty-title">No artworks yet</div>
+      <a href="studio.html" class="empty-link">✦ Create in Studio</a>
+    </div>`; return;
+  }
+  grid.innerHTML = '';
+  [...artworks].reverse().forEach(art => {
+    const vc = upvotes[art.id]||0;
+    const card = document.createElement('div');
+    card.className = 'art-card';
+    card.innerHTML = `
+      <div class="art-thumb">${art.dataUrl?`<img src="${art.dataUrl}" alt="${art.prompt||''}" loading="lazy">`:'<div style="height:100%;background:linear-gradient(135deg,#0d0822,#120830)"></div>'}</div>
+      <div class="art-info">
+        ${vc>0?`<div class="upvote-tally">♥ ${vc}</div>`:''}
+        <div class="art-prompt">${art.prompt||'Untitled creation'}</div>
+        <div class="art-date">${new Date(art.timestamp).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>
+        ${art.dataUrl?`<button class="art-dl-btn">⬇ Download</button>`:''}
+      </div>`;
+    if (art.dataUrl) card.querySelector('.art-dl-btn').addEventListener('click', () => { const a=document.createElement('a');a.href=art.dataUrl;a.download=`chromaflora-${username}-${art.id}.png`;a.click(); });
+    grid.appendChild(card);
+  });
+}
+
+/* ── Render songs ── */
+function renderSongs(songs) {
+  const grid = document.getElementById('songGrid');
+  if (!songs.length) {
+    grid.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">🎵</div>
+      <div class="empty-title">No songs yet</div>
+      <a href="player.html" class="empty-link">✦ Create in ChromaSynth</a>
+    </div>`; return;
+  }
+  grid.innerHTML = '';
+  [...songs].reverse().forEach(song => {
+    const card = document.createElement('div');
+    card.className = 'song-card';
+    card.innerHTML = `
+      <div class="song-icon">
+        <canvas width="44" height="44"></canvas>
+        <div class="song-icon-emoji">${GENRE_ICONS[song.genre]||'🎵'}</div>
+      </div>
+      <div class="song-info">
+        <div class="song-title">${song.title||song.genre+' Session'}</div>
+        <div class="song-meta">${song.bpm} BPM · ${new Date(song.timestamp).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>
+      </div>
+      <button class="song-play-btn">▶</button>`;
+    const canvas = card.querySelector('canvas');
+    const ctx = canvas.getContext('2d');
+    const colors={lofi:'#f97316',ambient:'#22d3ee',rnb:'#ec4899',techno:'#6366f1',jazz:'#f59e0b',house:'#10b981',liquiddub:'#a855f7'};
+    const c=colors[song.genre]||'#a855f7';
+    ctx.fillStyle=c+'22';ctx.fillRect(0,0,44,44);
+    ctx.strokeStyle=c;ctx.lineWidth=1.5;ctx.beginPath();
+    for(let x=0;x<44;x++){const y=22+Math.sin(x*0.5)*7+Math.sin(x*0.2)*4;x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();
+    card.querySelector('.song-play-btn').addEventListener('click', () => {
+      if (window.CFPlayer) { const gm={lofi:0,ambient:1,rnb:2,techno:3,jazz:4,house:5,liquiddub:6};const idx=gm[song.genre];if(idx!==undefined)window.CFPlayer.setGenre(idx);window.CFPlayer.init();window.CFPlayer.play(); }
+    });
+    grid.appendChild(card);
+  });
+}
+
+/* ── Tab switch ── */
+document.querySelectorAll('.ctab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.ctab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    const t = tab.dataset.ctab;
+    document.getElementById('artworksPanel').style.display = t==='artworks' ? '' : 'none';
+    document.getElementById('songsPanel').style.display = t==='songs' ? '' : 'none';
+  });
+});
+
+loadProfile();
+</script>
+</body>
+</html>

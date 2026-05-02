@@ -6,7 +6,7 @@ A cosmic bioluminescent design system and portfolio — pure HTML/CSS/JS, no ext
 ## Server
 `python3 -m http.server 8000 --directory public`
 
-## Pages (18 total)
+## Pages (20 total)
 | File | Purpose |
 |------|---------|
 | `index.html` | Main landing — 18-tile live gallery (each tile → project page), hero, stats |

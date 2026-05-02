@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Hidden Order — A Workbook for Conscious Living · ChromaFlora</title>
+<meta name="description" content="The Hidden Order: 10 frameworks for mastering reality by design. An interactive daily practice workbook by Jennipher Troup — Co. La'Bright.">
+<meta name="author" content="Jennipher Troup">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#04040c;--indigo:#4338ca;--violet:#7c3aed;--gold:#c9a84c;--gold-light:#e8c878;
+  --cream:#f5f0f8;--muted:rgba(245,240,248,0.45);--dim:rgba(245,240,248,0.2);
+  --border:rgba(124,58,237,0.15);--border-gold:rgba(201,168,76,0.15);
+  --t:0.18s cubic-bezier(0.4,0,0.2,1);--ts:0.4s cubic-bezier(0.34,1.56,0.64,1);
+  --f-purple:#7c3aed;--f-gold:#c9a84c;--f-teal:#0d9488;--f-rose:#be185d;
+  --f-blue:#1d4ed8;--f-orange:#c2410c;--f-green:#15803d;--f-sky:#0369a1;
+  --f-amber:#b45309;--f-pink:#9d174d
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--cream);min-height:100dvh;overflow-x:hidden}
+
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");opacity:0.035;pointer-events:none;z-index:1000}
+
+.header{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:58px;background:rgba(4,4,12,0.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.logo{font-family:'Playfair Display',serif;font-weight:900;font-size:15px;font-style:italic;color:var(--gold)}
+.logo a{color:inherit;text-decoration:none}
+.nav{display:flex;gap:4px}
+.nl{padding:5px 13px;border-radius:8px;font-size:12px;font-weight:600;color:rgba(245,240,248,0.35);text-decoration:none;transition:var(--t)}
+.nl:hover{color:var(--cream);background:rgba(255,255,255,0.05)}
+.progress-bar{position:fixed;top:58px;left:0;right:0;height:2px;background:rgba(255,255,255,0.04);z-index:99}
+.progress-fill{height:100%;background:linear-gradient(to right,var(--violet),var(--gold));transition:width .2s ease;width:0%}
+
+/* HERO */
+.hero{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 24px;position:relative;overflow:hidden}
+#heroCanvas{position:absolute;inset:0;width:100%;height:100%;opacity:0.5}
+.hero-content{position:relative;z-index:2;max-width:760px}
+.hero-eyebrow{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.2em;color:rgba(201,168,76,0.7);margin-bottom:20px;display:flex;align-items:center;justify-content:center;gap:12px}
+.hero-eyebrow::before,.hero-eyebrow::after{content:'';width:40px;height:1px;background:rgba(201,168,76,0.35)}
+.hero-h1{font-family:'Playfair Display',serif;font-size:clamp(42px,9vw,88px);font-weight:900;line-height:0.93;letter-spacing:-2px;margin-bottom:28px}
+.hero-h1 .the{font-style:italic;font-size:0.5em;color:rgba(245,240,248,0.4);display:block;letter-spacing:0;margin-bottom:8px}
+.hero-sub{font-size:clamp(14px,1.8vw,17px);color:var(--muted);line-height:1.75;max-width:520px;margin:0 auto 36px}
+.hero-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn-violet{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:12px;border:1px solid rgba(124,58,237,0.4);background:rgba(124,58,237,0.12);color:rgba(200,180,255,0.9);font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;transition:var(--ts)}
+.btn-violet:hover{background:rgba(124,58,237,0.25);transform:scale(1.03);box-shadow:0 4px 24px rgba(124,58,237,0.25)}
+.btn-gold{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:12px;border:1px solid rgba(201,168,76,0.35);background:rgba(201,168,76,0.08);color:var(--gold-light);font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;transition:var(--t)}
+.btn-gold:hover{background:rgba(201,168,76,0.18);color:var(--gold-light)}
+
+/* TOC */
+.toc-section{padding:48px 24px;max-width:960px;margin:0 auto}
+.toc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}
+.toc-item{padding:14px 16px;border-radius:12px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);cursor:pointer;transition:var(--t);text-decoration:none;display:block}
+.toc-item:hover{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.12);transform:translateY(-1px)}
+.toc-num{font-size:9px;font-weight:800;letter-spacing:.08em;margin-bottom:5px;opacity:0.5}
+.toc-name{font-size:12px;font-weight:800;line-height:1.3}
+.toc-tag{display:inline-block;margin-top:6px;padding:2px 7px;border-radius:99px;font-size:9px;font-weight:700}
+
+/* Progress panel */
+.progress-panel{padding:24px;background:rgba(124,58,237,0.06);border:1px solid rgba(124,58,237,0.12);border-radius:16px;margin-bottom:40px;display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.pp-track{flex:1;min-width:180px}
+.pp-label{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px}
+.pp-bar{height:6px;background:rgba(255,255,255,0.06);border-radius:99px;overflow:hidden}
+.pp-fill{height:100%;background:linear-gradient(to right,var(--violet),var(--gold));border-radius:99px;transition:width .4s ease}
+.pp-stat{text-align:center;min-width:60px}
+.pp-num{font-family:'Playfair Display',serif;font-size:28px;font-weight:900;color:var(--gold);line-height:1}
+.pp-sub{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-top:2px}
+
+/* Framework sections */
+.fw-section{padding:0 24px 64px;max-width:960px;margin:0 auto}
+.fw-card{border:1px solid var(--border);border-radius:20px;overflow:hidden;margin-bottom:24px;transition:var(--t)}
+.fw-card.open{border-color:rgba(255,255,255,0.12)}
+.fw-header{padding:24px 28px;cursor:pointer;display:flex;align-items:center;gap:16px;transition:var(--t);position:relative}
+.fw-header:hover{background:rgba(255,255,255,0.02)}
+.fw-num-badge{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0}
+.fw-title-wrap{flex:1}
+.fw-fw{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;opacity:0.45;margin-bottom:3px}
+.fw-name{font-family:'Playfair Display',serif;font-size:18px;font-weight:900;line-height:1.2}
+.fw-tagline{font-size:12px;color:var(--muted);margin-top:4px}
+.fw-chevron{font-size:12px;color:var(--dim);transition:transform .3s ease}
+.fw-card.open .fw-chevron{transform:rotate(180deg)}
+.fw-complete-badge{padding:4px 10px;border-radius:99px;font-size:9px;font-weight:800;text-transform:uppercase;background:rgba(16,185,129,0.12);color:rgba(100,240,180,0.8);border:1px solid rgba(16,185,129,0.2);display:none}
+.fw-card.completed .fw-complete-badge{display:block}
+
+.fw-body{display:none;border-top:1px solid rgba(255,255,255,0.05)}
+.fw-card.open .fw-body{display:block}
+.fw-body-inner{padding:28px 28px 32px}
+.fw-desc{font-size:14px;color:var(--muted);line-height:1.8;margin-bottom:24px}
+.fw-desc strong{color:var(--cream);font-weight:700}
+.fw-desc em{color:var(--gold-light);font-style:italic}
+
+/* Principles list */
+.principles{list-style:none;margin-bottom:24px}
+.principles li{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:13px;color:rgba(245,240,248,0.65);line-height:1.6}
+.principles li:last-child{border-bottom:none}
+.principles li::before{content:'◆';font-size:8px;margin-top:4px;flex-shrink:0;color:var(--gold);opacity:.6}
+
+/* Journal area */
+.journal-area{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);border-radius:14px;overflow:hidden}
+.journal-top{padding:12px 16px;background:rgba(255,255,255,0.025);border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;flex-wrap:gap}
+.journal-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.journal-actions{display:flex;gap:6px}
+.journal-btn{padding:4px 10px;border-radius:8px;font-size:10px;font-weight:700;font-family:inherit;cursor:pointer;border:1px solid;transition:var(--t)}
+.save-btn{background:rgba(124,58,237,0.1);border-color:rgba(124,58,237,0.25);color:rgba(180,150,255,0.8)}
+.save-btn:hover{background:rgba(124,58,237,0.2)}
+.save-btn.saved{background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.2);color:rgba(100,240,180,0.8)}
+.clear-btn{background:rgba(255,255,255,0.03);border-color:rgba(255,255,255,0.08);color:var(--dim)}
+.clear-btn:hover{background:rgba(255,255,255,0.07)}
+.journal-prompt{padding:12px 16px 6px;font-size:11px;color:rgba(201,168,76,0.55);font-style:italic;line-height:1.5;border-bottom:1px solid rgba(255,255,255,0.04)}
+textarea.journal-text{width:100%;min-height:90px;background:transparent;border:none;outline:none;padding:14px 16px;font-family:'Inter',sans-serif;font-size:13px;color:rgba(245,240,248,0.75);line-height:1.7;resize:vertical;color-scheme:dark}
+.journal-text::placeholder{color:rgba(245,240,248,0.18)}
+
+/* Completion row */
+.fw-completion{margin-top:20px;display:flex;align-items:center;justify-content:space-between;padding-top:20px;border-top:1px solid rgba(255,255,255,0.06)}
+.fw-mark-btn{display:inline-flex;align-items:center;gap:8px;padding:8px 18px;border-radius:10px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;border:1px solid;transition:var(--ts)}
+.fw-mark-btn.incomplete{background:rgba(124,58,237,0.08);border-color:rgba(124,58,237,0.25);color:rgba(180,150,255,0.7)}
+.fw-mark-btn.incomplete:hover{background:rgba(124,58,237,0.18);transform:scale(1.02)}
+.fw-mark-btn.complete{background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.2);color:rgba(100,240,180,0.85)}
+.fw-share{font-size:11px;color:var(--dim);cursor:pointer;transition:var(--t)}
+.fw-share:hover{color:var(--gold)}
+
+/* Insight box */
+.insight{padding:16px 18px;border-radius:12px;border-left:3px solid;margin:18px 0;background:rgba(255,255,255,0.025)}
+.insight p{font-size:13px;line-height:1.7;color:rgba(245,240,248,0.7)}
+.insight p strong{color:var(--cream)}
+
+/* Section */
+.section-div{height:1px;background:linear-gradient(to right,transparent,var(--border),transparent);margin:0 24px 64px}
+.section-label{text-align:center;padding:0 24px 48px;max-width:640px;margin:0 auto}
+.section-label .eyebrow{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.16em;color:rgba(201,168,76,0.6);margin-bottom:10px}
+.section-label h2{font-family:'Playfair Display',serif;font-size:clamp(24px,4vw,38px);font-weight:900;letter-spacing:-.5px;line-height:1.15;margin-bottom:12px}
+.section-label p{font-size:14px;color:var(--muted);line-height:1.7}
+
+/* Daily Check-in */
+.checkin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;padding:0 24px 64px;max-width:960px;margin:0 auto}
+.checkin-card{padding:16px;border-radius:14px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);transition:var(--t)}
+.checkin-card:hover{background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.1)}
+.checkin-q{font-size:12px;font-weight:700;margin-bottom:10px;line-height:1.4}
+.checkin-slider{width:100%;accent-color:var(--violet);cursor:pointer}
+.checkin-val{text-align:right;font-size:10px;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--gold);margin-top:4px}
+.checkin-save-row{padding:0 24px 40px;max-width:960px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.big-save{padding:10px 24px;border-radius:12px;background:linear-gradient(135deg,rgba(124,58,237,0.2),rgba(67,56,202,0.15));border:1px solid rgba(124,58,237,0.35);color:rgba(200,180,255,0.9);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:var(--ts)}
+.big-save:hover{background:linear-gradient(135deg,rgba(124,58,237,0.35),rgba(67,56,202,0.25));transform:scale(1.02)}
+.big-save.saved{background:rgba(16,185,129,0.12);border-color:rgba(16,185,129,0.25);color:rgba(100,240,180,0.85)}
+.checkin-date{font-size:11px;color:var(--dim);font-family:'JetBrains Mono',monospace}
+
+/* Footer */
+.footer{border-top:1px solid rgba(255,255,255,0.05);padding:48px 24px;text-align:center}
+.footer-logo{font-family:'Playfair Display',serif;font-size:24px;font-weight:900;font-style:italic;color:var(--gold);margin-bottom:6px}
+.footer-sub{font-size:12px;color:var(--dim);margin-bottom:20px}
+.footer-links{display:flex;gap:20px;justify-content:center;flex-wrap:wrap}
+.footer-link{font-size:12px;color:rgba(245,240,248,0.25);text-decoration:none;font-weight:600;transition:var(--t)}
+.footer-link:hover{color:var(--gold)}
+
+@media(max-width:640px){
+  .fw-header{padding:18px 18px}
+  .fw-body-inner{padding:20px 18px 24px}
+  .progress-panel{gap:16px}
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo"><a href="index.html">ChromaFlora</a></div>
+  <nav class="nav">
+    <a href="#frameworks" class="nl">Frameworks</a>
+    <a href="#daily" class="nl">Daily Check-in</a>
+    <a href="beats-boxes.html" class="nl">Beats & Boxes</a>
+    <a href="index.html" class="nl">Home</a>
+  </nav>
+</header>
+<div class="progress-bar"><div class="progress-fill" id="readingProgress"></div></div>
+
+<!-- HERO -->
+<section class="hero">
+  <canvas id="heroCanvas"></canvas>
+  <div class="hero-content">
+    <div class="hero-eyebrow">A Workbook for Conscious Living</div>
+    <h1 class="hero-h1">
+      <span class="the">The</span>
+      Hidden<br>Order
+    </h1>
+    <p class="hero-sub">Ten frameworks for mastering reality by design. Inspired by Dr. John Demartini's method — adapted for the creative, the seeker, the builder. Journal within each framework and track your practice.</p>
+    <div class="hero-actions">
+      <a href="#frameworks" class="btn-violet">Begin the Work ↓</a>
+      <a href="#daily" class="btn-gold">Daily Check-in</a>
+    </div>
+  </div>
+</section>
+
+<!-- INTRO -->
+<div style="padding:48px 24px 0;max-width:760px;margin:0 auto;text-align:center">
+  <p style="font-family:'Playfair Display',serif;font-size:clamp(18px,3vw,26px);font-style:italic;color:rgba(245,240,248,0.7);line-height:1.7;margin-bottom:16px">
+    "What you seek is seeking you — but only if you know what you are seeking."
+  </p>
+  <p style="font-size:13px;color:var(--dim);line-height:1.7">
+    The Hidden Order is the principle that beneath every apparent chaos is a geometry of purpose. These ten frameworks are lenses — each one a different way to perceive the structure underneath experience. Use this workbook daily, weekly, or whenever you feel lost. The journals save to your device only.
+  </p>
+</div>
+
+<!-- PROGRESS -->
+<div style="padding:36px 24px 12px;max-width:960px;margin:0 auto">
+  <div class="progress-panel">
+    <div class="pp-stat"><div class="pp-num" id="ppCompleted">0</div><div class="pp-sub">Completed</div></div>
+    <div class="pp-track">
+      <div class="pp-label">Framework Progress</div>
+      <div class="pp-bar"><div class="pp-fill" id="ppFill" style="width:0%"></div></div>
+    </div>
+    <div class="pp-stat"><div class="pp-num">10</div><div class="pp-sub">Frameworks</div></div>
+    <button onclick="resetAll()" style="padding:7px 16px;border-radius:9px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);color:var(--dim);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:var(--t)" onmouseover="this.style.color='rgba(245,240,248,0.5)'" onmouseout="this.style.color='var(--dim)'">Reset All</button>
+  </div>
+</div>
+
+<!-- TABLE OF CONTENTS -->
+<div class="toc-section" style="padding-top:0">
+  <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--dim);margin-bottom:14px">Jump to Framework</div>
+  <div class="toc-grid" id="toc"></div>
+</div>
+
+<!-- FRAMEWORKS -->
+<div id="frameworks"></div>
+<div class="fw-section" id="fwContainer"></div>
+
+<!-- DAILY CHECK-IN -->
+<div class="section-div"></div>
+<div class="section-label" id="daily">
+  <div class="eyebrow">Daily Practice</div>
+  <h2>Morning Check-in</h2>
+  <p>Rate yourself on each dimension to calibrate your day. Your responses are saved locally and timestamped.</p>
+</div>
+
+<div class="checkin-grid" id="checkinGrid"></div>
+<div class="checkin-save-row">
+  <button class="big-save" id="checkinSaveBtn" onclick="saveCheckin()">Save Today's Check-in</button>
+  <span class="checkin-date" id="checkinDate"></span>
+</div>
+
+<!-- CLOSING -->
+<div class="section-div"></div>
+<div style="padding:48px 24px 64px;max-width:760px;margin:0 auto;text-align:center">
+  <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.16em;color:rgba(201,168,76,0.5);margin-bottom:16px">A Closing Note</div>
+  <p style="font-family:'Playfair Display',serif;font-size:clamp(16px,2.5vw,22px);font-style:italic;color:rgba(245,240,248,0.65);line-height:1.8;margin-bottom:20px">
+    "The hidden order reveals itself not through seeking certainty, but through embracing the perfect balance of challenge and grace in every experience."
+  </p>
+  <p style="font-size:12px;color:var(--dim);line-height:1.7;margin-bottom:36px">
+    Adapted from Dr. John Demartini's philosophy of universal law and inspired by the lived experience of building something real in a world that doesn't always make sense. For Jennipher and every builder who lives between vision and reality.
+  </p>
+  <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+    <a href="beats-boxes.html" class="btn-gold">Beats & Boxes →</a>
+    <a href="index.html" class="btn-violet">ChromaFlora System</a>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="footer-logo">Co. La'Bright</div>
+  <div class="footer-sub">The Hidden Order Workbook · girlwithstarryeyes@outlook.com · @halcyonminx</div>
+  <div class="footer-links">
+    <a href="index.html" class="footer-link">ChromaFlora</a>
+    <a href="beats-boxes.html" class="footer-link">Beats & Boxes</a>
+    <a href="ai-studio.html" class="footer-link">AI Studio</a>
+    <a href="mailto:girlwithstarryeyes@outlook.com" class="footer-link">Contact</a>
+  </div>
+</footer>
+
+<script>
+/* ══════════════════════════════════════════════════════
+   FRAMEWORK DATA
+══════════════════════════════════════════════════════ */
+const FRAMEWORKS = [
+  {
+    id:'fw1', num:'01',
+    name:'The Law of Balance',
+    tagline:'Every experience contains both support and challenge in equal measure.',
+    color:'var(--f-purple)', colorRgb:'124,58,237', tag:'Foundation',
+    desc:`The universe operates on a principle of perfect equilibrium. What you perceive as purely negative or purely positive is always a <strong>half-vision</strong> of a whole reality. For every challenge you experience, there is an equal hidden support — and vice versa. This framework trains you to see both sides simultaneously.`,
+    principles:[
+      'Every person who has criticized you has also praised you — the balance exists in time or in different people.',
+      'What you judge as your greatest weakness conceals your greatest strength.',
+      'The moment you seek only the positives, you guarantee the negatives will feel larger.',
+      'Gratitude and grief are two eyes of the same perception — both expand vision when used together.',
+      'Balance is not found — it is revealed when you look long enough at both sides.'
+    ],
+    prompt:'Think of a situation that feels one-sided right now (all bad or all good). List 3 hidden benefits of the "bad" side and 3 hidden costs of the "good" side. What emerges?',
+    insight:'When you find the balance, emotional charge dissolves — not because the situation changed, but because your perception of it is now whole.'
+  },
+  {
+    id:'fw2', num:'02',
+    name:'The Values Hierarchy',
+    tagline:'You are always living your highest values — even when you think you are not.',
+    color:'var(--f-gold)', colorRgb:'201,168,76', tag:'Identity',
+    desc:`Your behavior reveals your true values, not your stated intentions. When you consistently make time for something, spend money on it, and think about it without being reminded — <strong>that is a high value</strong>. Misaligned action comes from believing you "should" value something you actually don't. Alignment comes from linking your daily actions to what you genuinely care about.`,
+    principles:[
+      'You always have time for your highest values. "No time" means "lower priority."',
+      'Every person\'s value system is perfectly tailored to their unique history and purpose.',
+      'Low self-worth comes from comparing your path to someone else\'s values.',
+      'Inspiration is sustained action aligned with highest values. Motivation (push) signals misalignment.',
+      'When you delegate lower values to others who love those things, both flourish.'
+    ],
+    prompt:'List your top 5 values as you LIVE them (not as you wish you did). Where does your time, money, and thought actually go each week? Does this surprise you?',
+    insight:'You will never sustainably do what conflicts with your genuine values. The work is not to change yourself — it is to find the link between what you do and what you love.'
+  },
+  {
+    id:'fw3', num:'03',
+    name:'The Perception Mirror',
+    tagline:'What you see in others is a reflection of what lives in you.',
+    color:'var(--f-teal)', colorRgb:'13,148,136', tag:'Relationships',
+    desc:`Every judgment you make about another person — every quality that deeply attracts or repels you — is a projection of a part of yourself you have not yet integrated. The <em>mirror principle</em> means the external world is always showing you the interior landscape. This framework dissolves the energy locked in judgment by owning what you see.`,
+    principles:[
+      'What infuriates you in others, you possess — in a form you have not yet recognized.',
+      'What you adore in others, you embody — in a form you have not yet owned.',
+      'You cannot see in others what does not exist in some form within you.',
+      'Projection ends when ownership begins — and with it, the emotional charge releases.',
+      'Your greatest teacher arrives wearing the face of your greatest irritant.'
+    ],
+    prompt:'Name someone who irritates you. List every specific trait that bothers you. For each one: where, when, and how do you express that same trait — even if in a completely different form?',
+    insight:'Once you own the trait you judged, it can no longer diminish you. The mirror reveals allies where you once saw enemies.'
+  },
+  {
+    id:'fw4', num:'04',
+    name:'The Gratitude Architecture',
+    tagline:'Gratitude is not a feeling — it is a perceptual skill, trained like any other.',
+    color:'var(--f-rose)', colorRgb:'190,24,93', tag:'Energy',
+    desc:`Most people wait for good things to be grateful. The master practitioner builds gratitude architecturally — <strong>a structure that holds experience before judgment classifies it</strong>. This means training yourself to find the gift in the wound, the lesson in the loss, and the order in the chaos before the emotional sting fades naturally.`,
+    principles:[
+      'Gratitude dissolves the past\'s power to produce present pain.',
+      'A blessing not recognized is a gift left unopened.',
+      'The discipline of finding benefit in adversity is the highest form of cognitive training.',
+      'What you are grateful for expands. What you resist persists.',
+      'Gratitude and grief are not opposites — they are both forms of love in motion.'
+    ],
+    prompt:'Identify one painful or frustrating experience from the past month. Write out at least 5 genuine ways it has served you, taught you, or positioned you for something better. Be specific.',
+    insight:'The moment genuine gratitude arrives, the story you told about the event changes — and your future choices change with it.'
+  },
+  {
+    id:'fw5', num:'05',
+    name:'The Mission Statement',
+    tagline:'Without a clear calling, you live inside someone else\'s purpose.',
+    color:'var(--f-blue)', colorRgb:'29,78,216', tag:'Direction',
+    desc:`A mission statement is not a career goal or a vision board. It is the distillation of your <strong>unique contribution to the world</strong> — specific, present-tense, and values-aligned. It describes what you do, for whom, and toward what end. When you live from mission, obstacles feel like refinements rather than roadblocks.`,
+    principles:[
+      'A mission that doesn\'t scare you slightly is not ambitious enough.',
+      'You cannot truly serve others from a place of self-betrayal.',
+      'Your greatest wound, integrated, often becomes your greatest gift to others.',
+      'Mission crystallizes when you stop asking "what do I want" and ask "what is needed that only I can offer?"',
+      'Clarity of mission generates energy. Confusion of mission depletes it.'
+    ],
+    prompt:'Complete this sentence clearly and specifically: "My purpose is to _______ for _______ so that _______." Write 3 versions. Which one feels most resonant and slightly uncomfortable at the same time?',
+    insight:'You do not find your mission by searching inward alone — you find it by noticing where your natural ability meets a genuine need in the world.'
+  },
+  {
+    id:'fw6', num:'06',
+    name:'The Emotional Mastery Method',
+    tagline:'Emotions are signals — not commands. They inform; they do not direct.',
+    color:'var(--f-orange)', colorRgb:'194,65,12', tag:'Mastery',
+    desc:`Uninvestigated emotions become recurring patterns. Every emotional reaction carries a <em>message</em> about a value being either met or threatened. The mastery method doesn't suppress or express emotions blindly — it <strong>inquires into them</strong>, finding what truth they point toward, what value they protect, and what the balance is on the other side.`,
+    principles:[
+      'Elation and depression are both signs of imbalanced perception, not measures of reality.',
+      'The emotion you flee becomes the pattern you repeat.',
+      'You cannot be triggered by what you have already integrated.',
+      'Feeling an emotion fully for 90 seconds discharges it — resisting it recycles it.',
+      'The goal is not to feel good — it is to feel clearly, so you can act wisely.'
+    ],
+    prompt:'Name a recurring emotional pattern (anger when ignored, anxiety when uncertain, sadness when overlooked). What is this emotion protecting? What does it tell you matters? What is the perceived "threat" it signals?',
+    insight:'Every emotion, fully met and investigated, transforms into either gratitude, wisdom, or decisive action. It is never wasted when witnessed without judgment.'
+  },
+  {
+    id:'fw7', num:'07',
+    name:'The Time Sovereignty System',
+    tagline:'Your time is a currency. Most people spend it on what others\' urgency, not their own priority.',
+    color:'var(--f-green)', colorRgb:'21,128,61', tag:'Productivity',
+    desc:`Time sovereignty means <strong>designing your day from your values outward</strong>, rather than filling your highest hours with others' demands. It is not time management — it is time architecture. You architect the week around your highest priority, block the sacred hours, and let the rest fill in the remaining space.`,
+    principles:[
+      'If you do not fill your schedule with your priorities, others will fill it with theirs.',
+      'Deep work requires uninterrupted blocks. Fragmented time produces fragmented results.',
+      'Saying yes to one thing is always saying no to another. Make the trade-off conscious.',
+      'The Pomodoro, the time-block, the power hour — these are tools. The underlying principle is reverence for your finite hours.',
+      'Rest scheduled deliberately produces more than rest stolen from exhaustion.'
+    ],
+    prompt:'Map your last 7 days: where did your time actually go (hours, honestly)? Now design your ideal week from scratch — what would you protect first? What would you stop allowing to steal your priority hours?',
+    insight:'The gap between your current time use and your ideal week is a precise map of the habits and permissions you need to change.'
+  },
+  {
+    id:'fw8', num:'08',
+    name:'The Wealth Consciousness',
+    tagline:'Prosperity is a state of mind expressed through material reality, not the reverse.',
+    color:'var(--f-sky)', colorRgb:'3,105,161', tag:'Abundance',
+    desc:`Money, resources, and material abundance are <strong>feedback systems</strong>, not end goals. They reflect the degree to which your work, creativity, and service is genuinely valued by others in a form they can exchange. Wealth consciousness means releasing scarcity beliefs, owning your capacity to generate value, and designing a life where contribution and compensation grow together.`,
+    principles:[
+      'Scarcity is a story. Abundance is also a story. Reality is neither — it is what you build.',
+      'Undercharging is not humility — it is misaligned self-worth expressed as price.',
+      'Track money like you track health: with attention, not anxiety.',
+      'Every resentment about money conceals a value that has not been honored.',
+      'The most sustainable wealth is built at the intersection of what you love, what you\'re good at, and what others will pay for.'
+    ],
+    prompt:'What is your core money story? (E.g., "money is stressful," "rich people are corrupt," "I always struggle.") Where did that story originate? How would you rewrite it from evidence of your actual capacity?',
+    insight:'Your income ceiling is often a self-worth ceiling in disguise. Changing one without the other is temporary.'
+  },
+  {
+    id:'fw9', num:'09',
+    name:'The Body as Intelligence',
+    tagline:'Your body is not a vessel for your mind — it is a mind of its own.',
+    color:'var(--f-amber)', colorRgb:'180,83,9', tag:'Vitality',
+    desc:`The body holds memory, wisdom, and unprocessed experience long after the rational mind has moved on. <em>Somatic intelligence</em> means learning to read physical signals as information — tension, fatigue, hunger, and pain as a language to be decoded, not suppressed. Movement, breath, and rest are not luxuries — they are <strong>cognitive infrastructure</strong>.`,
+    principles:[
+      'Chronic tension is almost always unexpressed emotion waiting for an outlet.',
+      'The breath is the only autonomic process you can consciously control — and it affects all others.',
+      'Sleep is not recovery from work. It is work of a different kind — integration, repair, consolidation.',
+      'Your gut is a second brain with 100 million neurons. What does it tell you that your head overrides?',
+      'Movement is thought embodied. Physical stagnation produces mental stagnation.'
+    ],
+    prompt:'Scan your body right now. Where do you feel tension, heaviness, tightness, or numbness? What has been happening emotionally in those areas of your life? What would this body sensation say if it could speak?',
+    insight:'The body resolves what the mind rehearses endlessly. Moving through something physically — literally — often dissolves it faster than analysis alone.'
+  },
+  {
+    id:'fw10', num:'10',
+    name:'The Integration Practice',
+    tagline:'Wholeness is not achieved — it is continuously practiced.',
+    color:'var(--f-pink)', colorRgb:'157,23,77', tag:'Synthesis',
+    desc:`Integration is the ongoing practice of <strong>bringing all parts of yourself into coherent expression</strong> — the shadow and the light, the wound and the gift, the visionary and the pragmatist. It is the final framework because it is the container for all others. No framework works in isolation. The Hidden Order emerges when all ten lenses are applied simultaneously — when you can hold the complexity of a life without needing it to be simpler than it is.`,
+    principles:[
+      'You do not integrate by transcending your darkness — you integrate by owning it as wisdom.',
+      'The parts of yourself you have exiled are exactly the resources you most need.',
+      'Every shadow is an unlived potential wearing a frightening face.',
+      'A life of deep integration looks different from a life of performed happiness — and it feels more real.',
+      'The integrated self does not need approval, because it contains within itself both the critic and the admirer.'
+    ],
+    prompt:'Which of the previous nine frameworks is hardest for you to apply? That resistance is showing you your edge. What would your life look like if you fully integrated that one framework into daily practice? What would change first?',
+    insight:'You are already whole. These frameworks are not adding something missing — they are revealing what was always there, waiting beneath the noise.'
+  }
+];
+
+const CHECKIN_QS = [
+  {id:'clarity',   label:'Mental Clarity',     q:'How clear and focused is my mind?'},
+  {id:'energy',    label:'Physical Energy',     q:'How is my body energy right now?'},
+  {id:'alignment', label:'Values Alignment',    q:'Am I acting in line with what I truly value?'},
+  {id:'gratitude', label:'Gratitude',           q:'How much gratitude do I feel right now?'},
+  {id:'mission',   label:'Mission Connection',  q:'How connected do I feel to my purpose?'},
+  {id:'balance',   label:'Perceived Balance',   q:'How balanced does my current situation feel?'},
+  {id:'creativity',label:'Creative Flow',       q:'How open and creative am I feeling?'},
+  {id:'connection',label:'Human Connection',    q:'How connected do I feel to others?'}
+];
+
+/* ══════════════════════════════════════════════════════
+   HERO CANVAS
+══════════════════════════════════════════════════════ */
+(function(){
+  const c = document.getElementById('heroCanvas');
+  const ctx = c.getContext('2d');
+  let W, H, t = 0, nodes = [];
+
+  function resize(){ W = c.width = window.innerWidth; H = c.height = window.innerHeight; }
+  resize(); window.addEventListener('resize', resize);
+
+  // Sacred geometry nodes
+  for(let i = 0; i < 10; i++){
+    const angle = (i/10)*Math.PI*2;
+    nodes.push({ bx:Math.cos(angle)*0.32, by:Math.sin(angle)*0.32, r:i%3===0?2.5:1.5, pulse:i });
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    t += 0.005;
+    const cx = W/2, cy = H/2;
+
+    // Background gradient
+    const grd = ctx.createRadialGradient(cx,cy,0,cx,cy,Math.min(W,H)*0.5);
+    grd.addColorStop(0,'rgba(124,58,237,0.05)');
+    grd.addColorStop(0.5,'rgba(67,56,202,0.02)');
+    grd.addColorStop(1,'transparent');
+    ctx.fillStyle=grd; ctx.fillRect(0,0,W,H);
+
+    // Outer rings
+    for(let r=1;r<5;r++){
+      const rad = (60+r*55)*(Math.min(W,H)/800) + Math.sin(t*0.4+r)*6;
+      ctx.beginPath(); ctx.arc(cx,cy,rad,0,Math.PI*2);
+      ctx.strokeStyle=`rgba(201,168,76,${0.04-r*0.006})`; ctx.lineWidth=1; ctx.stroke();
+    }
+
+    // Rotating merkaba lines
+    const baseR = 120*(Math.min(W,H)/800);
+    for(let tri=0; tri<2; tri++){
+      const offset = tri * Math.PI/3;
+      ctx.beginPath();
+      for(let i=0;i<3;i++){
+        const a = (i/3)*Math.PI*2 + t*0.3*(tri?1:-1) + offset;
+        const x = cx + Math.cos(a)*baseR, y = cy + Math.sin(a)*baseR;
+        i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+      }
+      ctx.closePath();
+      ctx.strokeStyle=`rgba(${tri?'201,168,76':'124,58,237'},0.08)`;
+      ctx.lineWidth=1; ctx.stroke();
+    }
+
+    // Constellation connections
+    const pts = nodes.map(n => ({
+      x: cx + n.bx*Math.min(W,H)*0.42*(0.9+Math.sin(t+n.pulse)*0.1),
+      y: cy + n.by*Math.min(W,H)*0.42*(0.9+Math.cos(t+n.pulse)*0.1)
+    }));
+
+    for(let i=0;i<pts.length;i++){
+      for(let j=i+1;j<pts.length;j++){
+        const d = Math.hypot(pts[i].x-pts[j].x, pts[i].y-pts[j].y);
+        if(d < 220){
+          ctx.beginPath(); ctx.moveTo(pts[i].x,pts[i].y); ctx.lineTo(pts[j].x,pts[j].y);
+          ctx.strokeStyle=`rgba(124,58,237,${0.06*(1-d/220)})`; ctx.lineWidth=.8; ctx.stroke();
+        }
+      }
+      ctx.beginPath(); ctx.arc(pts[i].x,pts[i].y,nodes[i].r*(0.8+Math.sin(t+nodes[i].pulse)*0.2),0,Math.PI*2);
+      ctx.fillStyle=nodes[i].r>2?`rgba(201,168,76,0.6)`:`rgba(124,58,237,0.45)`; ctx.fill();
+    }
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ══════════════════════════════════════════════════════
+   RENDER FRAMEWORKS
+══════════════════════════════════════════════════════ */
+const tocEl = document.getElementById('toc');
+const container = document.getElementById('fwContainer');
+
+function getCompleted(){ return JSON.parse(localStorage.getItem('ho_completed')||'{}'); }
+function getJournal(id){ return localStorage.getItem('ho_journal_'+id)||''; }
+function saveJournal(id,val){ localStorage.setItem('ho_journal_'+id,val); }
+function markComplete(id,val){ const c=getCompleted(); c[id]=val; localStorage.setItem('ho_completed',JSON.stringify(c)); updateProgress(); }
+function resetAll(){ if(!confirm('Reset all framework completions? Journal entries are preserved.')) return; localStorage.removeItem('ho_completed'); updateProgress(); document.querySelectorAll('.fw-card').forEach(c=>c.classList.remove('completed')); document.querySelectorAll('.fw-mark-btn').forEach(b=>{ b.textContent='✦ Mark as Practiced'; b.classList.remove('complete'); b.classList.add('incomplete'); }); }
+
+function updateProgress(){
+  const c = getCompleted();
+  const n = Object.values(c).filter(Boolean).length;
+  document.getElementById('ppCompleted').textContent = n;
+  document.getElementById('ppFill').style.width = (n/10*100)+'%';
+  // update TOC and cards
+  FRAMEWORKS.forEach(fw => {
+    const card = document.getElementById(fw.id);
+    const btn = document.getElementById(fw.id+'_btn');
+    const badge = document.getElementById(fw.id+'_badge');
+    if(c[fw.id]){ card?.classList.add('completed'); btn&&(btn.textContent='✓ Practiced'); btn?.classList.remove('incomplete'); btn?.classList.add('complete'); badge&&(badge.style.display='block'); }
+    else { card?.classList.remove('completed'); btn&&(btn.textContent='✦ Mark as Practiced'); btn?.classList.remove('complete'); btn?.classList.add('incomplete'); badge&&(badge.style.display='none'); }
+  });
+}
+
+FRAMEWORKS.forEach((fw,i) => {
+  // TOC item
+  const tI = document.createElement('a');
+  tI.className='toc-item'; tI.href='#'+fw.id;
+  tI.innerHTML=`<div class="toc-num" style="color:${fw.color}">${fw.num}</div><div class="toc-name">${fw.name}</div><div class="toc-tag" style="background:rgba(${fw.colorRgb},0.12);color:rgba(${fw.colorRgb},0.9)">${fw.tag}</div>`;
+  tocEl.appendChild(tI);
+
+  // Card
+  const card = document.createElement('div');
+  card.className='fw-card'; card.id=fw.id;
+  card.innerHTML=`
+<div class="fw-header" onclick="toggleFw('${fw.id}')">
+  <div class="fw-num-badge" style="background:rgba(${fw.colorRgb},0.12);color:rgba(${fw.colorRgb},0.9)">${fw.num}</div>
+  <div class="fw-title-wrap">
+    <div class="fw-fw" style="color:rgba(${fw.colorRgb},0.7)">Framework ${fw.num} · ${fw.tag}</div>
+    <div class="fw-name" style="color:var(--cream)">${fw.name}</div>
+    <div class="fw-tagline">${fw.tagline}</div>
+  </div>
+  <div class="fw-complete-badge" id="${fw.id}_badge">✓ Practiced</div>
+  <div class="fw-chevron">▼</div>
+</div>
+<div class="fw-body">
+  <div class="fw-body-inner">
+    <div class="fw-desc">${fw.desc}</div>
+    <ul class="principles">${fw.principles.map(p=>`<li>${p}</li>`).join('')}</ul>
+    <div class="insight" style="border-color:rgba(${fw.colorRgb},0.4);background:rgba(${fw.colorRgb},0.05)">
+      <p><strong>Core Insight:</strong> ${fw.insight}</p>
+    </div>
+    <div class="journal-area" style="margin-top:20px">
+      <div class="journal-top">
+        <div class="journal-label">✦ Reflection Journal</div>
+        <div class="journal-actions">
+          <button class="journal-btn save-btn" id="${fw.id}_save" onclick="saveJournalFw('${fw.id}')">Save</button>
+          <button class="journal-btn clear-btn" onclick="clearJournalFw('${fw.id}')">Clear</button>
+        </div>
+      </div>
+      <div class="journal-prompt">${fw.prompt}</div>
+      <textarea class="journal-text" id="${fw.id}_ta" placeholder="Write freely here — your reflections are private and saved to this device only...">${getJournal(fw.id)}</textarea>
+    </div>
+    <div class="fw-completion">
+      <button class="fw-mark-btn incomplete" id="${fw.id}_btn" onclick="toggleComplete('${fw.id}')">✦ Mark as Practiced</button>
+      <span class="fw-share" onclick="copyInsight('${fw.id}')">↗ Copy insight</span>
+    </div>
+  </div>
+</div>`;
+  container.appendChild(card);
+});
+
+function toggleFw(id){
+  const card = document.getElementById(id);
+  card.classList.toggle('open');
+}
+function saveJournalFw(id){
+  const val = document.getElementById(id+'_ta').value;
+  saveJournal(id,val);
+  const btn = document.getElementById(id+'_save');
+  btn.textContent='Saved ✓'; btn.classList.add('saved');
+  setTimeout(()=>{ btn.textContent='Save'; btn.classList.remove('saved'); },1800);
+}
+function clearJournalFw(id){
+  if(!confirm('Clear journal entry for this framework?')) return;
+  document.getElementById(id+'_ta').value='';
+  saveJournal(id,'');
+}
+function toggleComplete(id){
+  const c=getCompleted();
+  markComplete(id,!c[id]);
+}
+function copyInsight(id){
+  const fw = FRAMEWORKS.find(f=>f.id===id);
+  navigator.clipboard.writeText(`${fw.name}: ${fw.insight} — The Hidden Order, Co. La'Bright`);
+  const el = document.querySelector(`#${id} .fw-share`);
+  el.textContent='Copied!'; setTimeout(()=>el.textContent='↗ Copy insight',1600);
+}
+
+updateProgress();
+
+/* ══════════════════════════════════════════════════════
+   DAILY CHECK-IN
+══════════════════════════════════════════════════════ */
+const checkinGrid = document.getElementById('checkinGrid');
+const today = new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+document.getElementById('checkinDate').textContent = today;
+
+CHECKIN_QS.forEach(q => {
+  const saved = localStorage.getItem('ho_ci_'+q.id);
+  const val = saved || '5';
+  const card = document.createElement('div');
+  card.className='checkin-card';
+  card.innerHTML=`
+    <div class="checkin-q">${q.q}</div>
+    <input type="range" class="checkin-slider" id="ci_${q.id}" min="1" max="10" value="${val}" oninput="document.getElementById('cv_${q.id}').textContent=this.value+'/10'">
+    <div class="checkin-val" id="cv_${q.id}">${val}/10</div>
+    <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-top:6px">${q.label}</div>`;
+  checkinGrid.appendChild(card);
+});
+
+function saveCheckin(){
+  CHECKIN_QS.forEach(q => {
+    const val = document.getElementById('ci_'+q.id).value;
+    localStorage.setItem('ho_ci_'+q.id, val);
+  });
+  const btn = document.getElementById('checkinSaveBtn');
+  btn.textContent='Saved for today ✓'; btn.classList.add('saved');
+  setTimeout(()=>{ btn.textContent='Save Today\'s Check-in'; btn.classList.remove('saved'); },2000);
+}
+
+/* ══════════════════════════════════════════════════════
+   READING PROGRESS
+══════════════════════════════════════════════════════ */
+window.addEventListener('scroll', () => {
+  const scrolled = window.scrollY;
+  const total = document.documentElement.scrollHeight - window.innerHeight;
+  document.getElementById('readingProgress').style.width = (scrolled/total*100)+'%';
+});
+</script>
+</body>
+</html>

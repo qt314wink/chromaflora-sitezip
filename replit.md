@@ -6,13 +6,14 @@ A cosmic bioluminescent design system and portfolio — pure HTML/CSS/JS, no ext
 ## Server
 `python3 -m http.server 8000 --directory public`
 
-## Pages (14 total)
+## Pages (16 total)
 | File | Purpose |
 |------|---------|
-| `index.html` | Main landing — 18-tile live gallery, hero, stats |
+| `index.html` | Main landing — 18-tile live gallery (each tile → project page), hero, stats |
 | `projects.html` | Void drift project portfolio with theme-physics cards |
-| `player.html` | ChromaSynth — 7-genre Web Audio procedural synthesizer |
-| `studio.html` | Art Studio — layered canvas + 12 style presets + paint pour + remix |
+| `player.html` | **ChromaSynth v2** — harmonic partial synthesis, 4 visualizer modes (spectrum/oscilloscope/Lissajous/harmonograph), 9 modal scales, spatial audio, tuning systems |
+| `studio.html` | Art Studio — layered canvas + 12 style presets + paint pour + remix + **sacred geometry overlays** (Flower of Life, Metatron's Cube, Phi Grid, Vesica Piscis) + **Spirograph/Harmonograph draw tools** + **physical export panel** |
+| `plotter.html` | **NEW — Plotter Studio** — digital-to-physical: Spirograph/Harmonograph/Lissajous/Sacred Geo pattern gen, SVG export (AxiDraw), GCode (.nc), TurtleToy script, AxiDraw + EvilMadScientist + Canva/Figma integrations |
 | `tokens.html` | Design token browser |
 | `components.html` | Interactive component lab |
 | `blog.html` | Blog — fractal image grid, scroll reveal, search, expandable articles |
@@ -22,7 +23,7 @@ A cosmic bioluminescent design system and portfolio — pure HTML/CSS/JS, no ext
 | `marketplace.html` | Marketplace — asset packs (4), commission board, NFT callout |
 | `challenges.html` | Challenges + leaderboard — 4 challenges, entry system, ranked creators |
 | `admin.html` | Password-protected CMS dashboard |
-| `project.html` | Individual project detail page (URL: `project.html?id=X`) — live canvas, specs, paywall-gated embed code in 5 languages |
+| `project.html` | Individual project detail — live canvas, specs, **embed variant system** (orientation 16:9/9:16/1:1/4:3/21:9 · size 400/600/800/full · color original/dark/light/mono/neon · 7 code formats: HTML/React/Vue/Svelte/Web Component/Next.js/Vanilla JS) |
 | `swirl-generator.html` | Procedural swirl art generator |
 
 ## Core JS
@@ -33,6 +34,44 @@ A cosmic bioluminescent design system and portfolio — pure HTML/CSS/JS, no ext
 | `player-bar.js` | Persistent cross-page music player bar (fixed bottom, all pages except player.html) |
 
 ## Key Feature Systems
+
+### 🎵 ChromaSynth v2 Audio Engine (player.html)
+- **Harmonic synthesis**: Each voice built from up to 8 sine-wave partials (Fourier overtone series)
+- **Partial presets**: Pure Sine, Warm Tape, Sawtooth, Square, Brass, String, Bell, Organ
+- **9 modal scales**: Ionian, Dorian, Phrygian, Lydian, Mixolydian, Aeolian, Locrian, Pentatonic, Whole Tone
+- **Tuning systems**: Equal Temperament, Just Intonation, Pythagorean, Quarter-comma Meantone
+- **Root note selection**: All 12 chromatic root notes, transposable at runtime
+- **Chord types**: Triads, 7th Chords, 9th Chords, Sus2, Sus4
+- **Spatial audio**: StereoPannerNode with adjustable width per voice
+- **4 Visualizer modes**: Spectrum (FFT bars), Oscilloscope (waveform), Lissajous (stereo phase, ChannelSplitter), Harmonograph (damped oscillation math)
+- **Harmonograph parameters**: Freq ratio X/Y, phase offset, damping — render to canvas
+- **FX chain**: Reverb (ConvolverNode), Delay (DelayNode + feedback), Saturation (WaveShaperNode), Bass Boost (BiquadFilter), Hi-Pass, Compressor (DynamicsCompressor)
+- **ADSR**: Attack and Release controls per voice
+
+### ✦ Math & Sacred Geometry Tools (studio.html + plotter.html)
+- **Sacred geometry overlays** (non-destructive canvas layer): Phi Grid (golden ratio), Fibonacci spiral, Flower of Life, Metatron's Cube, Vesica Piscis, Seed of Life
+- **Spirograph drawing tool**: Hypotrochoid curves from R/r/d parameters, click+drag to place on canvas
+- **Harmonograph drawing tool**: Damped pendulum oscillation, freq ratio + phase + damping controls
+- **Plotter preview mode**: Grayscale + high contrast filter for pen plotter visualization
+- **Physical Export** (Pro-locked): SVG (AxiDraw-ready, mm dimensions), GCode (.nc with G0/G1 and Z-lift), TurtleToy script
+
+### ⊡ Plotter Studio (plotter.html)
+- 8 generative pattern types: Spirograph, Harmonograph, Lissajous, Sacred Geo, Penrose Tiling*, Flow Field*, Fractal Fern*, Voronoi* (*Pro)
+- Paper size templates: A4, A3, Letter, Square, Custom mm
+- Machine configs: AxiDraw V3/SE, EggBot, WaterColorBot, Generic GRBL, Jubilee
+- Export: SVG (AxiDraw-ready), GCode (.nc), TurtleToy JavaScript
+- Integrations: AxiDraw, EvilMadScientist, TurtleToy, Canva (soon), Figma (soon)
+
+### 🖼 Embed Variant System (project.html)
+- **Orientation**: 16:9, 9:16 Portrait, 1:1 Square, 4:3, 21:9 Ultrawide
+- **Size presets**: 400px, 600px, 800px, Full Width
+- **Color themes**: Original, Dark (+overlay), Light (+overlay), Mono, Neon+
+- **7 code formats**: HTML, React (hooks), Vue 3 (composition API), Svelte, Web Component (`<chroma-flora>`), Next.js (TypeScript, SSR-safe), Vanilla JS (ESM)
+
+### 🌐 Gallery Tile Navigation (index.html)
+- All 18 gallery tiles are click-navigable to their project pages (`project.html?id=X`)
+- Hover reveals "View Project →" chip with purple accent
+- data-effect mapped to PROJECTS data object
 
 ### ✦ 12 ChromaFlora Art Style Presets (studio.html)
 Unique procedural styles — each renders with pure Canvas 2D:

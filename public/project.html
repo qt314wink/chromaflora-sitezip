@@ -101,6 +101,10 @@
   .cta-btn.primary{background:linear-gradient(135deg,rgba(168,85,247,0.3),rgba(236,72,153,0.2));border-color:rgba(168,85,247,0.35);color:rgba(200,150,255,0.9)}
   .cta-btn.primary:hover{background:linear-gradient(135deg,rgba(168,85,247,0.5),rgba(236,72,153,0.35));color:white}
 
+  /* ── Embed variant buttons ── */
+  .variant-btn{padding:4px 9px;border-radius:7px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:rgba(255,255,255,.45);font-size:10px;font-weight:700;cursor:pointer;font-family:'JetBrains Mono',monospace;transition:var(--t-snap)}
+  .variant-btn:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.75)}
+  .variant-btn.active{background:rgba(168,85,247,.15);border-color:rgba(168,85,247,.35);color:rgba(200,150,255,.9)}
   /* ── Syntax colors ── */
   .kw{color:#c792ea}.str{color:#c3e88d}.fn{color:#82aaff}.cm{color:rgba(255,255,255,0.3)}
   .tag{color:#f07178}.attr{color:#ffcb6b}.val{color:#c3e88d}.num{color:#f78c6c}
@@ -149,12 +153,51 @@
       <div class="embed-title">Embed This Effect</div>
       <div class="pro-badge">PRO</div>
     </div>
+
+    <!-- Variant controls -->
+    <div style="padding:14px 22px 0;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid rgba(255,255,255,.05);padding-bottom:14px">
+      <!-- Orientation -->
+      <div>
+        <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.25);margin-bottom:5px">Orientation</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap" id="orientRow">
+          <button class="variant-btn active" data-orient="16:9" style="--vbc:rgba(168,85,247,.2)">16:9</button>
+          <button class="variant-btn" data-orient="9:16">9:16</button>
+          <button class="variant-btn" data-orient="1:1">1:1</button>
+          <button class="variant-btn" data-orient="4:3">4:3</button>
+          <button class="variant-btn" data-orient="21:9">21:9</button>
+        </div>
+      </div>
+      <!-- Size -->
+      <div>
+        <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.25);margin-bottom:5px">Size</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap" id="sizeRow">
+          <button class="variant-btn" data-size="400">400px</button>
+          <button class="variant-btn active" data-size="600">600px</button>
+          <button class="variant-btn" data-size="800">800px</button>
+          <button class="variant-btn" data-size="100%">Full Width</button>
+        </div>
+      </div>
+      <!-- Color Theme -->
+      <div>
+        <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.25);margin-bottom:5px">Color Theme</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap" id="colorRow">
+          <button class="variant-btn active" data-color="original">Original</button>
+          <button class="variant-btn" data-color="dark">Dark</button>
+          <button class="variant-btn" data-color="light">Light</button>
+          <button class="variant-btn" data-color="mono">Mono</button>
+          <button class="variant-btn" data-color="neon">Neon+</button>
+        </div>
+      </div>
+    </div>
+
     <div class="lang-tabs">
       <button class="lang-tab active" data-lang="html">HTML</button>
       <button class="lang-tab" data-lang="react">React</button>
       <button class="lang-tab" data-lang="vue">Vue</button>
+      <button class="lang-tab" data-lang="svelte">Svelte</button>
+      <button class="lang-tab" data-lang="wc">Web Component</button>
+      <button class="lang-tab" data-lang="next">Next.js</button>
       <button class="lang-tab" data-lang="js">Vanilla JS</button>
-      <button class="lang-tab" data-lang="css">CSS</button>
     </div>
     <div class="code-wrap">
       <div class="code-block" id="codeBlock">
@@ -438,6 +481,80 @@ function getEmbedCode(lang, project, effectId) {
   <span class="attr">mix-blend-mode</span>: <span class="val">overlay</span>;
   <span class="attr">opacity</span>: <span class="num">0.8</span>;
 }`;
+    case 'svelte': return `<span class="cm">&lt;!-- ChromaFlora · ${project} Effect (Svelte) --&gt;</span>
+<span class="tag">&lt;script&gt;</span>
+<span class="kw">import</span> { <span class="fn">onMount</span>, <span class="fn">onDestroy</span> } <span class="kw">from</span> <span class="str">'svelte'</span>;
+<span class="kw">import</span> { <span class="fn">ChromaFlora</span> } <span class="kw">from</span> <span class="str">'chromaflora-sdk'</span>;
+<span class="kw">let</span> canvas; <span class="kw">let</span> cf;
+<span class="fn">onMount</span>(() => {
+  cf = <span class="kw">new</span> <span class="fn">ChromaFlora</span>({
+    canvas, effect: <span class="str">'${effectName}'</span>, interactive: <span class="kw">true</span>
+  });
+  cf.<span class="fn">play</span>();
+});
+<span class="fn">onDestroy</span>(() => cf?.<span class="fn">destroy</span>());
+<span class="tag">&lt;/script&gt;</span>
+<span class="tag">&lt;canvas</span> <span class="attr">bind:this</span>={canvas}
+  <span class="attr">width</span>={<span class="num">800</span>} <span class="attr">height</span>={<span class="num">600</span>} <span class="tag">/&gt;</span>`;
+
+    case 'wc': return `<span class="cm">&lt;!-- ChromaFlora Web Component · ${project} --&gt;</span>
+<span class="cm">&lt;!-- Zero-dependency · Works in any framework or plain HTML --&gt;</span>
+<span class="tag">&lt;script</span>
+  <span class="attr">type</span>=<span class="val">"module"</span>
+  <span class="attr">src</span>=<span class="val">"https://cdn.chromaflora.art/v5/elements.js"</span><span class="tag">&gt;
+&lt;/script&gt;</span>
+
+<span class="tag">&lt;chroma-flora</span>
+  <span class="attr">effect</span>=<span class="val">"${effectName}"</span>
+  <span class="attr">width</span>=<span class="val">"800"</span>
+  <span class="attr">height</span>=<span class="val">"600"</span>
+  <span class="attr">interactive</span>
+  <span class="attr">fps</span>=<span class="val">"60"</span>
+<span class="tag">&gt;&lt;/chroma-flora&gt;</span>
+
+<span class="cm">&lt;!-- Theme override --&gt;</span>
+<span class="tag">&lt;style&gt;</span>
+  chroma-flora {
+    <span class="attr">--cf-accent</span>: <span class="val">#a855f7</span>;
+    <span class="attr">--cf-bg</span>: <span class="val">#04040f</span>;
+  }
+<span class="tag">&lt;/style&gt;</span>`;
+
+    case 'next': return `<span class="cm">// ChromaFlora · ${project} Effect (Next.js)</span>
+<span class="cm">// app/components/ChromaCanvas.tsx</span>
+<span class="str">'use client'</span>;
+
+<span class="kw">import</span> { <span class="fn">useEffect</span>, <span class="fn">useRef</span> } <span class="kw">from</span> <span class="str">'react'</span>;
+<span class="kw">import</span> <span class="kw">type</span> { <span class="fn">FC</span> } <span class="kw">from</span> <span class="str">'react'</span>;
+
+<span class="kw">const</span> <span class="fn">ChromaCanvas</span>: <span class="fn">FC</span> = () => {
+  <span class="kw">const</span> ref = <span class="fn">useRef</span>&lt;<span class="fn">HTMLCanvasElement</span>&gt;(<span class="kw">null</span>);
+
+  <span class="fn">useEffect</span>(() => {
+    <span class="kw">if</span> (!ref.current) <span class="kw">return</span>;
+    <span class="cm">// Dynamic import for SSR safety</span>
+    <span class="fn">import</span>(<span class="str">'chromaflora-sdk'</span>).then(({ <span class="fn">ChromaFlora</span> }) => {
+      <span class="kw">const</span> cf = <span class="kw">new</span> <span class="fn">ChromaFlora</span>({
+        canvas: ref.current!,
+        effect: <span class="str">'${effectName}'</span>
+      });
+      cf.<span class="fn">play</span>();
+      <span class="kw">return</span> () => cf.<span class="fn">destroy</span>();
+    });
+  }, []);
+
+  <span class="kw">return</span> (
+    <span class="tag">&lt;canvas</span>
+      <span class="attr">ref</span>={ref}
+      <span class="attr">width</span>={<span class="num">800</span>}
+      <span class="attr">height</span>={<span class="num">600</span>}
+      <span class="attr">style</span>={{ width: <span class="str">'100%'</span>, height: <span class="str">'auto'</span> }}
+    <span class="tag">/&gt;</span>
+  );
+};
+
+<span class="kw">export default</span> <span class="fn">ChromaCanvas</span>;`;
+
     default: return '';
   }
 }
@@ -515,6 +632,63 @@ document.querySelectorAll('.lang-tab').forEach(tab => {
     tab.classList.add('active');
     currentLang = tab.dataset.lang;
     renderEmbed();
+  });
+});
+
+/* ── Embed variant state ── */
+let embedOrient = '16:9', embedSize = '600', embedColor = 'original';
+
+function updateEmbedVariants() {
+  const [ow, oh] = embedOrient.split(':').map(Number);
+  const w = embedSize === '100%' ? 'width:100%' : `width:${embedSize}px`;
+  const aspectRatio = (oh / ow * 100).toFixed(2);
+  // Re-render with variant info injected into code block label
+  document.getElementById('codeLang').textContent =
+    `${currentLang.toUpperCase()} · ${embedOrient} · ${embedSize} · ${embedColor}`;
+  renderEmbed();
+}
+
+// Orientation buttons
+document.querySelectorAll('[data-orient]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-orient]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    embedOrient = btn.dataset.orient;
+    updateEmbedVariants();
+  });
+});
+
+// Size buttons
+document.querySelectorAll('[data-size]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-size]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    embedSize = btn.dataset.size;
+    updateEmbedVariants();
+  });
+});
+
+// Color theme buttons
+document.querySelectorAll('[data-color]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-color]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    embedColor = btn.dataset.color;
+    // Apply a visual tint to the hero canvas for preview
+    const heroCanvas = document.getElementById('heroCanvas');
+    const overlayColors = {
+      original: null,
+      dark: 'rgba(0,0,0,0.4)',
+      light: 'rgba(255,255,255,0.15)',
+      mono: null,
+      neon: null,
+    };
+    if (heroCanvas && overlayColors[embedColor]) {
+      const ctx = heroCanvas.getContext('2d');
+      ctx.fillStyle = overlayColors[embedColor];
+      ctx.fillRect(0, 0, heroCanvas.width, heroCanvas.height);
+    }
+    updateEmbedVariants();
   });
 });
 

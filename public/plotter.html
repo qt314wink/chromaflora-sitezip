@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plotter Studio — Digital to Physical · ChromaFlora</title>
+<meta name="description" content="ChromaFlora Plotter Studio — export your generative art as GCode, AxiDraw SVG, TurtleToy scripts, and pen-plotter-ready vector paths.">
+<meta name="author" content="Jennipher Troup">
+<meta name="twitter:creator" content="@halcyonminx">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#04040f;--purple:#a855f7;--aqua:#22d3ee;--pink:#ec4899;--orange:#f97316;--green:#10b981;--border:rgba(255,255,255,0.08);--t-snap:0.1s cubic-bezier(0.4,0,0.2,1);--t-spring:0.4s cubic-bezier(0.34,1.56,0.64,1)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:#fff;min-height:100dvh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 60% 40% at 30% 0%,rgba(34,211,238,.1) 0%,transparent 60%),radial-gradient(ellipse 40% 30% at 80% 100%,rgba(168,85,247,.07) 0%,transparent 60%)}
+.header{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:60px;background:rgba(4,4,15,.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.logo{font-weight:800;font-size:16px}.logo a{color:white;text-decoration:none}
+.nav{display:flex;gap:4px}
+.nav-link{padding:6px 14px;border-radius:8px;font-size:13px;font-weight:500;color:rgba(255,255,255,.6);text-decoration:none;transition:var(--t-snap)}
+.nav-link:hover,.nav-link.active{color:white;background:rgba(255,255,255,.07)}
+
+/* ── Layout ── */
+.page{max-width:1200px;margin:0 auto;padding:40px 24px 100px;position:relative;z-index:1}
+.page-title{font-size:clamp(30px,5vw,52px);font-weight:900;letter-spacing:-2px;margin-bottom:8px;background:linear-gradient(135deg,#22d3ee,#a855f7,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.page-sub{font-size:14px;color:rgba(255,255,255,.4);margin-bottom:40px;font-family:'JetBrains Mono',monospace}
+
+.studio-layout{display:grid;grid-template-columns:1fr 360px;gap:24px;align-items:start}
+@media(max-width:900px){.studio-layout{grid-template-columns:1fr}}
+
+/* ── Canvas area ── */
+.canvas-wrap{border-radius:18px;overflow:hidden;background:#000;border:1px solid rgba(255,255,255,.07);position:relative}
+.canvas-toolbar{display:flex;gap:6px;padding:12px;background:rgba(0,0,0,.6);border-bottom:1px solid rgba(255,255,255,.06);flex-wrap:wrap}
+.ctool{padding:6px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:rgba(255,255,255,.6);font-size:12px;font-weight:700;cursor:pointer;transition:var(--t-snap);font-family:'JetBrains Mono',monospace}
+.ctool:hover,.ctool.active{background:rgba(34,211,238,.12);border-color:rgba(34,211,238,.3);color:rgba(34,211,238,.9)}
+.ctool.destructive:hover{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.3);color:rgba(239,68,68,.9)}
+#plotterCanvas{display:block;width:100%;cursor:crosshair}
+.canvas-info{padding:8px 14px;background:rgba(0,0,0,.4);font-size:10px;font-family:'JetBrains Mono',monospace;color:rgba(255,255,255,.3);display:flex;gap:16px}
+
+/* ── Right panel ── */
+.panel{display:flex;flex-direction:column;gap:16px}
+.panel-card{border-radius:16px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.025);padding:20px}
+.panel-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.3);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.pro-tag{padding:2px 8px;border-radius:99px;font-size:9px;font-weight:800;background:linear-gradient(135deg,rgba(249,115,22,.25),rgba(168,85,247,.25));border:1px solid rgba(249,115,22,.3);color:rgba(249,200,100,.9)}
+.free-tag{padding:2px 8px;border-radius:99px;font-size:9px;font-weight:800;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.25);color:rgba(16,185,129,.9)}
+
+.cf-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.3);margin-bottom:4px}
+.cf-select{width:100%;padding:9px 12px;border-radius:9px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:white;font-size:12px;font-family:inherit;outline:none;transition:border-color var(--t-snap);margin-bottom:10px}
+.cf-select:focus{border-color:rgba(34,211,238,.4)}
+.cf-select option{background:#0d0822}
+.cf-input{width:100%;padding:9px 12px;border-radius:9px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:white;font-size:12px;font-family:'JetBrains Mono',monospace;outline:none;transition:border-color var(--t-snap);margin-bottom:10px}
+.cf-input:focus{border-color:rgba(34,211,238,.4)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.export-btn{width:100%;padding:11px;border-radius:11px;border:none;cursor:pointer;font-size:13px;font-weight:700;font-family:inherit;transition:var(--t-spring);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px}
+.export-btn.svg{background:linear-gradient(135deg,rgba(34,211,238,.25),rgba(99,102,241,.2));border:1px solid rgba(34,211,238,.3);color:rgba(34,211,238,.9)}
+.export-btn.gcode{background:linear-gradient(135deg,rgba(249,115,22,.25),rgba(168,85,247,.2));border:1px solid rgba(249,115,22,.3);color:rgba(249,200,100,.9)}
+.export-btn.turtle{background:linear-gradient(135deg,rgba(16,185,129,.2),rgba(34,211,238,.2));border:1px solid rgba(16,185,129,.25);color:rgba(16,185,129,.9)}
+.export-btn.canva{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.5)}
+.export-btn:hover{transform:translateY(-2px);filter:brightness(1.2)}
+.export-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;filter:none}
+
+/* ── Pattern generator ── */
+.pattern-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.pattern-card{border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,.06);cursor:pointer;transition:var(--t-snap);position:relative}
+.pattern-card:hover,.pattern-card.active{border-color:rgba(34,211,238,.4);box-shadow:0 0 12px rgba(34,211,238,.15)}
+.pattern-card canvas{display:block;width:100%;height:60px}
+.pattern-label{font-size:9px;text-align:center;padding:4px 2px;color:rgba(255,255,255,.5);font-weight:700;background:rgba(0,0,0,.5)}
+.pattern-free{position:absolute;top:4px;right:4px;padding:2px 5px;border-radius:4px;font-size:8px;font-weight:800;background:rgba(16,185,129,.8);color:white}
+.pattern-pro{position:absolute;top:4px;right:4px;padding:2px 5px;border-radius:4px;font-size:8px;font-weight:800;background:rgba(249,115,22,.8);color:white}
+
+/* ── Code output ── */
+.code-output{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:14px;font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(255,255,255,.55);max-height:180px;overflow-y:auto;white-space:pre;overflow-x:auto;margin-bottom:8px;position:relative;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.1) transparent}
+.copy-code-btn{position:absolute;top:8px;right:8px;padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:rgba(255,255,255,.5);font-size:9px;font-weight:700;cursor:pointer;font-family:'JetBrains Mono',monospace;transition:var(--t-snap)}
+.copy-code-btn:hover{background:rgba(255,255,255,.1);color:white}
+
+/* ── Integration cards ── */
+.integrations{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.int-card{border-radius:12px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.02);padding:14px;transition:var(--t-snap);cursor:pointer}
+.int-card:hover{border-color:rgba(34,211,238,.2);background:rgba(34,211,238,.04)}
+.int-icon{font-size:22px;margin-bottom:6px}
+.int-name{font-size:12px;font-weight:800;margin-bottom:2px}
+.int-desc{font-size:10px;color:rgba(255,255,255,.35);line-height:1.4}
+.int-tag{font-size:9px;font-weight:800;margin-top:6px;display:inline-block;padding:2px 7px;border-radius:99px}
+
+/* ── Slider ── */
+.slider-group{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.slider-label{display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,.4)}
+.slider-label span{font-family:'JetBrains Mono',monospace;color:var(--aqua)}
+input[type=range]{width:100%;height:3px;border-radius:3px;cursor:pointer;-webkit-appearance:none;appearance:none;background:linear-gradient(to right,var(--aqua) var(--pct,50%),rgba(255,255,255,.1) var(--pct,50%))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:white;box-shadow:0 2px 6px rgba(0,0,0,.5)}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="logo"><a href="index.html">ChromaFlora</a></div>
+  <nav class="nav">
+    <a href="index.html" class="nav-link">System</a>
+    <a href="studio.html" class="nav-link">Studio</a>
+    <a href="projects.html" class="nav-link">Projects</a>
+    <a href="challenges.html" class="nav-link">Challenges</a>
+    <a href="marketplace.html" class="nav-link active">Market</a>
+  </nav>
+</header>
+
+<div class="page">
+  <div class="page-title">Plotter Studio</div>
+  <div class="page-sub">digital → physical · SVG · GCode · TurtleToy · AxiDraw · Canva · Figma</div>
+
+  <div class="studio-layout">
+    <!-- Canvas -->
+    <div>
+      <div class="canvas-wrap">
+        <div class="canvas-toolbar">
+          <button class="ctool active" data-draw="spirograph">Spirograph</button>
+          <button class="ctool" data-draw="harmonograph">Harmonograph</button>
+          <button class="ctool" data-draw="lissajous">Lissajous</button>
+          <button class="ctool" data-draw="sacred">Sacred Geo</button>
+          <button class="ctool" data-draw="tiling">Tiling</button>
+          <button class="ctool" data-draw="flow">Flow Field</button>
+          <button class="ctool" data-draw="fractal">Fractal Fern</button>
+          <button class="ctool" data-draw="voronoi">Voronoi</button>
+          <div style="flex:1"></div>
+          <button class="ctool destructive" id="clearBtn">Clear</button>
+        </div>
+        <canvas id="plotterCanvas" width="800" height="600"></canvas>
+        <div class="canvas-info">
+          <span id="canvasInfo">800 × 600px · <span id="pathCount">0</span> paths · <span id="ptCount">0</span> pts</span>
+          <span id="plotterStatus">Ready</span>
+        </div>
+      </div>
+
+      <!-- Code output -->
+      <div style="margin-top:16px;position:relative">
+        <div class="code-output" id="codeOutput">; Click Export to generate output code</div>
+        <button class="copy-code-btn" id="copyCodeBtn">Copy</button>
+      </div>
+    </div>
+
+    <!-- Right panel -->
+    <div class="panel">
+
+      <!-- Pattern Generator -->
+      <div class="panel-card">
+        <div class="panel-title">Generative Patterns <span class="free-tag">FREE</span></div>
+        <div class="pattern-grid" id="patternGrid"></div>
+        <div class="slider-group">
+          <div class="slider-label">Complexity <span id="complexVal">50</span></div>
+          <input type="range" id="sldComplex" min="5" max="100" value="50" style="--pct:47%">
+        </div>
+        <div class="slider-group">
+          <div class="slider-label">Line Weight <span id="weightVal">0.4mm</span></div>
+          <input type="range" id="sldWeight" min="1" max="30" value="8" style="--pct:25%">
+        </div>
+        <div class="slider-group">
+          <div class="slider-label">Stroke Density <span id="densVal">60%</span></div>
+          <input type="range" id="sldDens" min="1" max="100" value="60" style="--pct:59%">
+        </div>
+        <button class="export-btn svg" id="genPattern">▶ Generate to Canvas</button>
+      </div>
+
+      <!-- Paper & Machine Config -->
+      <div class="panel-card">
+        <div class="panel-title">Paper &amp; Machine</div>
+        <div>
+          <div class="cf-label">Paper Size</div>
+          <select class="cf-select" id="selPaper">
+            <option value="a4">A4 · 210×297mm</option>
+            <option value="a3">A3 · 297×420mm</option>
+            <option value="letter">Letter · 215.9×279.4mm</option>
+            <option value="square">Square · 200×200mm</option>
+            <option value="custom">Custom…</option>
+          </select>
+        </div>
+        <div class="row2">
+          <div>
+            <div class="cf-label">Width (mm)</div>
+            <input class="cf-input" id="paperW" type="number" value="210">
+          </div>
+          <div>
+            <div class="cf-label">Height (mm)</div>
+            <input class="cf-input" id="paperH" type="number" value="297">
+          </div>
+        </div>
+        <div>
+          <div class="cf-label">Plotter / Machine</div>
+          <select class="cf-select" id="selMachine">
+            <option>AxiDraw V3</option>
+            <option>AxiDraw SE/A3</option>
+            <option>EggBot 2.0</option>
+            <option>WaterColorBot</option>
+            <option>Generic GRBL</option>
+            <option>Jubilee Toolchanger</option>
+            <option>Custom CNC</option>
+          </select>
+        </div>
+        <div class="row2">
+          <div>
+            <div class="cf-label">Speed (mm/s)</div>
+            <input class="cf-input" id="speedVal" type="number" value="40">
+          </div>
+          <div>
+            <div class="cf-label">Z Lift (mm)</div>
+            <input class="cf-input" id="zLift" type="number" value="2.5">
+          </div>
+        </div>
+      </div>
+
+      <!-- Export targets -->
+      <div class="panel-card">
+        <div class="panel-title">Export <span class="pro-tag">PRO for all</span></div>
+        <button class="export-btn svg" id="btnSVG">⬡ Export SVG (AxiDraw-ready)</button>
+        <button class="export-btn gcode" id="btnGCode">⚙ Export GCode (.nc)</button>
+        <button class="export-btn turtle" id="btnTurtle">🐢 Export TurtleToy Script</button>
+        <button class="export-btn canva" id="btnCanva" disabled>◈ Canva Integration (coming)</button>
+        <button class="export-btn canva" id="btnFigma" disabled>◈ Figma Plugin (coming)</button>
+        <div style="font-size:10px;color:rgba(255,255,255,.2);margin-top:8px;line-height:1.6;font-family:'JetBrains Mono',monospace">
+          SVG is free · GCode + TurtleToy require Pro<br>
+          Canva/Figma integrations launching Q3 2025
+        </div>
+      </div>
+
+      <!-- Integrations -->
+      <div class="panel-card">
+        <div class="panel-title">Physical Workflow Integrations</div>
+        <div class="integrations">
+          <div class="int-card" onclick="window.open('https://turtletoy.net','_blank')">
+            <div class="int-icon">🐢</div>
+            <div class="int-name">TurtleToy</div>
+            <div class="int-desc">Run & share turtle graphics scripts in browser</div>
+            <div class="int-tag" style="background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.2);color:#10b981">Open Platform</div>
+          </div>
+          <div class="int-card" onclick="window.open('https://www.evilmadscientist.com/axidraw','_blank')">
+            <div class="int-icon">✒</div>
+            <div class="int-name">AxiDraw</div>
+            <div class="int-desc">Evil Mad Scientist pen plotter — SVG direct</div>
+            <div class="int-tag" style="background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.15);color:#22d3ee">Hardware</div>
+          </div>
+          <div class="int-card" onclick="window.open('https://www.evilmadscientist.com','_blank')">
+            <div class="int-icon">⭕</div>
+            <div class="int-name">EggBot</div>
+            <div class="int-desc">Spherical surface plotter — wrapping coordinates</div>
+            <div class="int-tag" style="background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.15);color:#a855f7">Hardware</div>
+          </div>
+          <div class="int-card">
+            <div class="int-icon">◈</div>
+            <div class="int-name">Canva</div>
+            <div class="int-desc">Import ChromaFlora SVGs into Canva designs</div>
+            <div class="int-tag" style="background:rgba(249,115,22,.08);border:1px solid rgba(249,115,22,.15);color:#f97316">Soon</div>
+          </div>
+          <div class="int-card">
+            <div class="int-icon">⬡</div>
+            <div class="int-name">Figma</div>
+            <div class="int-desc">Live ChromaFlora component library for Figma</div>
+            <div class="int-tag" style="background:rgba(249,115,22,.08);border:1px solid rgba(249,115,22,.15);color:#f97316">Soon</div>
+          </div>
+          <div class="int-card" onclick="window.open('mailto:girlwithstarryeyes@outlook.com?subject=ChromaFlora Plotter Integration','_blank')">
+            <div class="int-icon">✉</div>
+            <div class="int-name">Custom</div>
+            <div class="int-desc">Need a specific plotter or DXF/HPGL output?</div>
+            <div class="int-tag" style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.15);color:#10b981">Request</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="player-bar.js"></script>
+<script>
+/* ══════════════════════════════════════════════
+   ChromaFlora Plotter Studio
+   Generative line art → SVG / GCode / TurtleToy
+══════════════════════════════════════════════ */
+const canvas = document.getElementById('plotterCanvas');
+const ctx = canvas.getContext('2d');
+let W = canvas.width, H = canvas.height;
+let currentDraw = 'spirograph';
+let paths = []; // [{pts:[{x,y},...], pen:1}]
+let currentPath = null;
+let complexity = 50, density = 0.6, lineWeight = 0.4;
+
+// Resize canvas to fill
+function resizeCanvas() {
+  const wrap = canvas.parentElement;
+  const dpr = window.devicePixelRatio||1;
+  const displayW = wrap.offsetWidth;
+  const displayH = Math.round(displayW * 0.75);
+  canvas.style.width = displayW + 'px';
+  canvas.style.height = displayH + 'px';
+  canvas.width = displayW * dpr;
+  canvas.height = displayH * dpr;
+  ctx.scale(dpr, dpr);
+  W = displayW; H = displayH;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+// Background grid
+function drawGrid() {
+  ctx.fillStyle = '#06040f';
+  ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = 'rgba(34,211,238,0.04)';
+  ctx.lineWidth = 0.5;
+  const step = 20;
+  for (let x = 0; x < W; x += step) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+  for (let y = 0; y < H; y += step) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+}
+drawGrid();
+
+/* ── Pattern definitions ── */
+const PATTERNS = {
+  spirograph: {
+    name: 'Spirograph', free: true,
+    generate(cx, cy, complexity, density) {
+      const paths = [];
+      const count = Math.ceil(complexity / 10);
+      for (let c = 0; c < count; c++) {
+        const R = 60 + c * 25;
+        const r = R * (0.3 + c * 0.07);
+        const d = r * (0.8 + Math.random() * 0.4);
+        const pts = [];
+        const steps = Math.ceil(density * 600);
+        for (let i = 0; i <= steps; i++) {
+          const t = (i / steps) * Math.PI * 2 * Math.ceil(R / gcd(Math.round(R), Math.round(r)));
+          const x = cx + (R - r) * Math.cos(t) + d * Math.cos((R - r) / r * t);
+          const y = cy + (R - r) * Math.sin(t) - d * Math.sin((R - r) / r * t);
+          pts.push({ x, y });
+        }
+        paths.push({ pts, hue: (c * 35 + 180) % 360 });
+      }
+      return paths;
+    }
+  },
+  harmonograph: {
+    name: 'Harmonograph', free: true,
+    generate(cx, cy, complexity, density) {
+      const ratios = [[3,2],[5,4],[7,4],[5,3],[8,5]];
+      const paths = [];
+      const [rx, ry] = ratios[Math.floor(complexity/20) % ratios.length];
+      const amp = Math.min(W, H) * 0.38;
+      const pts = [], steps = Math.ceil(density * 4000), damp = 0.0015;
+      for (let i = 0; i < steps; i++) {
+        const t = i * 0.05;
+        const d = Math.exp(-damp * t * 200);
+        if (d < 0.005) break;
+        pts.push({
+          x: cx + Math.sin(rx * t + Math.PI / 4) * amp * d,
+          y: cy + Math.sin(ry * t) * amp * d
+        });
+      }
+      paths.push({ pts, hue: 200 });
+      return paths;
+    }
+  },
+  lissajous: {
+    name: 'Lissajous', free: true,
+    generate(cx, cy, complexity, density) {
+      const paths = [];
+      const layers = Math.ceil(complexity / 25);
+      for (let l = 0; l < layers; l++) {
+        const a = 1 + l, b = 2 + l * 0.5, phase = (l / layers) * Math.PI;
+        const amp = Math.min(W, H) * 0.42 * (1 - l * 0.1);
+        const pts = [], steps = Math.ceil(density * 800);
+        for (let i = 0; i <= steps; i++) {
+          const t = (i / steps) * Math.PI * 2;
+          pts.push({ x: cx + Math.sin(a * t + phase) * amp, y: cy + Math.sin(b * t) * amp });
+        }
+        paths.push({ pts, hue: (l * 60 + 160) % 360 });
+      }
+      return paths;
+    }
+  },
+  sacred: {
+    name: 'Sacred Geo', free: true,
+    generate(cx, cy, complexity, density) {
+      const paths = [];
+      const r = Math.min(W, H) * 0.12;
+      // Flower of Life
+      const centers = [[cx, cy]];
+      for (let a = 0; a < 6; a++) {
+        centers.push([cx + r * Math.cos(a * Math.PI / 3), cy + r * Math.sin(a * Math.PI / 3)]);
+      }
+      if (complexity > 30) for (let a = 0; a < 12; a++) {
+        centers.push([cx + 2 * r * Math.cos(a * Math.PI / 6), cy + 2 * r * Math.sin(a * Math.PI / 6)]);
+      }
+      centers.forEach(([ccx, ccy]) => {
+        const pts = [], steps = 72;
+        for (let i = 0; i <= steps; i++) {
+          const t = (i / steps) * Math.PI * 2;
+          pts.push({ x: ccx + r * Math.cos(t), y: ccy + r * Math.sin(t) });
+        }
+        paths.push({ pts, hue: 260 });
+      });
+      // Metatron inner lines
+      if (complexity > 50) {
+        for (let i = 0; i < centers.length; i++) for (let j = i + 1; j < centers.length; j++) {
+          const dx = centers[j][0] - centers[i][0], dy = centers[j][1] - centers[i][1];
+          const d = Math.sqrt(dx * dx + dy * dy);
+          if (d < r * 2.2) paths.push({ pts: [{ x: centers[i][0], y: centers[i][1] }, { x: centers[j][0], y: centers[j][1] }], hue: 300 });
+        }
+      }
+      return paths;
+    }
+  },
+  tiling: {
+    name: 'Penrose Tiling', free: false,
+    generate(cx, cy, complexity, density) {
+      const paths = [], r = 30 + complexity * 0.8;
+      for (let row = -5; row < 6; row++) for (let col = -5; col < 6; col++) {
+        const x = cx + col * r * 1.5, y = cy + row * r * 1.73 + (col % 2 ? r * 0.87 : 0);
+        if (Math.abs(x - cx) > W * 0.55 || Math.abs(y - cy) > H * 0.55) continue;
+        const pts = [];
+        for (let i = 0; i <= 6; i++) { const t = (i / 6) * Math.PI * 2 + Math.PI / 6; pts.push({ x: x + r * Math.cos(t), y: y + r * Math.sin(t) }); }
+        paths.push({ pts, hue: ((row * col * 13 + 200) % 360 + 360) % 360 });
+      }
+      return paths;
+    }
+  },
+  flow: {
+    name: 'Flow Field', free: false,
+    generate(cx, cy, complexity, density) {
+      const paths = [], lines = Math.ceil(complexity * 1.5);
+      for (let l = 0; l < lines; l++) {
+        const pts = [];
+        let x = (Math.random() - 0.5) * W + cx, y = (Math.random() - 0.5) * H + cy;
+        for (let s = 0; s < Math.ceil(density * 120); s++) {
+          const nx = x / W, ny = y / H;
+          const angle = (Math.sin(nx * 4 + Math.PI) * Math.cos(ny * 3)) * Math.PI * 2;
+          x += Math.cos(angle) * 3; y += Math.sin(angle) * 3;
+          if (x < 0 || x > W || y < 0 || y > H) break;
+          pts.push({ x, y });
+        }
+        if (pts.length > 5) paths.push({ pts, hue: (l * 7 + 180) % 360 });
+      }
+      return paths;
+    }
+  },
+  fractal: {
+    name: 'Fractal Fern', free: false,
+    generate(cx, cy, complexity, density) {
+      const paths = []; const pts = [];
+      let x = 0, y = 0;
+      const n = Math.ceil(density * 3000 + complexity * 20);
+      for (let i = 0; i < n; i++) {
+        const r = Math.random();
+        let nx, ny;
+        if (r < 0.01) { nx = 0; ny = 0.16 * y; }
+        else if (r < 0.86) { nx = 0.85 * x + 0.04 * y; ny = -0.04 * x + 0.85 * y + 1.6; }
+        else if (r < 0.93) { nx = 0.2 * x - 0.26 * y; ny = 0.23 * x + 0.22 * y + 1.6; }
+        else { nx = -0.15 * x + 0.28 * y; ny = 0.26 * x + 0.24 * y + 0.44; }
+        x = nx; y = ny;
+        pts.push({ x: cx + x * W * 0.055, y: cy + (H * 0.48 - y * H * 0.075) });
+      }
+      // Group into path chunks
+      for (let i = 0; i < pts.length; i += 80) paths.push({ pts: pts.slice(i, i + 80), hue: 120 + Math.random() * 40 });
+      return paths;
+    }
+  },
+  voronoi: {
+    name: 'Voronoi', free: false,
+    generate(cx, cy, complexity, density) {
+      const paths = []; const seeds = [];
+      const count = Math.ceil(complexity * 0.4 + 8);
+      for (let i = 0; i < count; i++) seeds.push({ x: (Math.random() - 0.5) * W * 0.85 + cx, y: (Math.random() - 0.5) * H * 0.85 + cy, hue: Math.random() * 360 });
+      // Draw connecting lines (simplified voronoi edges)
+      seeds.forEach((s, i) => seeds.forEach((s2, j) => {
+        if (j <= i) return;
+        const d = Math.hypot(s.x - s2.x, s.y - s2.y);
+        if (d < W * 0.25) paths.push({ pts: [{ x: s.x, y: s.y }, { x: s2.x, y: s2.y }], hue: s.hue });
+      }));
+      return paths;
+    }
+  }
+};
+
+function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+
+/* ── Build pattern thumbnails ── */
+function buildPatternThumbs() {
+  const grid = document.getElementById('patternGrid');
+  grid.innerHTML = '';
+  Object.entries(PATTERNS).forEach(([key, pat]) => {
+    const card = document.createElement('div');
+    card.className = 'pattern-card' + (key === currentDraw ? ' active' : '');
+    const thumb = document.createElement('canvas');
+    thumb.width = 120; thumb.height = 60;
+    const tc = thumb.getContext('2d');
+    tc.fillStyle = '#060410'; tc.fillRect(0, 0, 120, 60);
+    try {
+      const pts = pat.generate(60, 30, 40, 0.5);
+      pts.slice(0, 5).forEach(p => {
+        tc.beginPath(); tc.moveTo(p.pts[0].x, p.pts[0].y);
+        p.pts.forEach(pt => tc.lineTo(pt.x, pt.y));
+        tc.strokeStyle = `hsla(${p.hue},80%,65%,.7)`; tc.lineWidth = 0.8; tc.stroke();
+      });
+    } catch(e) {}
+    const label = document.createElement('div');
+    label.className = 'pattern-label';
+    label.textContent = pat.name;
+    const tag = document.createElement('div');
+    tag.className = pat.free ? 'pattern-free' : 'pattern-pro';
+    tag.textContent = pat.free ? 'FREE' : 'PRO';
+    card.appendChild(thumb); card.appendChild(label); card.appendChild(tag);
+    card.addEventListener('click', () => {
+      if (!pat.free) { showProHint(); return; }
+      currentDraw = key;
+      document.querySelectorAll('.pattern-card').forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      document.querySelectorAll('.ctool').forEach(t => t.classList.toggle('active', t.dataset.draw === key));
+    });
+    grid.appendChild(card);
+  });
+}
+
+function showProHint() {
+  alert('This pattern is a Pro feature. Email girlwithstarryeyes@outlook.com for early access.');
+}
+
+/* ── Draw to canvas ── */
+function generateAndDraw() {
+  const pat = PATTERNS[currentDraw];
+  if (!pat) return;
+  const generated = pat.generate(W / 2, H / 2, complexity, density);
+  paths = generated;
+  redrawCanvas();
+  updateInfo();
+}
+
+function redrawCanvas() {
+  ctx.clearRect(0, 0, W, H);
+  drawGrid();
+  paths.forEach((path, pi) => {
+    if (!path.pts || path.pts.length < 2) return;
+    ctx.beginPath();
+    ctx.moveTo(path.pts[0].x, path.pts[0].y);
+    path.pts.forEach(pt => ctx.lineTo(pt.x, pt.y));
+    ctx.strokeStyle = `hsla(${path.hue || 200},80%,65%,0.7)`;
+    ctx.lineWidth = lineWeight * 2.5;
+    ctx.stroke();
+  });
+}
+
+function updateInfo() {
+  const totalPts = paths.reduce((s, p) => s + p.pts.length, 0);
+  document.getElementById('pathCount').textContent = paths.length;
+  document.getElementById('ptCount').textContent = totalPts;
+}
+
+/* ── SVG Export ── */
+function exportSVG() {
+  const pw = parseFloat(document.getElementById('paperW').value) || 210;
+  const ph = parseFloat(document.getElementById('paperH').value) || 297;
+  const speed = parseFloat(document.getElementById('speedVal').value) || 40;
+  let svg = `<?xml version="1.0" encoding="UTF-8"?>\n`;
+  svg += `<!-- ChromaFlora Plotter Export · AxiDraw-compatible SVG -->\n`;
+  svg += `<!-- Machine: ${document.getElementById('selMachine').value} -->\n`;
+  svg += `<!-- Paper: ${pw}×${ph}mm · Speed: ${speed}mm/s -->\n`;
+  svg += `<!-- Generated by ChromaFlora · @halcyonminx -->\n`;
+  svg += `<svg xmlns="http://www.w3.org/2000/svg" width="${pw}mm" height="${ph}mm" viewBox="0 0 ${W} ${H}">\n`;
+  svg += `<g id="chromaflora" stroke="#000000" stroke-width="${lineWeight}" fill="none">\n`;
+  paths.forEach((path, i) => {
+    if (!path.pts || path.pts.length < 2) return;
+    const d = path.pts.map((pt, j) => `${j === 0 ? 'M' : 'L'}${pt.x.toFixed(2)},${pt.y.toFixed(2)}`).join(' ');
+    svg += `  <path id="cf_path_${i}" d="${d}"/>\n`;
+  });
+  svg += `</g>\n</svg>`;
+  document.getElementById('codeOutput').textContent = svg;
+  downloadText(svg, 'chromaflora-plotter.svg', 'image/svg+xml');
+  document.getElementById('plotterStatus').textContent = `SVG exported · ${paths.length} paths`;
+}
+
+/* ── GCode Export ── */
+function exportGCode() {
+  const pw = parseFloat(document.getElementById('paperW').value) || 210;
+  const ph = parseFloat(document.getElementById('paperH').value) || 297;
+  const speed = parseFloat(document.getElementById('speedVal').value) || 40;
+  const zLift = parseFloat(document.getElementById('zLift').value) || 2.5;
+  const scaleX = pw / W, scaleY = ph / H;
+  let gc = `; ChromaFlora GCode Export\n; Machine: ${document.getElementById('selMachine').value}\n`;
+  gc += `; Paper: ${pw}×${ph}mm · Feed: ${speed*60}mm/min\n`;
+  gc += `; Generated by ChromaFlora · @halcyonminx\n\n`;
+  gc += `G21 ; mm mode\nG90 ; absolute positioning\nG0 Z${zLift} ; pen up\nG0 X0 Y0 ; home\n\n`;
+  paths.forEach((path, i) => {
+    if (!path.pts || path.pts.length < 2) return;
+    gc += `; Path ${i + 1}\n`;
+    const first = path.pts[0];
+    gc += `G0 X${(first.x * scaleX).toFixed(3)} Y${(first.y * scaleY).toFixed(3)} ; rapid to start\n`;
+    gc += `G0 Z0 ; pen down\n`;
+    path.pts.slice(1).forEach(pt => {
+      gc += `G1 X${(pt.x * scaleX).toFixed(3)} Y${(pt.y * scaleY).toFixed(3)} F${speed * 60}\n`;
+    });
+    gc += `G0 Z${zLift} ; pen up\n\n`;
+  });
+  gc += `G0 X0 Y0 ; return home\nM2 ; program end`;
+  document.getElementById('codeOutput').textContent = gc;
+  downloadText(gc, 'chromaflora.nc', 'text/plain');
+  document.getElementById('plotterStatus').textContent = `GCode exported · ${paths.length} moves`;
+}
+
+/* ── TurtleToy Export ── */
+function exportTurtle() {
+  const scaleX = 200 / W, scaleY = 200 / H;
+  let code = `// ChromaFlora TurtleToy Export\n// Paste at: https://turtletoy.net/\n// @halcyonminx\n\n`;
+  code += `const turtle = new Turtle();\n\n`;
+  paths.forEach((path, i) => {
+    if (!path.pts || path.pts.length < 2) return;
+    code += `// Path ${i + 1}\n`;
+    const first = path.pts[0];
+    code += `turtle.penup();\nturtle.goto(${((first.x - W / 2) * scaleX).toFixed(2)}, ${((first.y - H / 2) * scaleY).toFixed(2)});\nturtle.pendown();\n`;
+    path.pts.slice(1).forEach(pt => {
+      code += `turtle.goto(${((pt.x - W / 2) * scaleX).toFixed(2)}, ${((pt.y - H / 2) * scaleY).toFixed(2)});\n`;
+    });
+    code += '\n';
+  });
+  document.getElementById('codeOutput').textContent = code;
+  downloadText(code, 'chromaflora-turtletoy.js', 'text/javascript');
+  document.getElementById('plotterStatus').textContent = `TurtleToy exported · ${paths.length} paths`;
+}
+
+function downloadText(content, filename, mime) {
+  const blob = new Blob([content], { type: mime });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+}
+
+/* ── Toolbar tool switching ── */
+document.querySelectorAll('.ctool[data-draw]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const key = btn.dataset.draw;
+    if (PATTERNS[key] && !PATTERNS[key].free) { showProHint(); return; }
+    currentDraw = key;
+    document.querySelectorAll('.ctool[data-draw]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.pattern-card').forEach((c, i) => {
+      c.classList.toggle('active', Object.keys(PATTERNS)[i] === key);
+    });
+  });
+});
+
+document.getElementById('clearBtn').addEventListener('click', () => { paths = []; ctx.clearRect(0, 0, W, H); drawGrid(); updateInfo(); document.getElementById('codeOutput').textContent = '; Canvas cleared'; });
+document.getElementById('genPattern').addEventListener('click', generateAndDraw);
+document.getElementById('btnSVG').addEventListener('click', exportSVG);
+document.getElementById('btnGCode').addEventListener('click', () => {
+  if (!confirm('GCode export is a Pro feature. Export preview version for free?')) return;
+  exportGCode();
+});
+document.getElementById('btnTurtle').addEventListener('click', () => {
+  if (!confirm('TurtleToy export is a Pro feature. Export preview version for free?')) return;
+  exportTurtle();
+});
+
+/* ── Sliders ── */
+function trackSl(el) { el.style.setProperty('--pct', ((+el.value - +el.min) / (+el.max - +el.min) * 100) + '%'); }
+document.getElementById('sldComplex').addEventListener('input', function() { complexity = +this.value; document.getElementById('complexVal').textContent = this.value; trackSl(this); });
+document.getElementById('sldWeight').addEventListener('input', function() { lineWeight = this.value / 20; document.getElementById('weightVal').textContent = (this.value / 20).toFixed(2) + 'mm'; trackSl(this); });
+document.getElementById('sldDens').addEventListener('input', function() { density = this.value / 100; document.getElementById('densVal').textContent = this.value + '%'; trackSl(this); });
+document.getElementById('selPaper').addEventListener('change', function() {
+  const map = { a4: [210, 297], a3: [297, 420], letter: [215.9, 279.4], square: [200, 200] };
+  if (map[this.value]) { document.getElementById('paperW').value = map[this.value][0]; document.getElementById('paperH').value = map[this.value][1]; }
+});
+document.getElementById('copyCodeBtn').addEventListener('click', () => {
+  navigator.clipboard.writeText(document.getElementById('codeOutput').textContent).then(() => {
+    const btn = document.getElementById('copyCodeBtn'); btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+});
+
+// Init
+buildPatternThumbs();
+generateAndDraw();
+</script>
+</body>
+</html>

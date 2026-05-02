@@ -300,6 +300,11 @@
     <div class="tool-sep"></div>
     <button class="tool-btn"        data-tool="select"  title="Select">⬚</button>
     <button class="tool-btn"        id="btnImport" title="Import Image">📁</button>
+    <div class="tool-sep"></div>
+    <button class="tool-btn" data-tool="sacred"      title="Sacred Geometry Overlay (G)">✡</button>
+    <button class="tool-btn" data-tool="spirograph"  title="Spirograph Draw (R)">⊕</button>
+    <button class="tool-btn" data-tool="harmonograph"title="Harmonograph Draw (H)">⋈</button>
+    <button class="tool-btn" data-tool="plotter"     title="Plotter Preview Mode">⊡</button>
   </div>
 
   <!-- Canvas area -->
@@ -416,6 +421,92 @@
           <div class="mini-slider-label">Surface Tension <span id="tensVal">50%</span></div>
           <input type="range" class="mini" id="tension" min="0" max="100" value="50">
         </div>
+      </div>
+    </div>
+
+    <!-- Math & Geometry Tools -->
+    <div class="panel-section" id="mathGeoSection">
+      <div class="panel-title" style="display:flex;align-items:center;justify-content:space-between">
+        <span>✦ Math &amp; Geometry</span>
+        <span style="font-size:9px;color:rgba(34,211,238,0.7);font-weight:700">SACRED</span>
+      </div>
+      <!-- Sacred Geometry Overlays -->
+      <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:.06em">Overlay Guides</div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px" id="geoOverlayBtns">
+        <button class="pour-btn" data-geo="none">Off</button>
+        <button class="pour-btn" data-geo="phi-grid">Phi Grid</button>
+        <button class="pour-btn" data-geo="fibonacci">Fibonacci</button>
+        <button class="pour-btn" data-geo="flower">Flower of Life</button>
+        <button class="pour-btn" data-geo="metatron">Metatron</button>
+        <button class="pour-btn" data-geo="vesica">Vesica Piscis</button>
+        <button class="pour-btn" data-geo="seed">Seed of Life</button>
+      </div>
+      <!-- Spirograph params (show when spirograph tool active) -->
+      <div id="spirographParams" style="display:none">
+        <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:.06em">Spirograph</div>
+        <div class="mini-slider">
+          <div class="mini-slider-label">Outer R <span id="sgRVal">60</span></div>
+          <input type="range" class="mini" id="sgR" min="20" max="120" value="60">
+        </div>
+        <div class="mini-slider">
+          <div class="mini-slider-label">Inner r <span id="sgrVal">35</span></div>
+          <input type="range" class="mini" id="sgr" min="5" max="100" value="35">
+        </div>
+        <div class="mini-slider">
+          <div class="mini-slider-label">Trace d <span id="sgdVal">40</span></div>
+          <input type="range" class="mini" id="sgd" min="5" max="150" value="40">
+        </div>
+        <div class="mini-slider">
+          <div class="mini-slider-label">Loops <span id="sgLoopsVal">12</span></div>
+          <input type="range" class="mini" id="sgLoops" min="1" max="40" value="12">
+        </div>
+        <button class="pour-btn" id="btnDrawSpirograph" style="width:100%;margin-top:6px">Draw Spirograph to Canvas</button>
+      </div>
+      <!-- Harmonograph params (show when harmonograph tool active) -->
+      <div id="harmonographParams" style="display:none">
+        <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:.06em">Harmonograph</div>
+        <div class="mini-slider">
+          <div class="mini-slider-label">Freq X <span id="hgXVal">3</span></div>
+          <input type="range" class="mini" id="studioHgX" min="1" max="8" step="0.5" value="3">
+        </div>
+        <div class="mini-slider">
+          <div class="mini-slider-label">Freq Y <span id="hgYVal">2</span></div>
+          <input type="range" class="mini" id="studioHgY" min="1" max="8" step="0.5" value="2">
+        </div>
+        <div class="mini-slider">
+          <div class="mini-slider-label">Phase <span id="hgPhVal">0.79</span></div>
+          <input type="range" class="mini" id="studioHgPh" min="0" max="628" value="157">
+        </div>
+        <div class="mini-slider">
+          <div class="mini-slider-label">Damping <span id="hgDmVal">0.001</span></div>
+          <input type="range" class="mini" id="studioHgDm" min="1" max="100" value="15">
+        </div>
+        <button class="pour-btn" id="btnDrawHarmonograph" style="width:100%;margin-top:6px">Draw Harmonograph to Canvas</button>
+      </div>
+    </div>
+
+    <!-- Physical Export -->
+    <div class="panel-section">
+      <div class="panel-title" style="display:flex;align-items:center;justify-content:space-between">
+        <span>⊡ Physical Export</span>
+        <a href="plotter.html" style="font-size:9px;color:rgba(34,211,238,0.7);font-weight:700;text-decoration:none">Plotter Studio →</a>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <button class="pour-btn feature-locked" style="position:relative;padding:7px;font-size:11px;font-weight:700;width:100%">
+          ⬡ Export SVG (AxiDraw)
+          <div class="lock-overlay" style="border-radius:6px"><div class="lock-icon" style="font-size:12px">🔒</div><div class="lock-text">PRO</div><button class="lock-btn" onclick="showProModal(event)">Upgrade</button></div>
+        </button>
+        <button class="pour-btn feature-locked" id="btnExportGCode" style="position:relative;padding:7px;font-size:11px;font-weight:700;width:100%">
+          ⚙ Export GCode (.nc)
+          <div class="lock-overlay" style="border-radius:6px"><div class="lock-icon" style="font-size:12px">🔒</div><div class="lock-text">PRO</div><button class="lock-btn" onclick="showProModal(event)">Upgrade</button></div>
+        </button>
+        <button class="pour-btn feature-locked" id="btnExportTurtle" style="position:relative;padding:7px;font-size:11px;font-weight:700;width:100%">
+          🐢 TurtleToy Script
+          <div class="lock-overlay" style="border-radius:6px"><div class="lock-icon" style="font-size:12px">🔒</div><div class="lock-text">PRO</div><button class="lock-btn" onclick="showProModal(event)">Upgrade</button></div>
+        </button>
+      </div>
+      <div style="margin-top:10px;font-size:10px;color:rgba(255,255,255,.2);line-height:1.5">
+        Pen plotters: AxiDraw, EvilMadScientist, WaterColorBot, custom GRBL
       </div>
     </div>
   </div>
@@ -1802,6 +1893,345 @@ function shareArtwork() {
   }
 }
 window.shareArtwork = shareArtwork;
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+   CHROMAFLORA STUDIO — Math, Sacred Geometry & Plotter Engine
+   Jennipher Troup · @halcyonminx
+══════════════════════════════════════════════════════════════════ -->
+<style>
+#geoOverlay{position:absolute;inset:0;pointer-events:none;z-index:2;opacity:.55}
+.plotter-mode #studioCanvas{filter:grayscale(1) contrast(2)}
+</style>
+<script>
+(function MathGeoEngine() {
+
+/* ── Sacred Geometry Overlay ── */
+const canvasArea = document.getElementById('canvasArea');
+let overlayCanvas = null;
+let activeGeo = 'none';
+
+function getOrCreateOverlay() {
+  if (overlayCanvas) return overlayCanvas;
+  overlayCanvas = document.createElement('canvas');
+  overlayCanvas.id = 'geoOverlay';
+  const sc = document.getElementById('studioCanvas');
+  overlayCanvas.width = sc.width; overlayCanvas.height = sc.height;
+  overlayCanvas.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:2;opacity:.55;width:100%;height:100%';
+  canvasArea.appendChild(overlayCanvas);
+  return overlayCanvas;
+}
+
+function clearOverlay() {
+  if (!overlayCanvas) return;
+  const ctx = overlayCanvas.getContext('2d');
+  ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+}
+
+function drawGeoOverlay(type) {
+  const oc = getOrCreateOverlay();
+  const ctx = oc.getContext('2d');
+  const W = oc.width, H = oc.height;
+  ctx.clearRect(0, 0, W, H);
+  if (type === 'none') return;
+
+  ctx.strokeStyle = 'rgba(255,215,255,0.5)';
+  ctx.lineWidth = 0.8;
+  const cx = W / 2, cy = H / 2;
+
+  switch (type) {
+    case 'phi-grid': {
+      // Golden ratio grid lines
+      const phi = 1.61803398875;
+      ctx.strokeStyle = 'rgba(255,200,100,.45)';
+      ctx.lineWidth = 0.6;
+      const rx = W / (phi + 1);
+      const ry = H / (phi + 1);
+      [rx, W - rx].forEach(x => { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); });
+      [ry, H - ry].forEach(y => { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); });
+      // Phi spiral
+      ctx.strokeStyle = 'rgba(255,200,100,.3)';
+      ctx.lineWidth = 0.8;
+      ctx.beginPath();
+      for (let t = 0; t < Math.PI * 8; t += 0.05) {
+        const r = 20 * Math.pow(phi, t / (Math.PI * 2));
+        const x = cx + r * Math.cos(t), y = cy + r * Math.sin(t);
+        t < 0.05 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        if (r > Math.max(W, H)) break;
+      }
+      ctx.stroke();
+      break;
+    }
+    case 'fibonacci': {
+      ctx.strokeStyle = 'rgba(200,255,200,.45)';
+      let a = 0, b = 1, x0 = cx, y0 = cy, dir = 0;
+      for (let i = 0; i < 12; i++) {
+        const r = b * Math.min(W, H) * 0.05;
+        ctx.strokeRect(x0 - (dir === 0 || dir === 1 ? r : 0), y0 - (dir === 1 || dir === 2 ? r : 0),
+          dir === 0 || dir === 2 ? r : r, dir === 1 || dir === 3 ? r : r);
+        // Arc
+        ctx.beginPath();
+        const offsets = [[0, r, 0, 0], [-r, 0, 0, r], [0, -r, r, 0], [r, 0, 0, -r]];
+        const o = offsets[dir % 4];
+        const angles = [[0, Math.PI / 2], [Math.PI / 2, Math.PI], [Math.PI, Math.PI * 1.5], [Math.PI * 1.5, Math.PI * 2]];
+        ctx.arc(x0 + o[0], y0 + o[1], r, angles[dir % 4][0], angles[dir % 4][1]);
+        ctx.stroke();
+        const [c] = [a + b]; a = b; b = c;
+        dir = (dir + 1) % 4;
+      }
+      break;
+    }
+    case 'flower': {
+      // Flower of Life
+      const r = Math.min(W, H) * 0.08;
+      const centers = [[cx, cy]];
+      for (let a = 0; a < 6; a++) {
+        centers.push([cx + r * Math.cos(a * Math.PI / 3), cy + r * Math.sin(a * Math.PI / 3)]);
+        centers.push([cx + 2 * r * Math.cos(a * Math.PI / 3), cy + 2 * r * Math.sin(a * Math.PI / 3)]);
+      }
+      for (let a = 0; a < 6; a++) {
+        centers.push([cx + 2 * r * Math.cos((a + 0.5) * Math.PI / 3), cy + 2 * r * Math.sin((a + 0.5) * Math.PI / 3)]);
+      }
+      ctx.strokeStyle = 'rgba(168,85,247,.5)'; ctx.lineWidth = 0.7;
+      centers.forEach(([ccx, ccy]) => {
+        ctx.beginPath(); ctx.arc(ccx, ccy, r, 0, Math.PI * 2); ctx.stroke();
+      });
+      // Outer boundary circle
+      ctx.strokeStyle = 'rgba(168,85,247,.2)'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(cx, cy, r * 3, 0, Math.PI * 2); ctx.stroke();
+      break;
+    }
+    case 'metatron': {
+      const r = Math.min(W, H) * 0.09;
+      const pts = [[cx, cy]];
+      for (let a = 0; a < 6; a++) pts.push([cx + r * 2 * Math.cos(a * Math.PI / 3), cy + r * 2 * Math.sin(a * Math.PI / 3)]);
+      for (let a = 0; a < 6; a++) pts.push([cx + r * 4 * Math.cos(a * Math.PI / 3), cy + r * 4 * Math.sin(a * Math.PI / 3)]);
+      // Draw all connecting lines
+      ctx.strokeStyle = 'rgba(34,211,238,.35)'; ctx.lineWidth = 0.5;
+      for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) {
+        ctx.beginPath(); ctx.moveTo(pts[i][0], pts[i][1]); ctx.lineTo(pts[j][0], pts[j][1]); ctx.stroke();
+      }
+      // Circles on each node
+      ctx.strokeStyle = 'rgba(168,85,247,.4)'; ctx.lineWidth = 0.7;
+      pts.forEach(([px, py]) => { ctx.beginPath(); ctx.arc(px, py, r, 0, Math.PI * 2); ctx.stroke(); });
+      break;
+    }
+    case 'vesica': {
+      const r = Math.min(W, H) * 0.2;
+      ctx.strokeStyle = 'rgba(236,72,153,.5)'; ctx.lineWidth = 0.9;
+      ctx.beginPath(); ctx.arc(cx - r / 2, cy, r, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx + r / 2, cy, r, 0, Math.PI * 2); ctx.stroke();
+      // Vesica overlap highlight
+      ctx.strokeStyle = 'rgba(255,200,255,.3)';
+      ctx.beginPath(); ctx.arc(cx - r / 2, cy, r, -Math.PI / 3, Math.PI / 3); ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx + r / 2, cy, r, Math.PI * 2 / 3, Math.PI * 4 / 3); ctx.stroke();
+      break;
+    }
+    case 'seed': {
+      const r = Math.min(W, H) * 0.09;
+      ctx.strokeStyle = 'rgba(249,115,22,.45)'; ctx.lineWidth = 0.7;
+      [[cx, cy], ...Array.from({length: 6}, (_, a) => [cx + r * Math.cos(a * Math.PI / 3), cy + r * Math.sin(a * Math.PI / 3)])].forEach(([px, py]) => {
+        ctx.beginPath(); ctx.arc(px, py, r, 0, Math.PI * 2); ctx.stroke();
+      });
+      break;
+    }
+  }
+}
+
+// Bind overlay buttons
+document.querySelectorAll('[data-geo]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-geo]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeGeo = btn.dataset.geo;
+    drawGeoOverlay(activeGeo);
+  });
+});
+
+/* ── Show/hide math tool panels ── */
+document.querySelectorAll('.tool-btn[data-tool]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tool = btn.dataset.tool;
+    document.getElementById('spirographParams').style.display = tool === 'spirograph' ? 'block' : 'none';
+    document.getElementById('harmonographParams').style.display = tool === 'harmonograph' ? 'block' : 'none';
+    // Plotter preview mode
+    document.querySelector('.studio')?.classList.toggle('plotter-mode', tool === 'plotter');
+  });
+});
+
+/* ── Spirograph draw to canvas ── */
+function drawSpirograph() {
+  const sc = document.getElementById('studioCanvas');
+  const ctx = sc.getContext('2d');
+  const W = sc.width, H = sc.height;
+  const R = parseInt(document.getElementById('sgR').value);
+  const r = parseInt(document.getElementById('sgr').value);
+  const d = parseInt(document.getElementById('sgd').value);
+  const loops = parseInt(document.getElementById('sgLoops').value);
+  const totalAngle = Math.PI * 2 * Math.ceil(R / Math.max(1, gcd(Math.abs(Math.round(R)), Math.abs(Math.round(r)))));
+  const steps = loops * 200;
+  const cx = W / 2, cy = H / 2;
+  const hue = (Date.now() * 0.01) % 360;
+  ctx.save();
+  ctx.strokeStyle = `hsla(${hue},85%,65%,0.7)`;
+  ctx.lineWidth = 1.5;
+  ctx.globalCompositeOperation = 'screen';
+  ctx.beginPath();
+  for (let i = 0; i <= steps; i++) {
+    const t = (i / steps) * totalAngle * loops;
+    const x = cx + (R - r) * Math.cos(t) + d * Math.cos((R - r) / r * t);
+    const y = cy + (R - r) * Math.sin(t) - d * Math.sin((R - r) / r * t);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+  ctx.restore();
+  // Composite
+  if (window.studioComposite) window.studioComposite();
+}
+
+function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+
+document.getElementById('btnDrawSpirograph')?.addEventListener('click', drawSpirograph);
+
+// Slider label updates for spirograph
+['sgR', 'sgr', 'sgd', 'sgLoops'].forEach(id => {
+  const el = document.getElementById(id);
+  const valId = id + 'Val';
+  if (el) el.addEventListener('input', () => {
+    document.getElementById(valId).textContent = el.value;
+    const pct = ((+el.value - +el.min) / (+el.max - +el.min)) * 100;
+    el.style.setProperty('--pct', pct + '%');
+  });
+});
+
+/* ── Harmonograph draw to canvas ── */
+function drawHarmonograph() {
+  const sc = document.getElementById('studioCanvas');
+  const ctx = sc.getContext('2d');
+  const W = sc.width, H = sc.height;
+  const freqX = parseFloat(document.getElementById('studioHgX').value);
+  const freqY = parseFloat(document.getElementById('studioHgY').value);
+  const phase = parseFloat(document.getElementById('studioHgPh').value) / 100;
+  const damping = parseFloat(document.getElementById('studioHgDm').value) / 10000;
+  const amp = Math.min(W, H) * 0.42;
+  const cx = W / 2, cy = H / 2;
+  const hue = (Date.now() * 0.01) % 360;
+  ctx.save();
+  ctx.strokeStyle = `hsla(${hue},85%,65%,0.6)`;
+  ctx.lineWidth = 0.9;
+  ctx.globalCompositeOperation = 'screen';
+  ctx.beginPath();
+  let firstPt = true;
+  for (let i = 0; i < 12000; i++) {
+    const t = i * 0.04;
+    const d = Math.exp(-damping * t * 200);
+    if (d < 0.005) break;
+    const x = cx + Math.sin(freqX * t + phase) * amp * d;
+    const y = cy + Math.sin(freqY * t) * amp * d;
+    if (firstPt) { ctx.moveTo(x, y); firstPt = false; } else { ctx.lineTo(x, y); }
+  }
+  ctx.stroke(); ctx.restore();
+  if (window.studioComposite) window.studioComposite();
+}
+
+document.getElementById('btnDrawHarmonograph')?.addEventListener('click', drawHarmonograph);
+
+// Slider label updates for harmonograph
+[['studioHgX', 'hgXVal'], ['studioHgY', 'hgYVal'], ['studioHgPh', 'hgPhVal', v => (v/100).toFixed(2)], ['studioHgDm', 'hgDmVal', v => (v/10000).toFixed(4)]].forEach(([id, valId, fmt]) => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', () => {
+    document.getElementById(valId).textContent = fmt ? fmt(el.value) : el.value;
+    const pct = ((+el.value - +el.min) / (+el.max - +el.min)) * 100;
+    el.style.setProperty('--pct', pct + '%');
+  });
+});
+
+/* ── Spirograph tool: click+drag on canvas draws at cursor ── */
+let isSpiroDrawing = false;
+let spiroOrigin = null;
+const sc = document.getElementById('studioCanvas');
+
+sc.addEventListener('mousedown', function(e) {
+  const activeTool = document.querySelector('.tool-btn.active')?.dataset.tool;
+  if (activeTool !== 'spirograph' && activeTool !== 'harmonograph') return;
+  isSpiroDrawing = true;
+  const rect = sc.getBoundingClientRect();
+  const scaleX = sc.width / rect.width;
+  const scaleY = sc.height / rect.height;
+  spiroOrigin = { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY };
+}, { capture: true });
+
+sc.addEventListener('mouseup', function(e) {
+  if (!isSpiroDrawing) return;
+  isSpiroDrawing = false;
+  const activeTool = document.querySelector('.tool-btn.active')?.dataset.tool;
+  const rect = sc.getBoundingClientRect();
+  const scaleX = sc.width / rect.width;
+  const scaleY = sc.height / rect.height;
+  const endPt = { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY };
+  if (activeTool === 'spirograph') drawSpirographAt(spiroOrigin.x, spiroOrigin.y);
+  if (activeTool === 'harmonograph') drawHarmonographAt(spiroOrigin.x, spiroOrigin.y);
+}, { capture: true });
+
+function drawSpirographAt(cx, cy) {
+  const ctx = sc.getContext('2d');
+  const R = parseInt(document.getElementById('sgR').value);
+  const r = parseInt(document.getElementById('sgr').value);
+  const d = parseInt(document.getElementById('sgd').value);
+  const loops = parseInt(document.getElementById('sgLoops').value);
+  const totalAngle = Math.PI * 2 * Math.ceil(R / Math.max(1, gcd(Math.abs(Math.round(R)), Math.abs(Math.round(r)))));
+  const steps = loops * 200;
+  const hue = (Date.now() * 0.01) % 360;
+  ctx.save(); ctx.strokeStyle = `hsla(${hue},85%,65%,0.7)`; ctx.lineWidth = 1.2;
+  ctx.globalCompositeOperation = 'screen';
+  ctx.beginPath();
+  for (let i = 0; i <= steps; i++) {
+    const t = (i / steps) * totalAngle * loops;
+    const x = cx + (R - r) * Math.cos(t) + d * Math.cos((R - r) / r * t);
+    const y = cy + (R - r) * Math.sin(t) - d * Math.sin((R - r) / r * t);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.stroke(); ctx.restore();
+}
+
+function drawHarmonographAt(cx, cy) {
+  const ctx = sc.getContext('2d');
+  const freqX = parseFloat(document.getElementById('studioHgX').value);
+  const freqY = parseFloat(document.getElementById('studioHgY').value);
+  const phase = parseFloat(document.getElementById('studioHgPh').value) / 100;
+  const damping = parseFloat(document.getElementById('studioHgDm').value) / 10000;
+  const amp = 120;
+  const hue = (Date.now() * 0.01) % 360;
+  ctx.save(); ctx.strokeStyle = `hsla(${hue},85%,65%,0.65)`; ctx.lineWidth = 0.9;
+  ctx.globalCompositeOperation = 'screen';
+  ctx.beginPath(); let firstPt = true;
+  for (let i = 0; i < 8000; i++) {
+    const t = i * 0.04;
+    const d = Math.exp(-damping * t * 200);
+    if (d < 0.005) break;
+    const x = cx + Math.sin(freqX * t + phase) * amp * d;
+    const y = cy + Math.sin(freqY * t) * amp * d;
+    if (firstPt) { ctx.moveTo(x, y); firstPt = false; } else ctx.lineTo(x, y);
+  }
+  ctx.stroke(); ctx.restore();
+}
+
+/* ── Expose composite function for math tools ── */
+window.studioComposite = function() {
+  // Trigger a re-composite of all layers if the studio engine exposes it
+  const studio = window.studio || window.StudioEngine;
+  if (studio && studio.composite) studio.composite();
+};
+
+// Add keyboard shortcuts for new tools
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'g' || e.key === 'G') document.querySelector('[data-tool="sacred"]')?.click();
+  if (e.key === 'r' || e.key === 'R') document.querySelector('[data-tool="spirograph"]')?.click();
+  if (e.key === 'h') document.querySelector('[data-tool="harmonograph"]')?.click();
+});
+
+})();
 </script>
 <script src="player-bar.js"></script>
 </body>

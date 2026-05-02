@@ -2109,6 +2109,53 @@ document.addEventListener('DOMContentLoaded', function() {
     { label: 'Settings', icon: '⚙', onClick: () => settingsDrawer.open() },
     { label: 'Export Kit', icon: '✦', onClick: () => exportModal.open() },
   ]);
+
+  /* ── Gallery tile click-to-project navigation ── */
+  (function bindTileNav() {
+    // Map data-effect → project page ID
+    const effectToProject = {
+      'abstract-flows': 'chromaflora',
+      'liquid-neon': 'liquid-neon',
+      'plasma-drift': 'plasma-drift',
+      'mandala': 'mandala',
+      'cosmic-tide': 'cosmic-tide',
+      'floral-glow': 'floral-glow',
+      'deep-space': 'deep-space',
+      'liquid-mercury': 'liquid-mercury',
+      'quilling': 'quilling',
+      'tectonic-shift': 'tectonic-shift',
+      'ripple-field': 'ripple-field',
+      'bubble': 'bubble',
+      'crystallize': 'crystallize',
+      'liquify': 'liquify',
+      'paper-layer': 'paper-layer',
+      'coloring-book': 'coloring-book',
+      'acid-pour': 'acid-pour',
+      'chromaflora': 'chromaflora',
+    };
+
+    document.querySelectorAll('.gallery-tile[data-effect]').forEach(tile => {
+      tile.style.cursor = 'pointer';
+      // Inject "View Project →" chip into label on hover
+      const label = tile.querySelector('.gallery-tile-label');
+      if (label) {
+        const chip = document.createElement('div');
+        chip.style.cssText = 'display:inline-flex;align-items:center;gap:4px;margin-top:6px;padding:4px 10px;border-radius:7px;font-size:10px;font-weight:800;background:rgba(168,85,247,.25);border:1px solid rgba(168,85,247,.4);color:rgba(200,150,255,.9);opacity:0;transition:opacity .2s;letter-spacing:.04em';
+        chip.textContent = 'View Project →';
+        label.appendChild(chip);
+        tile.addEventListener('mouseenter', () => chip.style.opacity = '1');
+        tile.addEventListener('mouseleave', () => chip.style.opacity = '0');
+      }
+
+      tile.addEventListener('click', function(e) {
+        // Don't navigate if clicking on an interactive canvas element
+        if (e.target.tagName === 'CANVAS' && e.target.style.pointerEvents === 'none') return;
+        const effect = this.dataset.effect;
+        const projectId = effectToProject[effect] || effect;
+        window.location.href = `project.html?id=${projectId}`;
+      });
+    });
+  })();
 });
 </script>
 <script src="drawer.js"></script>

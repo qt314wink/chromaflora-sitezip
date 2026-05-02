@@ -62,6 +62,7 @@
   /* ── Code block ── */
   .code-wrap{position:relative;margin:12px}
   .code-block{background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:18px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.7;color:rgba(255,255,255,0.65);max-height:220px;overflow:hidden;position:relative;white-space:pre;overflow-x:auto}
+  .code-block.locked #codeContent{filter:blur(5px);user-select:none;pointer-events:none}
   .code-lang{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.2);margin-bottom:8px}
 
   /* ── Paywall overlay ── */
@@ -208,7 +209,7 @@
       <div class="paywall" id="paywallOverlay">
         <div class="paywall-inner">
           <div class="paywall-lock">🔒</div>
-          <div class="paywall-msg">Embed code is a Pro feature.<br>Unlock for all 14 effects in all 5 languages.</div>
+          <div class="paywall-msg">Embed code is a Pro feature.<br>Unlock for all 18 effects in 7 frameworks.</div>
           <button class="paywall-btn" onclick="openProModal()">✦ Unlock Pro Access</button>
         </div>
       </div>
@@ -237,6 +238,21 @@
       <div class="modal-feat"><div class="feat-icon">📞</div>Creator support</div>
     </div>
     <button class="modal-cta" onclick="window.location.href='mailto:girlwithstarryeyes@outlook.com?subject=ChromaFlora%20Pro%20Access'">Get Pro Access →</button>
+    <div style="margin:18px 0 10px;position:relative">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <div style="flex:1;height:1px;background:rgba(255,255,255,0.07)"></div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.2);font-weight:700">OR ENTER ACCESS CODE</div>
+        <div style="flex:1;height:1px;background:rgba(255,255,255,0.07)"></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="proCodeInput" placeholder="Enter code e.g. CHROMAPRO2026"
+          style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:9px;padding:9px 13px;font-size:12px;color:white;font-family:'JetBrains Mono',monospace;outline:none"
+          onkeydown="if(event.key==='Enter')verifyProCode()">
+        <button onclick="verifyProCode()"
+          style="padding:9px 16px;border-radius:9px;border:none;background:rgba(168,85,247,0.25);color:rgba(200,150,255,0.9);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">Verify</button>
+      </div>
+      <div id="codeMsg" style="font-size:11px;margin-top:8px;color:rgba(255,255,255,0.3)"></div>
+    </div>
     <div class="modal-footer-text">girlwithstarryeyes@outlook.com · @halcyonminx</div>
   </div>
 </div>
@@ -567,7 +583,7 @@ const projectId = params.get('id') || 'chromaflora';
 const project = PROJECTS[projectId] || PROJECTS['chromaflora'];
 
 let currentLang = 'html';
-let isProUnlocked = false; // Always false in free tier — will check upgrade
+let isProUnlocked = localStorage.getItem('cf_pro_unlocked') === '1';
 
 function init() {
   document.title = `${project.title} · ChromaFlora`;
@@ -618,12 +634,47 @@ function init() {
 }
 
 function renderEmbed() {
-  document.getElementById('codeContent').innerHTML = getEmbedCode(currentLang, project.title, project.effect);
+  document.getElementById('codeContent').innerHTML = isProUnlocked
+    ? getEmbedCode(currentLang, project.title, project.effect)
+    : getLockedPlaceholder(currentLang);
   document.getElementById('codeLang').textContent = currentLang.toUpperCase();
-  // Paywall always shows unless Pro
   document.getElementById('paywallOverlay').style.display = isProUnlocked ? 'none' : '';
   document.getElementById('copyBtn').style.display = isProUnlocked ? '' : 'none';
+  document.getElementById('codeBlock').classList.toggle('locked', !isProUnlocked);
 }
+
+function getLockedPlaceholder(lang) {
+  const lines = {
+    html: ['&lt;!-- ChromaFlora Embed Code --&gt;','&lt;script src="..."&gt;&lt;/script&gt;','&lt;canvas id="cf" ...&gt;&lt;/canvas&gt;'],
+    react: ['import { ChromaFlora } from ...','const MyComponent = () => {','  return &lt;ChromaCanvas effect="..." /&gt;'],
+    vue: ['import ChromaCanvas from ...','&lt;template&gt;','  &lt;chroma-canvas effect="..." /&gt;'],
+    svelte: ['import { onMount } from "svelte"','let canvas; onMount(() => {...})','&lt;canvas bind:this={canvas} /&gt;'],
+    wc: ['&lt;script type="module" src="..."&gt;','&lt;chroma-flora effect="..."&gt;','&lt;/chroma-flora&gt;'],
+    next: ["'use client';",'import { useEffect, useRef } from "react"','const ChromaCanvas: FC = () => {...}'],
+    js: ['import { ChromaFlora } from "..."','const cf = new ChromaFlora({...})','cf.play();'],
+  };
+  const l = lines[lang] || lines.html;
+  return `<span style="opacity:.35">${l.join('\n')}</span>\n<span style="opacity:.2">// 🔒 Unlock Pro to copy full embed code\n// girlwithstarryeyes@outlook.com</span>`;
+}
+
+function verifyProCode() {
+  const code = (document.getElementById('proCodeInput')?.value || '').trim().toUpperCase();
+  const validCodes = ['CHROMAPRO2026','HALCYONPRO','JENNIPHER2026','CHROMAFLORA'];
+  if (validCodes.includes(code)) {
+    localStorage.setItem('cf_pro_unlocked', '1');
+    isProUnlocked = true;
+    document.getElementById('codeMsg').style.color = '#10b981';
+    document.getElementById('codeMsg').textContent = '✓ Pro access unlocked! Enjoy all embed formats.';
+    setTimeout(() => {
+      document.getElementById('proModal').classList.remove('open');
+      renderEmbed();
+    }, 1200);
+  } else {
+    document.getElementById('codeMsg').style.color = 'rgba(255,100,130,0.9)';
+    document.getElementById('codeMsg').textContent = '✕ Invalid code. Email girlwithstarryeyes@outlook.com to get your code.';
+  }
+}
+window.verifyProCode = verifyProCode;
 
 // Lang tab switching
 document.querySelectorAll('.lang-tab').forEach(tab => {

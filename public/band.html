@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Band Manager · ChromaFlora</title>
+<meta name="description" content="ChromaFlora Band Manager — organize bands, tracks, stems, and SoundCloud integration with a full audio database.">
+<meta name="author" content="Jennipher Troup">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#04040f;--purple:#a855f7;--aqua:#22d3ee;--pink:#ec4899;--orange:#f97316;--green:#10b981;--border:rgba(255,255,255,0.08);--t-snap:0.12s cubic-bezier(0.4,0,0.2,1);--t-spring:0.4s cubic-bezier(0.34,1.56,0.64,1)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:#fff;min-height:100dvh;overflow-x:hidden}
+
+.header{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:58px;background:rgba(4,4,15,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.logo{font-weight:800;font-size:15px}.logo a{color:white;text-decoration:none}.logo span{color:var(--purple)}
+.nav-links{display:flex;gap:4px}
+.nl{padding:5px 13px;border-radius:8px;font-size:12px;font-weight:600;color:rgba(255,255,255,0.5);text-decoration:none;transition:var(--t-snap)}
+.nl:hover,.nl.active{color:white;background:rgba(255,255,255,0.07)}
+.hdr-right{display:flex;gap:10px;align-items:center}
+
+/* Layout */
+.layout{display:grid;grid-template-columns:280px 1fr;min-height:calc(100dvh - 58px)}
+@media(max-width:880px){.layout{grid-template-columns:1fr}}
+
+/* Sidebar */
+.sidebar{border-right:1px solid var(--border);background:rgba(255,255,255,0.012);padding:0;overflow-y:auto;max-height:calc(100dvh - 58px);position:sticky;top:58px}
+@media(max-width:880px){.sidebar{display:none}}
+
+.band-list-header{padding:18px 18px 10px;display:flex;align-items:center;justify-content:space-between}
+.band-list-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,0.25)}
+.add-band-btn{padding:4px 10px;border-radius:7px;border:1px solid rgba(168,85,247,0.3);background:rgba(168,85,247,0.08);color:rgba(200,150,255,0.8);font-size:11px;font-weight:700;cursor:pointer;transition:var(--t-snap)}
+.add-band-btn:hover{background:rgba(168,85,247,0.2);color:white}
+
+.band-item{display:flex;align-items:center;gap:12px;padding:12px 18px;cursor:pointer;transition:var(--t-snap);border-bottom:1px solid rgba(255,255,255,0.03)}
+.band-item:hover{background:rgba(255,255,255,0.03)}
+.band-item.selected{background:rgba(168,85,247,0.08);border-left:3px solid var(--purple)}
+.band-avatar{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;border:1px solid rgba(255,255,255,0.08)}
+.band-info .bname{font-size:13px;font-weight:700}
+.band-info .bgenre{font-size:11px;color:rgba(255,255,255,0.35);margin-top:2px}
+.band-track-count{margin-left:auto;font-size:10px;font-weight:800;color:rgba(255,255,255,0.2);font-family:'JetBrains Mono',monospace}
+
+/* Main */
+.main{overflow-y:auto;max-height:calc(100dvh - 58px)}
+
+/* Tabs */
+.main-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);padding:0 28px;background:rgba(255,255,255,0.01)}
+.mt-btn{padding:14px 18px;border:none;border-bottom:2px solid transparent;background:transparent;font-size:13px;font-weight:700;color:rgba(255,255,255,0.35);cursor:pointer;transition:var(--t-snap);font-family:inherit;position:relative}
+.mt-btn:hover{color:rgba(255,255,255,0.6)}
+.mt-btn.active{color:rgba(200,150,255,0.95);border-bottom-color:var(--purple)}
+.tab-panel{display:none;padding:28px}.tab-panel.active{display:block}
+
+/* Cards */
+.card{background:rgba(255,255,255,0.025);border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:18px}
+.card-title{font-size:13px;font-weight:800;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card-title-text{display:flex;align-items:center;gap:8px}
+
+/* Form */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:700px){.form-grid{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:6px}
+.field-label{font-size:11px;font-weight:700;color:rgba(255,255,255,0.4)}
+.field-input,.field-select,.field-textarea{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:9px 13px;font-size:13px;color:white;font-family:inherit;transition:var(--t-snap);outline:none;width:100%}
+.field-input:focus,.field-select:focus,.field-textarea:focus{border-color:rgba(168,85,247,0.45);background:rgba(168,85,247,0.05)}
+.field-select option{background:#0d0d26}
+.field-textarea{resize:vertical;min-height:80px;line-height:1.6}
+
+/* Buttons */
+.btn-primary{display:inline-flex;align-items:center;gap:7px;padding:10px 22px;border-radius:11px;border:none;background:linear-gradient(135deg,#a855f7,#22d3ee);color:white;font-size:13px;font-weight:800;cursor:pointer;transition:var(--t-spring);font-family:inherit}
+.btn-primary:hover{transform:scale(1.03);box-shadow:0 4px 20px rgba(168,85,247,0.3)}
+.btn-secondary{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.6);font-size:12px;font-weight:700;cursor:pointer;transition:var(--t-snap);font-family:inherit}
+.btn-secondary:hover{background:rgba(255,255,255,0.09);color:white;border-color:rgba(255,255,255,0.18)}
+.btn-danger{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border-radius:9px;border:1px solid rgba(236,72,153,0.2);background:rgba(236,72,153,0.06);color:rgba(255,120,160,0.7);font-size:11px;font-weight:700;cursor:pointer;transition:var(--t-snap);font-family:inherit}
+.btn-danger:hover{background:rgba(236,72,153,0.15);color:white}
+
+/* Track list */
+.track-list{display:flex;flex-direction:column;gap:8px}
+.track-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);transition:var(--t-snap);cursor:pointer}
+.track-row:hover{background:rgba(255,255,255,0.06);border-color:rgba(168,85,247,0.15)}
+.track-row.selected{background:rgba(168,85,247,0.08);border-color:rgba(168,85,247,0.25)}
+.track-num{font-size:12px;font-weight:800;color:rgba(255,255,255,0.2);width:24px;text-align:center;font-family:'JetBrains Mono',monospace;flex-shrink:0}
+.track-cover{width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,rgba(168,85,247,0.3),rgba(34,211,238,0.2));flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:15px}
+.track-info{flex:1;min-width:0}
+.track-title{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
+.track-meta{font-size:10px;color:rgba(255,255,255,0.35)}
+.track-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.track-tag{padding:2px 7px;border-radius:99px;font-size:9px;font-weight:700;background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.15);color:rgba(200,150,255,0.7)}
+.track-bpm{font-size:11px;font-weight:800;color:rgba(255,255,255,0.25);font-family:'JetBrains Mono',monospace;flex-shrink:0;min-width:50px;text-align:right}
+.track-key{font-size:10px;font-weight:800;color:rgba(34,211,238,0.5);font-family:'JetBrains Mono',monospace;flex-shrink:0;min-width:40px}
+.track-actions{display:flex;gap:4px;flex-shrink:0}
+.track-btn{width:28px;height:28px;border-radius:7px;border:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.03);color:rgba(255,255,255,0.35);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:var(--t-snap)}
+.track-btn:hover{background:rgba(168,85,247,0.15);border-color:rgba(168,85,247,0.3);color:white}
+.track-btn.danger:hover{background:rgba(236,72,153,0.15);border-color:rgba(236,72,153,0.25);color:rgba(255,120,160,0.9)}
+
+/* Stems */
+.stems-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-top:16px}
+.stem-card{padding:14px;border-radius:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);transition:var(--t-snap)}
+.stem-card:hover{border-color:rgba(168,85,247,0.25)}
+.stem-type-badge{display:inline-block;padding:3px 9px;border-radius:99px;font-size:9px;font-weight:800;margin-bottom:8px}
+.stem-name{font-size:12px;font-weight:700;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stem-info{font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:8px}
+.stem-audio{width:100%;height:28px;margin-bottom:8px}
+.stem-actions{display:flex;gap:6px}
+.stem-btn{flex:1;padding:4px 0;border-radius:7px;border:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.03);color:rgba(255,255,255,0.4);font-size:10px;font-weight:700;cursor:pointer;transition:var(--t-snap);font-family:inherit}
+.stem-btn:hover{background:rgba(168,85,247,0.12);color:white}
+
+/* Drop zone */
+.drop-zone{border:2px dashed rgba(255,255,255,0.1);border-radius:14px;padding:32px;text-align:center;cursor:pointer;transition:var(--t-snap);margin-bottom:14px}
+.drop-zone:hover,.drop-zone.over{border-color:rgba(168,85,247,0.4);background:rgba(168,85,247,0.05)}
+.drop-icon{font-size:32px;margin-bottom:10px;opacity:0.5}
+.drop-text{font-size:13px;color:rgba(255,255,255,0.45);margin-bottom:4px}
+.drop-sub{font-size:11px;color:rgba(255,255,255,0.25)}
+input[type=file]{display:none}
+
+/* SoundCloud */
+.sc-wrap{border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.07);margin-top:14px}
+.sc-input-row{display:flex;gap:8px;margin-bottom:14px}
+.sc-input{flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:9px 13px;font-size:13px;color:white;font-family:inherit;outline:none;transition:var(--t-snap)}
+.sc-input:focus{border-color:rgba(168,85,247,0.4)}
+.sc-attach-btn{padding:9px 16px;border-radius:10px;border:none;background:rgba(168,85,247,0.2);color:rgba(200,150,255,0.9);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:var(--t-snap);white-space:nowrap}
+.sc-attach-btn:hover{background:rgba(168,85,247,0.35);color:white}
+
+/* Stats */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px}
+@media(max-width:700px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
+.stat-card{padding:14px 16px;border-radius:12px;background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.06)}
+.stat-val{font-size:22px;font-weight:900;margin-bottom:3px}
+.stat-label{font-size:10px;font-weight:700;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:.06em}
+
+/* No content */
+.empty{text-align:center;padding:50px 20px;color:rgba(255,255,255,0.2)}
+.empty .ei{font-size:36px;margin-bottom:12px;opacity:.4}
+
+/* Badge colors by stem type */
+.st-kick{background:rgba(249,115,22,0.15);color:rgba(250,180,100,0.85)}
+.st-snare{background:rgba(236,72,153,0.15);color:rgba(255,140,180,0.85)}
+.st-bass{background:rgba(34,211,238,0.15);color:rgba(100,230,240,0.85)}
+.st-melody,.st-lead{background:rgba(168,85,247,0.15);color:rgba(200,150,255,0.85)}
+.st-pads,.st-atmosphere{background:rgba(16,185,129,0.15);color:rgba(100,240,180,0.85)}
+.st-drums,.st-percussion{background:rgba(249,115,22,0.12);color:rgba(250,160,80,0.8)}
+.st-fx,.st-sfx{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.5)}
+.st-full,.st-mix{background:rgba(168,85,247,0.2);color:rgba(200,150,255,0.9)}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.85);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity 0.2s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal-box{background:linear-gradient(160deg,#0d0822,#07041a);border:1px solid rgba(168,85,247,0.2);border-radius:20px;max-width:480px;width:100%;padding:28px;position:relative;transform:scale(0.92);transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);max-height:90vh;overflow-y:auto}
+.modal-overlay.open .modal-box{transform:scale(1)}
+.modal-close{position:absolute;top:14px;right:14px;width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.5);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.modal-title{font-size:16px;font-weight:900;margin-bottom:16px}
+
+/* Search bar */
+.search-row{display:flex;gap:10px;margin-bottom:20px}
+.search-input{flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:9px 14px;font-size:13px;color:white;font-family:inherit;outline:none;transition:var(--t-snap)}
+.search-input:focus{border-color:rgba(168,85,247,0.4)}
+.filter-chip{padding:5px 12px;border-radius:99px;border:1px solid rgba(255,255,255,0.08);background:transparent;color:rgba(255,255,255,0.35);font-size:11px;font-weight:700;cursor:pointer;transition:var(--t-snap)}
+.filter-chip:hover,.filter-chip.active{background:rgba(168,85,247,0.12);border-color:rgba(168,85,247,0.3);color:rgba(200,150,255,0.9)}
+
+/* Band header */
+.band-header{padding:24px 28px 0;display:flex;align-items:center;gap:18px}
+.band-header-avatar{width:64px;height:64px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;border:1px solid rgba(255,255,255,0.1)}
+.band-header-name{font-size:22px;font-weight:900;letter-spacing:-0.5px;margin-bottom:3px}
+.band-header-meta{font-size:12px;color:rgba(255,255,255,0.4)}
+.band-header-actions{margin-left:auto;display:flex;gap:8px}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo"><a href="index.html">Chroma<span>Flora</span></a> <span style="font-size:11px;opacity:.4;font-weight:500;margin-left:6px">Band Manager</span></div>
+  <div class="nav-links">
+    <a href="index.html" class="nl">System</a>
+    <a href="player.html" class="nl">Synth</a>
+    <a href="studio.html" class="nl">Studio</a>
+    <a href="ai-studio.html" class="nl">AI Studio</a>
+    <a href="band.html" class="nl active">Band</a>
+  </div>
+  <div class="hdr-right">
+    <button class="btn-secondary" onclick="openAddBandModal()">+ New Band</button>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- Band List Sidebar -->
+  <aside class="sidebar">
+    <div class="band-list-header">
+      <div class="band-list-title">Bands & Artists</div>
+      <button class="add-band-btn" onclick="openAddBandModal()">+ Add</button>
+    </div>
+    <div id="bandListEl">
+      <!-- rendered by JS -->
+    </div>
+    <!-- AI-generated stems section -->
+    <div style="padding:18px 18px 10px;border-top:1px solid rgba(255,255,255,0.05);margin-top:8px">
+      <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,0.2);margin-bottom:10px">AI Generated</div>
+      <div class="band-item" onclick="showAIGenStems()" id="aiStemsBandItem">
+        <div class="band-avatar" style="background:linear-gradient(135deg,rgba(168,85,247,0.3),rgba(34,211,238,0.2))">🤗</div>
+        <div class="band-info">
+          <div class="bname">AI Stems</div>
+          <div class="bgenre">From AI Studio</div>
+        </div>
+        <div class="band-track-count" id="aiStemCount">0</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main panel -->
+  <main class="main" id="mainPanel">
+    <!-- No band selected state -->
+    <div id="noBandState" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:calc(100dvh - 58px);text-align:center;padding:40px">
+      <div style="font-size:48px;margin-bottom:16px;opacity:0.3">🎸</div>
+      <div style="font-size:20px;font-weight:800;margin-bottom:8px;opacity:0.5">No band selected</div>
+      <div style="font-size:14px;color:rgba(255,255,255,0.25);margin-bottom:24px;max-width:300px;line-height:1.6">Create a band or artist profile to start organizing your tracks and stems.</div>
+      <button class="btn-primary" onclick="openAddBandModal()">+ Create First Band</button>
+    </div>
+
+    <!-- Band detail view (hidden until band selected) -->
+    <div id="bandDetailView" style="display:none">
+      <!-- Band header -->
+      <div class="band-header" id="bandHeader">
+        <!-- rendered by JS -->
+      </div>
+
+      <!-- Tabs -->
+      <div class="main-tabs">
+        <button class="mt-btn active" onclick="switchBandTab('tracks',this)">Tracks</button>
+        <button class="mt-btn" onclick="switchBandTab('stems',this)">Stems</button>
+        <button class="mt-btn" onclick="switchBandTab('soundcloud',this)">SoundCloud</button>
+        <button class="mt-btn" onclick="switchBandTab('info',this)">Band Info</button>
+      </div>
+
+      <!-- Tracks tab -->
+      <div class="tab-panel active" id="btab-tracks">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <input class="search-input" id="trackSearch" placeholder="Search tracks…" oninput="renderTracks()" style="max-width:220px">
+            <button class="filter-chip active" data-tfilter="all" onclick="setTrackFilter('all',this)">All</button>
+            <button class="filter-chip" data-tfilter="original" onclick="setTrackFilter('original',this)">Originals</button>
+            <button class="filter-chip" data-tfilter="remix" onclick="setTrackFilter('remix',this)">Remixes</button>
+            <button class="filter-chip" data-tfilter="cover" onclick="setTrackFilter('cover',this)">Covers</button>
+          </div>
+          <button class="btn-primary" onclick="openAddTrackModal()">+ Add Track</button>
+        </div>
+
+        <div class="track-list" id="trackListEl">
+          <!-- rendered by JS -->
+        </div>
+      </div>
+
+      <!-- Stems tab -->
+      <div class="tab-panel" id="btab-stems">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="filter-chip active" data-sf="all" onclick="setStemFilter('all',this)">All Stems</button>
+            <button class="filter-chip" data-sf="kick" onclick="setStemFilter('kick',this)">Kick</button>
+            <button class="filter-chip" data-sf="snare" onclick="setStemFilter('snare',this)">Snare</button>
+            <button class="filter-chip" data-sf="bass" onclick="setStemFilter('bass',this)">Bass</button>
+            <button class="filter-chip" data-sf="melody" onclick="setStemFilter('melody',this)">Melody</button>
+            <button class="filter-chip" data-sf="pads" onclick="setStemFilter('pads',this)">Pads</button>
+            <button class="filter-chip" data-sf="full" onclick="setStemFilter('full',this)">Full Mix</button>
+          </div>
+          <button class="btn-primary" onclick="document.getElementById('stemFileInput').click()">⬆ Upload Stems</button>
+        </div>
+        <input type="file" id="stemFileInput" multiple accept="audio/*" onchange="handleStemUpload(event)">
+
+        <div class="drop-zone" id="stemDropZone"
+          ondragover="event.preventDefault();this.classList.add('over')"
+          ondragleave="this.classList.remove('over')"
+          ondrop="handleStemDrop(event)"
+          onclick="document.getElementById('stemFileInput').click()">
+          <div class="drop-icon">♫</div>
+          <div class="drop-text">Drop audio stems here or click to upload</div>
+          <div class="drop-sub">MP3, WAV, FLAC, AIFF, OGG supported · Files stored locally in browser</div>
+        </div>
+
+        <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap" id="stemTrackFilter">
+          <!-- Track filter pills for stems -->
+        </div>
+
+        <div class="stems-grid" id="stemsGrid">
+          <!-- rendered by JS -->
+        </div>
+      </div>
+
+      <!-- SoundCloud tab -->
+      <div class="tab-panel" id="btab-soundcloud">
+        <div class="card">
+          <div class="card-title"><div class="card-title-text"><span>☁</span> Link SoundCloud Profile</div></div>
+          <div class="form-grid">
+            <div class="field">
+              <div class="field-label">SoundCloud Profile URL</div>
+              <input type="url" class="field-input" id="bandSCUrl" placeholder="https://soundcloud.com/yourname">
+            </div>
+            <div class="field">
+              <div class="field-label">Profile Username</div>
+              <input type="text" class="field-input" id="bandSCUsername" placeholder="yourname">
+            </div>
+          </div>
+          <div style="margin-top:14px;display:flex;gap:10px">
+            <button class="btn-primary" onclick="saveBandSC()">Save SC Profile</button>
+            <button class="btn-secondary" onclick="embedBandSCProfile()">Embed Profile ▶</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><div class="card-title-text"><span>▶</span> Embed Track / Playlist</div></div>
+          <div class="sc-input-row">
+            <input class="sc-input" id="bandSCTrackUrl" placeholder="Paste SoundCloud track or playlist URL…" type="url">
+            <button class="sc-attach-btn" onclick="embedBandTrack()">Embed ▶</button>
+          </div>
+          <div id="bandSCEmbed"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><div class="card-title-text"><span>◈</span> SC Track Library</div>
+            <button class="btn-secondary" style="font-size:11px" onclick="openSCLinkModal()">+ Link Track</button>
+          </div>
+          <div id="bandSCTracks">
+            <!-- rendered by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Band Info tab -->
+      <div class="tab-panel" id="btab-info">
+        <div class="card">
+          <div class="card-title"><div class="card-title-text">Band / Artist Info</div>
+            <button class="btn-secondary" onclick="saveBandInfo()">Save Changes</button>
+          </div>
+          <div class="form-grid">
+            <div class="field">
+              <div class="field-label">Band / Artist Name</div>
+              <input type="text" class="field-input" id="editBandName" placeholder="My Band">
+            </div>
+            <div class="field">
+              <div class="field-label">Genre(s)</div>
+              <input type="text" class="field-input" id="editBandGenre" placeholder="Electronic, Ambient, House…">
+            </div>
+            <div class="field">
+              <div class="field-label">Emoji Avatar</div>
+              <input type="text" class="field-input" id="editBandEmoji" placeholder="🎸" style="font-size:20px;width:80px">
+            </div>
+            <div class="field">
+              <div class="field-label">Formed Year</div>
+              <input type="number" class="field-input" id="editBandYear" placeholder="2024" min="1950" max="2100">
+            </div>
+            <div class="field">
+              <div class="field-label">Home City</div>
+              <input type="text" class="field-input" id="editBandCity" placeholder="New York, NY">
+            </div>
+            <div class="field">
+              <div class="field-label">Label / Management</div>
+              <input type="text" class="field-input" id="editBandLabel" placeholder="Independent">
+            </div>
+          </div>
+          <div class="field" style="margin-top:14px">
+            <div class="field-label">Members (comma-separated)</div>
+            <input type="text" class="field-input" id="editBandMembers" placeholder="Jennipher Troup, …">
+          </div>
+          <div class="field" style="margin-top:14px">
+            <div class="field-label">Bio / Description</div>
+            <textarea class="field-textarea" id="editBandBio" placeholder="Describe this band or artist…" style="min-height:100px"></textarea>
+          </div>
+          <div class="field" style="margin-top:14px">
+            <div class="field-label">Links (one per line)</div>
+            <textarea class="field-textarea" id="editBandLinks" placeholder="https://soundcloud.com/…&#10;https://instagram.com/…&#10;https://spotify.com/…" style="min-height:80px"></textarea>
+          </div>
+          <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn-primary" onclick="saveBandInfo()">Save Changes</button>
+            <button class="btn-danger" onclick="deleteBand()">Delete Band</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><div class="card-title-text">Band Stats</div></div>
+          <div class="stats-grid" id="bandStatsGrid">
+            <!-- rendered by JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Gen stems view -->
+    <div id="aiGenStemsView" style="display:none;padding:28px">
+      <div class="page-header" style="margin-bottom:24px">
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:rgba(168,85,247,0.7);margin-bottom:8px">AI Studio</div>
+        <div style="font-size:28px;font-weight:900;letter-spacing:-1px;margin-bottom:6px">AI Generated Stems</div>
+        <div style="font-size:14px;color:rgba(255,255,255,0.4);line-height:1.6">Audio generated in the AI Studio and saved to your band library.</div>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+        <button class="btn-primary" onclick="location.href='ai-studio.html#audio'">+ Generate More in AI Studio</button>
+        <button class="btn-secondary" onclick="clearAIStems()">Clear All</button>
+      </div>
+      <div id="aiStemsGrid"></div>
+    </div>
+  </main>
+</div>
+
+<!-- Add/Edit Band Modal -->
+<div class="modal-overlay" id="addBandModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeAddBandModal()">✕</button>
+    <div class="modal-title" id="addBandModalTitle">Create New Band</div>
+    <div class="form-grid">
+      <div class="field">
+        <div class="field-label">Band / Artist Name *</div>
+        <input type="text" class="field-input" id="newBandName" placeholder="My Band">
+      </div>
+      <div class="field">
+        <div class="field-label">Genre</div>
+        <input type="text" class="field-input" id="newBandGenre" placeholder="Electronic, Ambient…">
+      </div>
+      <div class="field">
+        <div class="field-label">Emoji Avatar</div>
+        <input type="text" class="field-input" id="newBandEmoji" placeholder="🎸" maxlength="2" style="font-size:20px">
+      </div>
+      <div class="field">
+        <div class="field-label">Members</div>
+        <input type="text" class="field-input" id="newBandMembers" placeholder="Member1, Member2">
+      </div>
+    </div>
+    <div class="field" style="margin-top:12px">
+      <div class="field-label">Bio</div>
+      <textarea class="field-textarea" id="newBandBio" placeholder="Brief description…" style="min-height:70px"></textarea>
+    </div>
+    <div style="margin-top:18px;display:flex;gap:10px">
+      <button class="btn-primary" onclick="saveBand()">Create Band</button>
+      <button class="btn-secondary" onclick="closeAddBandModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Track Modal -->
+<div class="modal-overlay" id="addTrackModal">
+  <div class="modal-box" style="max-width:540px">
+    <button class="modal-close" onclick="closeAddTrackModal()">✕</button>
+    <div class="modal-title">Add Track</div>
+    <div class="form-grid">
+      <div class="field">
+        <div class="field-label">Track Title *</div>
+        <input type="text" class="field-input" id="newTrackTitle" placeholder="My Track">
+      </div>
+      <div class="field">
+        <div class="field-label">Type</div>
+        <select class="field-select" id="newTrackType">
+          <option value="original">Original</option>
+          <option value="remix">Remix</option>
+          <option value="cover">Cover</option>
+          <option value="instrumental">Instrumental</option>
+          <option value="demo">Demo</option>
+          <option value="unreleased">Unreleased</option>
+        </select>
+      </div>
+      <div class="field">
+        <div class="field-label">BPM</div>
+        <input type="number" class="field-input" id="newTrackBPM" placeholder="128" min="20" max="300" style="font-family:'JetBrains Mono',monospace">
+      </div>
+      <div class="field">
+        <div class="field-label">Key / Mode</div>
+        <select class="field-select" id="newTrackKey">
+          <option value="">Unknown</option>
+          <option>C Major</option><option>A Minor</option><option>G Major</option><option>E Minor</option>
+          <option>D Major</option><option>B Minor</option><option>F Major</option><option>D Minor</option>
+          <option>A Major</option><option>F# Minor</option><option>Bb Major</option><option>G Minor</option>
+          <option>Eb Major</option><option>C Minor</option>
+        </select>
+      </div>
+      <div class="field">
+        <div class="field-label">Duration</div>
+        <input type="text" class="field-input" id="newTrackDuration" placeholder="3:24" style="font-family:'JetBrains Mono',monospace">
+      </div>
+      <div class="field">
+        <div class="field-label">Release Year</div>
+        <input type="number" class="field-input" id="newTrackYear" placeholder="2025" style="font-family:'JetBrains Mono',monospace">
+      </div>
+    </div>
+    <div class="field" style="margin-top:12px">
+      <div class="field-label">Tags (comma-separated)</div>
+      <input type="text" class="field-input" id="newTrackTags" placeholder="dance, euphoric, peak-time">
+    </div>
+    <div class="field" style="margin-top:12px">
+      <div class="field-label">SoundCloud URL (optional)</div>
+      <input type="url" class="field-input" id="newTrackSCUrl" placeholder="https://soundcloud.com/…">
+    </div>
+    <div class="field" style="margin-top:12px">
+      <div class="field-label">Notes</div>
+      <textarea class="field-textarea" id="newTrackNotes" placeholder="Production notes, credits, story…" style="min-height:70px"></textarea>
+    </div>
+    <div style="margin-top:18px;display:flex;gap:10px">
+      <button class="btn-primary" onclick="saveTrack()">Add Track</button>
+      <button class="btn-secondary" onclick="closeAddTrackModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- SC Link modal -->
+<div class="modal-overlay" id="scLinkModal">
+  <div class="modal-box" style="max-width:400px">
+    <button class="modal-close" onclick="document.getElementById('scLinkModal').classList.remove('open')">✕</button>
+    <div class="modal-title">Link SoundCloud Track</div>
+    <div class="field" style="margin-bottom:12px">
+      <div class="field-label">Title</div>
+      <input type="text" class="field-input" id="scLinkTitle" placeholder="Track title">
+    </div>
+    <div class="field" style="margin-bottom:12px">
+      <div class="field-label">SoundCloud URL</div>
+      <input type="url" class="field-input" id="scLinkUrl" placeholder="https://soundcloud.com/…">
+    </div>
+    <button class="btn-primary" onclick="saveSCLink()">Link Track</button>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   DATA (IndexedDB for stems, localStorage for metadata)
+═══════════════════════════════════════════ */
+const LS = k => localStorage.getItem(k);
+const LSSet = (k,v) => localStorage.setItem(k,v);
+
+let bands = JSON.parse(LS('cf_bands') || '[]');
+let selectedBandId = null;
+let trackFilter = 'all';
+let stemFilter = 'all';
+let stemsByTrack = null;
+
+/* IndexedDB for audio blob storage */
+let db = null;
+function openDB() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open('chromaflora_stems', 1);
+    req.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains('stems')) {
+        d.createObjectStore('stems', { keyPath: 'id' });
+      }
+    };
+    req.onsuccess = e => { db = e.target.result; res(db); };
+    req.onerror = e => rej(e);
+  });
+}
+async function putStem(stemObj) {
+  await openDB();
+  return new Promise((res, rej) => {
+    const tx = db.transaction('stems', 'readwrite');
+    tx.objectStore('stems').put(stemObj);
+    tx.oncomplete = res; tx.onerror = rej;
+  });
+}
+async function getStemsForBand(bandId) {
+  await openDB();
+  return new Promise((res, rej) => {
+    const tx = db.transaction('stems', 'readonly');
+    const store = tx.objectStore('stems');
+    const all = [];
+    store.openCursor().onsuccess = e => {
+      const cursor = e.target.result;
+      if (cursor) {
+        if (cursor.value.bandId === bandId) all.push(cursor.value);
+        cursor.continue();
+      } else { res(all); }
+    };
+    tx.onerror = rej;
+  });
+}
+async function deleteStemFromDB(id) {
+  await openDB();
+  return new Promise((res, rej) => {
+    const tx = db.transaction('stems', 'readwrite');
+    tx.objectStore('stems').delete(id);
+    tx.oncomplete = res; tx.onerror = rej;
+  });
+}
+
+/* ═══════════════════════════════════════════
+   BAND LIST
+═══════════════════════════════════════════ */
+function saveBands() { LSSet('cf_bands', JSON.stringify(bands)); }
+function renderBandList() {
+  const el = document.getElementById('bandListEl');
+  if (!bands.length) {
+    el.innerHTML = `<div style="padding:20px 18px;font-size:12px;color:rgba(255,255,255,0.2)">No bands yet. Click + Add to create one.</div>`;
+    return;
+  }
+  el.innerHTML = bands.map(b => {
+    const trackCount = JSON.parse(LS(`cf_tracks_${b.id}`) || '[]').length;
+    return `<div class="band-item${selectedBandId === b.id ? ' selected' : ''}" onclick="selectBand('${b.id}')">
+      <div class="band-avatar" style="background:linear-gradient(135deg,rgba(168,85,247,0.3),rgba(34,211,238,0.2))">${b.emoji || '🎸'}</div>
+      <div class="band-info">
+        <div class="bname">${b.name}</div>
+        <div class="bgenre">${b.genre || 'Unknown genre'}</div>
+      </div>
+      <div class="band-track-count">${trackCount}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ═══════════════════════════════════════════
+   ADD / DELETE BAND
+═══════════════════════════════════════════ */
+function openAddBandModal() {
+  document.getElementById('addBandModalTitle').textContent = 'Create New Band';
+  document.getElementById('newBandName').value = '';
+  document.getElementById('newBandGenre').value = '';
+  document.getElementById('newBandEmoji').value = '';
+  document.getElementById('newBandMembers').value = '';
+  document.getElementById('newBandBio').value = '';
+  document.getElementById('addBandModal').classList.add('open');
+}
+function closeAddBandModal() { document.getElementById('addBandModal').classList.remove('open'); }
+document.getElementById('addBandModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('addBandModal')) closeAddBandModal();
+});
+
+function saveBand() {
+  const name = document.getElementById('newBandName').value.trim();
+  if (!name) { alert('Band name required.'); return; }
+  const band = {
+    id: Date.now().toString(),
+    name,
+    genre: document.getElementById('newBandGenre').value.trim(),
+    emoji: document.getElementById('newBandEmoji').value.trim() || '🎸',
+    members: document.getElementById('newBandMembers').value.trim(),
+    bio: document.getElementById('newBandBio').value.trim(),
+    createdAt: new Date().toISOString()
+  };
+  bands.push(band);
+  saveBands();
+  closeAddBandModal();
+  renderBandList();
+  selectBand(band.id);
+}
+
+function deleteBand() {
+  if (!selectedBandId) return;
+  if (!confirm('Delete this band and all its track data?')) return;
+  bands = bands.filter(b => b.id !== selectedBandId);
+  LSSet(`cf_tracks_${selectedBandId}`, '[]');
+  saveBands();
+  selectedBandId = null;
+  renderBandList();
+  document.getElementById('noBandState').style.display = '';
+  document.getElementById('bandDetailView').style.display = 'none';
+}
+
+/* ═══════════════════════════════════════════
+   SELECT BAND
+═══════════════════════════════════════════ */
+function selectBand(id) {
+  selectedBandId = id;
+  document.getElementById('noBandState').style.display = 'none';
+  document.getElementById('aiGenStemsView').style.display = 'none';
+  document.getElementById('bandDetailView').style.display = 'block';
+  document.getElementById('aiStemsBandItem').classList.remove('selected');
+  renderBandList();
+  renderBandHeader();
+  renderTracks();
+  renderStems();
+  renderBandSC();
+  renderBandInfo();
+  renderBandStats();
+  switchBandTab('tracks', document.querySelector('.mt-btn.active') || document.querySelector('.mt-btn'));
+}
+
+function renderBandHeader() {
+  const band = bands.find(b => b.id === selectedBandId);
+  if (!band) return;
+  const tracks = JSON.parse(LS(`cf_tracks_${band.id}`) || '[]');
+  document.getElementById('bandHeader').innerHTML = `
+    <div class="band-header-avatar" style="background:linear-gradient(135deg,rgba(168,85,247,0.3),rgba(34,211,238,0.2))">${band.emoji || '🎸'}</div>
+    <div>
+      <div class="band-header-name">${band.name}</div>
+      <div class="band-header-meta">${band.genre || 'Unknown genre'} · ${tracks.length} track${tracks.length !== 1 ? 's' : ''} · ${band.members ? band.members.split(',').length + ' members' : 'Solo'}</div>
+    </div>
+    <div class="band-header-actions">
+      <button class="btn-secondary" onclick="openAddTrackModal()">+ Track</button>
+    </div>
+  `;
+}
+
+function switchBandTab(id, btn) {
+  document.querySelectorAll('.mt-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#bandDetailView .tab-panel').forEach(p => p.classList.remove('active'));
+  const panel = document.getElementById('btab-' + id);
+  if (panel) panel.classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+/* ═══════════════════════════════════════════
+   TRACKS
+═══════════════════════════════════════════ */
+function getTracks() { return JSON.parse(LS(`cf_tracks_${selectedBandId}`) || '[]'); }
+function saveTracks(tracks) { LSSet(`cf_tracks_${selectedBandId}`, JSON.stringify(tracks)); }
+
+function openAddTrackModal() {
+  ['newTrackTitle','newTrackBPM','newTrackDuration','newTrackYear','newTrackTags','newTrackSCUrl','newTrackNotes']
+    .forEach(id => document.getElementById(id).value = '');
+  document.getElementById('newTrackType').value = 'original';
+  document.getElementById('newTrackKey').value = '';
+  document.getElementById('addTrackModal').classList.add('open');
+}
+function closeAddTrackModal() { document.getElementById('addTrackModal').classList.remove('open'); }
+document.getElementById('addTrackModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('addTrackModal')) closeAddTrackModal();
+});
+
+function saveTrack() {
+  const title = document.getElementById('newTrackTitle').value.trim();
+  if (!title) { alert('Track title required.'); return; }
+  const tracks = getTracks();
+  const track = {
+    id: Date.now().toString(),
+    bandId: selectedBandId,
+    title,
+    type: document.getElementById('newTrackType').value,
+    bpm: document.getElementById('newTrackBPM').value,
+    key: document.getElementById('newTrackKey').value,
+    duration: document.getElementById('newTrackDuration').value,
+    year: document.getElementById('newTrackYear').value,
+    tags: document.getElementById('newTrackTags').value.split(',').map(t=>t.trim()).filter(Boolean),
+    scUrl: document.getElementById('newTrackSCUrl').value.trim(),
+    notes: document.getElementById('newTrackNotes').value.trim(),
+    createdAt: new Date().toISOString()
+  };
+  tracks.push(track);
+  saveTracks(tracks);
+  closeAddTrackModal();
+  renderTracks();
+  renderBandHeader();
+  renderBandStats();
+}
+
+function deleteTrack(id) {
+  if (!confirm('Delete this track?')) return;
+  const tracks = getTracks().filter(t => t.id !== id);
+  saveTracks(tracks);
+  renderTracks();
+  renderBandHeader();
+  renderBandStats();
+}
+
+function setTrackFilter(f, el) {
+  trackFilter = f;
+  document.querySelectorAll('[data-tfilter]').forEach(b => b.classList.remove('active'));
+  if (el) el.classList.add('active');
+  renderTracks();
+}
+
+function renderTracks() {
+  if (!selectedBandId) return;
+  const search = (document.getElementById('trackSearch')?.value || '').toLowerCase();
+  const all = getTracks();
+  const filtered = all.filter(t => {
+    const matchFilter = trackFilter === 'all' || t.type === trackFilter;
+    const matchSearch = !search || t.title.toLowerCase().includes(search) || (t.tags||[]).join(',').toLowerCase().includes(search);
+    return matchFilter && matchSearch;
+  });
+  const el = document.getElementById('trackListEl');
+  if (!filtered.length) {
+    el.innerHTML = `<div class="empty"><div class="ei">🎵</div>No tracks yet.<br><span style="font-size:12px">Add your first track with the button above.</span></div>`;
+    return;
+  }
+  el.innerHTML = filtered.map((t, i) => `
+    <div class="track-row">
+      <div class="track-num">${i + 1}</div>
+      <div class="track-cover">${t.type === 'remix' ? '↺' : t.type === 'cover' ? '♪' : '♫'}</div>
+      <div class="track-info">
+        <div class="track-title">${t.title}</div>
+        <div class="track-meta">${t.type.charAt(0).toUpperCase() + t.type.slice(1)} · ${t.year || '—'} · ${t.duration || '—'}</div>
+        ${t.tags && t.tags.length ? `<div class="track-tags">${t.tags.slice(0,4).map(tag => `<span class="track-tag">${tag}</span>`).join('')}</div>` : ''}
+      </div>
+      <div class="track-key">${t.key || ''}</div>
+      <div class="track-bpm">${t.bpm ? t.bpm + ' BPM' : '—'}</div>
+      <div class="track-actions">
+        ${t.scUrl ? `<button class="track-btn" onclick="embedTrackSC('${encodeURIComponent(t.scUrl)}')" title="Play on SoundCloud">▶</button>` : ''}
+        <button class="track-btn danger" onclick="deleteTrack('${t.id}')" title="Delete">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function embedTrackSC(encodedUrl) {
+  switchBandTab('soundcloud', null);
+  document.getElementById('bandSCEmbed').innerHTML = `
+    <div style="border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.07)">
+      <iframe width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay"
+        src="https://w.soundcloud.com/player/?url=${encodedUrl}&color=%23a855f7&auto_play=true&show_user=true"
+        style="display:block"></iframe>
+    </div>`;
+}
+
+/* ═══════════════════════════════════════════
+   STEMS (IndexedDB)
+═══════════════════════════════════════════ */
+function setStemFilter(f, el) {
+  stemFilter = f;
+  document.querySelectorAll('[data-sf]').forEach(b => b.classList.remove('active'));
+  if (el) el.classList.add('active');
+  renderStems();
+}
+
+function handleStemUpload(event) {
+  const files = Array.from(event.target.files);
+  processStemFiles(files);
+}
+function handleStemDrop(event) {
+  event.preventDefault();
+  document.getElementById('stemDropZone').classList.remove('over');
+  const files = Array.from(event.dataTransfer.files).filter(f => f.type.startsWith('audio/'));
+  processStemFiles(files);
+}
+
+async function processStemFiles(files) {
+  if (!selectedBandId) { alert('Select a band first.'); return; }
+  for (const file of files) {
+    const reader = new FileReader();
+    await new Promise(res => {
+      reader.onload = async e => {
+        const stemType = guessStemType(file.name);
+        const stem = {
+          id: `stem_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+          bandId: selectedBandId,
+          name: file.name.replace(/\.[^.]+$/, ''),
+          type: stemType,
+          format: file.type || 'audio/wav',
+          size: file.size,
+          data: e.target.result,
+          createdAt: new Date().toISOString()
+        };
+        await putStem(stem);
+        res();
+      };
+      reader.readAsArrayBuffer(file);
+    });
+  }
+  renderStems();
+}
+
+function guessStemType(filename) {
+  const lower = filename.toLowerCase();
+  if (/kick|bd|bassdrum/.test(lower)) return 'kick';
+  if (/snare|sn/.test(lower)) return 'snare';
+  if (/hat|hh|hihat/.test(lower)) return 'hats';
+  if (/bass|sub/.test(lower)) return 'bass';
+  if (/lead|melody|synth/.test(lower)) return 'melody';
+  if (/pad|atmo|ambient|reverb/.test(lower)) return 'pads';
+  if (/drum|perc/.test(lower)) return 'drums';
+  if (/fx|sfx|effect/.test(lower)) return 'fx';
+  if (/full|mix|master/.test(lower)) return 'full';
+  return 'stem';
+}
+
+async function renderStems() {
+  if (!selectedBandId) return;
+  const allStems = await getStemsForBand(selectedBandId);
+  const filtered = stemFilter === 'all' ? allStems : allStems.filter(s => s.type === stemFilter);
+  const el = document.getElementById('stemsGrid');
+  if (!filtered.length) {
+    el.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="ei">♫</div>No stems uploaded yet.<br><span style="font-size:12px">Drop audio files above to add stems.</span></div>`;
+    return;
+  }
+  el.innerHTML = '';
+  filtered.forEach(stem => {
+    const blob = new Blob([stem.data], { type: stem.format });
+    const url = URL.createObjectURL(blob);
+    const card = document.createElement('div');
+    card.className = 'stem-card';
+    const sizeKB = Math.round(stem.size / 1024);
+    card.innerHTML = `
+      <div class="stem-type-badge st-${stem.type}">${stem.type.toUpperCase()}</div>
+      <div class="stem-name">${stem.name}</div>
+      <div class="stem-info">${sizeKB > 1024 ? (sizeKB/1024).toFixed(1)+'MB' : sizeKB+'KB'} · ${stem.format.split('/')[1]?.toUpperCase() || 'AUDIO'}</div>
+      <audio class="stem-audio" controls src="${url}"></audio>
+      <div class="stem-actions">
+        <a href="${url}" download="${stem.name}.${stem.format.split('/')[1] || 'wav'}" class="stem-btn" style="text-align:center">⬇</a>
+        <button class="stem-btn" onclick="deleteStem('${stem.id}')">✕</button>
+      </div>
+    `;
+    el.appendChild(card);
+  });
+}
+
+async function deleteStem(id) {
+  if (!confirm('Delete this stem?')) return;
+  await deleteStemFromDB(id);
+  renderStems();
+}
+
+/* ═══════════════════════════════════════════
+   SOUNDCLOUD
+═══════════════════════════════════════════ */
+function saveBandSC() {
+  const band = bands.find(b => b.id === selectedBandId);
+  if (!band) return;
+  band.scUrl = document.getElementById('bandSCUrl').value.trim();
+  band.scUsername = document.getElementById('bandSCUsername').value.trim();
+  saveBands();
+  alert('SoundCloud profile saved.');
+}
+
+function embedBandSCProfile() {
+  const url = document.getElementById('bandSCUrl').value.trim();
+  if (!url) { alert('Enter a SoundCloud profile URL first.'); return; }
+  const encoded = encodeURIComponent(url);
+  document.getElementById('bandSCEmbed').innerHTML = `
+    <div style="border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.07)">
+      <iframe width="100%" height="450" scrolling="no" frameborder="no" allow="autoplay"
+        src="https://w.soundcloud.com/player/?url=${encoded}&color=%23a855f7&auto_play=false&show_user=true&visual=true"
+        style="display:block"></iframe>
+    </div>`;
+}
+
+function embedBandTrack() {
+  const url = document.getElementById('bandSCTrackUrl').value.trim();
+  if (!url) return;
+  const encoded = encodeURIComponent(url);
+  document.getElementById('bandSCEmbed').innerHTML = `
+    <div style="border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.07)">
+      <iframe width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay"
+        src="https://w.soundcloud.com/player/?url=${encoded}&color=%23a855f7&auto_play=true&show_user=true"
+        style="display:block"></iframe>
+    </div>`;
+}
+
+function openSCLinkModal() { document.getElementById('scLinkModal').classList.add('open'); }
+document.getElementById('scLinkModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('scLinkModal')) document.getElementById('scLinkModal').classList.remove('open');
+});
+
+function saveSCLink() {
+  const title = document.getElementById('scLinkTitle').value.trim();
+  const url = document.getElementById('scLinkUrl').value.trim();
+  if (!title || !url) { alert('Title and URL required.'); return; }
+  const links = JSON.parse(LS(`cf_sc_links_${selectedBandId}`) || '[]');
+  links.push({ id: Date.now(), title, url });
+  LSSet(`cf_sc_links_${selectedBandId}`, JSON.stringify(links));
+  document.getElementById('scLinkModal').classList.remove('open');
+  renderBandSC();
+}
+
+function renderBandSC() {
+  if (!selectedBandId) return;
+  const band = bands.find(b => b.id === selectedBandId);
+  if (band) {
+    document.getElementById('bandSCUrl').value = band.scUrl || '';
+    document.getElementById('bandSCUsername').value = band.scUsername || '';
+  }
+  const links = JSON.parse(LS(`cf_sc_links_${selectedBandId}`) || '[]');
+  const el = document.getElementById('bandSCTracks');
+  if (!links.length) {
+    el.innerHTML = '<div style="font-size:12px;color:rgba(255,255,255,0.2);padding:8px 0">No SC tracks linked yet.</div>';
+    return;
+  }
+  el.innerHTML = links.map(l => `
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
+      <div style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,rgba(168,85,247,0.3),rgba(34,211,238,0.2));display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">♫</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l.title}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l.url}</div>
+      </div>
+      <button onclick="embedTrackSC('${encodeURIComponent(l.url)}')" class="track-btn" title="Embed">▶</button>
+      <a href="${l.url}" target="_blank" class="track-btn" title="Open SC">↗</a>
+      <button onclick="deleteSCLink(${l.id})" class="track-btn danger">✕</button>
+    </div>
+  `).join('');
+}
+
+function deleteSCLink(id) {
+  const links = JSON.parse(LS(`cf_sc_links_${selectedBandId}`) || '[]').filter(l => l.id !== id);
+  LSSet(`cf_sc_links_${selectedBandId}`, JSON.stringify(links));
+  renderBandSC();
+}
+
+/* ═══════════════════════════════════════════
+   BAND INFO
+═══════════════════════════════════════════ */
+function renderBandInfo() {
+  const band = bands.find(b => b.id === selectedBandId);
+  if (!band) return;
+  document.getElementById('editBandName').value = band.name || '';
+  document.getElementById('editBandGenre').value = band.genre || '';
+  document.getElementById('editBandEmoji').value = band.emoji || '';
+  document.getElementById('editBandYear').value = band.year || '';
+  document.getElementById('editBandCity').value = band.city || '';
+  document.getElementById('editBandLabel').value = band.label || '';
+  document.getElementById('editBandMembers').value = band.members || '';
+  document.getElementById('editBandBio').value = band.bio || '';
+  document.getElementById('editBandLinks').value = (band.links || []).join('\n');
+}
+
+function saveBandInfo() {
+  const band = bands.find(b => b.id === selectedBandId);
+  if (!band) return;
+  band.name = document.getElementById('editBandName').value.trim() || band.name;
+  band.genre = document.getElementById('editBandGenre').value.trim();
+  band.emoji = document.getElementById('editBandEmoji').value.trim() || '🎸';
+  band.year = document.getElementById('editBandYear').value;
+  band.city = document.getElementById('editBandCity').value.trim();
+  band.label = document.getElementById('editBandLabel').value.trim();
+  band.members = document.getElementById('editBandMembers').value.trim();
+  band.bio = document.getElementById('editBandBio').value.trim();
+  band.links = document.getElementById('editBandLinks').value.split('\n').map(l => l.trim()).filter(Boolean);
+  saveBands();
+  renderBandList();
+  renderBandHeader();
+  const notice = document.createElement('span');
+  notice.style.cssText = 'color:#10b981;font-size:12px;font-weight:700;margin-left:12px';
+  notice.textContent = '✓ Saved';
+  document.querySelector('#btab-info .card .btn-primary').after(notice);
+  setTimeout(() => notice.remove(), 2000);
+}
+
+/* ═══════════════════════════════════════════
+   BAND STATS
+═══════════════════════════════════════════ */
+async function renderBandStats() {
+  if (!selectedBandId) return;
+  const tracks = getTracks();
+  const stems = await getStemsForBand(selectedBandId);
+  const scLinks = JSON.parse(LS(`cf_sc_links_${selectedBandId}`) || '[]');
+  const totalDuration = tracks.reduce((acc, t) => {
+    if (!t.duration) return acc;
+    const parts = t.duration.split(':').map(Number);
+    return acc + (parts[0] * 60 + (parts[1] || 0));
+  }, 0);
+  const minutes = Math.floor(totalDuration / 60);
+  document.getElementById('bandStatsGrid').innerHTML = `
+    <div class="stat-card"><div class="stat-val">${tracks.length}</div><div class="stat-label">Tracks</div></div>
+    <div class="stat-card"><div class="stat-val">${stems.length}</div><div class="stat-label">Stems</div></div>
+    <div class="stat-card"><div class="stat-val">${scLinks.length}</div><div class="stat-label">SC Links</div></div>
+    <div class="stat-card"><div class="stat-val">${minutes || '—'}</div><div class="stat-label">Minutes</div></div>
+  `;
+}
+
+/* ═══════════════════════════════════════════
+   AI GEN STEMS VIEW
+═══════════════════════════════════════════ */
+function showAIGenStems() {
+  selectedBandId = null;
+  document.getElementById('bandDetailView').style.display = 'none';
+  document.getElementById('noBandState').style.display = 'none';
+  document.getElementById('aiGenStemsView').style.display = 'block';
+  document.querySelectorAll('.band-item').forEach(b => b.classList.remove('selected'));
+  document.getElementById('aiStemsBandItem').classList.add('selected');
+  renderAIGenStems();
+}
+
+function renderAIGenStems() {
+  const stems = JSON.parse(LS('cf_band_gen_stems') || '[]');
+  document.getElementById('aiStemCount').textContent = stems.length;
+  const el = document.getElementById('aiStemsGrid');
+  if (!stems.length) {
+    el.innerHTML = `<div class="empty"><div class="ei">🤗</div>No AI-generated stems yet.<br><span style="font-size:12px">Generate audio in the AI Studio and click "Save to Band Library".</span>
+      <div style="margin-top:20px"><a href="ai-studio.html" class="btn-primary" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;padding:10px 22px;border-radius:11px;background:linear-gradient(135deg,#a855f7,#22d3ee);color:white;font-size:13px;font-weight:800">Go to AI Studio →</a></div>
+    </div>`;
+    return;
+  }
+  el.innerHTML = `<div class="stems-grid">${stems.map(s => `
+    <div class="stem-card">
+      <div class="stem-type-badge st-${s.stemType}">${s.stemType.toUpperCase()}</div>
+      <div class="stem-name">${s.prompt.slice(0, 40)}…</div>
+      <div class="stem-info">${s.model} · ${new Date(s.createdAt).toLocaleDateString()}</div>
+      <audio class="stem-audio" controls src="${s.url}"></audio>
+      <div class="stem-actions">
+        <a href="${s.url}" download="ai-${s.stemType}-${s.id}.wav" class="stem-btn" style="text-align:center">⬇</a>
+        <button class="stem-btn" onclick="removeAIStem(${s.id})">✕</button>
+      </div>
+    </div>
+  `).join('')}</div>`;
+}
+
+function removeAIStem(id) {
+  const stems = JSON.parse(LS('cf_band_gen_stems') || '[]').filter(s => s.id !== id);
+  LSSet('cf_band_gen_stems', JSON.stringify(stems));
+  renderAIGenStems();
+}
+function clearAIStems() {
+  if (!confirm('Clear all AI-generated stems?')) return;
+  LSSet('cf_band_gen_stems', '[]');
+  renderAIGenStems();
+}
+
+/* ═══════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════ */
+renderBandList();
+const aiStems = JSON.parse(LS('cf_band_gen_stems') || '[]');
+document.getElementById('aiStemCount').textContent = aiStems.length;
+
+if (bands.length > 0) {
+  selectBand(bands[0].id);
+}
+</script>
+</body>
+</html>

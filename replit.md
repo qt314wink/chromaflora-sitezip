@@ -6,14 +6,16 @@ A cosmic bioluminescent design system and portfolio — pure HTML/CSS/JS, no ext
 ## Server
 `python3 -m http.server 8000 --directory public`
 
-## Pages (16 total)
+## Pages (18 total)
 | File | Purpose |
 |------|---------|
 | `index.html` | Main landing — 18-tile live gallery (each tile → project page), hero, stats |
 | `projects.html` | Void drift project portfolio with theme-physics cards |
 | `player.html` | **ChromaSynth v2** — harmonic partial synthesis, 4 visualizer modes (spectrum/oscilloscope/Lissajous/harmonograph), 9 modal scales, spatial audio, tuning systems |
 | `studio.html` | Art Studio — layered canvas + 12 style presets + paint pour + remix + **sacred geometry overlays** (Flower of Life, Metatron's Cube, Phi Grid, Vesica Piscis) + **Spirograph/Harmonograph draw tools** + **physical export panel** |
-| `plotter.html` | **NEW — Plotter Studio** — digital-to-physical: Spirograph/Harmonograph/Lissajous/Sacred Geo pattern gen, SVG export (AxiDraw), GCode (.nc), TurtleToy script, AxiDraw + EvilMadScientist + Canva/Figma integrations |
+| `plotter.html` | Plotter Studio — digital-to-physical: Spirograph/Harmonograph/Lissajous/Sacred Geo pattern gen, SVG export (AxiDraw), GCode (.nc), TurtleToy script |
+| `ai-studio.html` | **NEW — AI Studio** — HuggingFace Inference API (image+audio), Leonardo.ai API, Replicate API (ComfyUI/SDXL), SoundCloud embed, HF Spaces directory, pipeline builder, local gallery |
+| `band.html` | **NEW — Band Manager** — band/artist profiles, track library, stem upload (IndexedDB binary storage), SoundCloud integration, AI-generated stems library |
 | `tokens.html` | Design token browser |
 | `components.html` | Interactive component lab |
 | `blog.html` | Blog — fractal image grid, scroll reveal, search, expandable articles |

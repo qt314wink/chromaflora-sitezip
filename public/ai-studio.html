@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Studio · ChromaFlora</title>
+<meta name="description" content="ChromaFlora AI Studio — generative image and audio pipelines via HuggingFace, Leonardo, Replicate, and SoundCloud.">
+<meta name="author" content="Jennipher Troup">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#04040f;--purple:#a855f7;--aqua:#22d3ee;--pink:#ec4899;--orange:#f97316;--green:#10b981;--border:rgba(255,255,255,0.08);--t-snap:0.12s cubic-bezier(0.4,0,0.2,1);--t-spring:0.4s cubic-bezier(0.34,1.56,0.64,1)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:#fff;min-height:100dvh;overflow-x:hidden}
+
+/* Header */
+.header{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:58px;background:rgba(4,4,15,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.logo{font-weight:800;font-size:15px}.logo a{color:white;text-decoration:none}
+.logo span{color:var(--purple)}
+.nav-links{display:flex;gap:4px}
+.nl{padding:5px 13px;border-radius:8px;font-size:12px;font-weight:600;color:rgba(255,255,255,0.5);text-decoration:none;transition:var(--t-snap)}
+.nl:hover,.nl.active{color:white;background:rgba(255,255,255,0.07)}
+.hdr-right{display:flex;align-items:center;gap:10px}
+.api-status{display:flex;gap:6px;align-items:center}
+.api-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.15)}
+.api-dot.connected{background:#10b981;box-shadow:0 0 6px rgba(16,185,129,0.6)}
+.api-dot-label{font-size:10px;font-weight:700;color:rgba(255,255,255,0.3)}
+.btn-keys{padding:5px 14px;border-radius:8px;border:1px solid rgba(168,85,247,0.3);background:rgba(168,85,247,0.08);color:rgba(200,150,255,0.9);font-size:12px;font-weight:700;cursor:pointer;transition:var(--t-snap)}
+.btn-keys:hover{background:rgba(168,85,247,0.18);border-color:rgba(168,85,247,0.5);color:white}
+
+/* Layout */
+.layout{display:grid;grid-template-columns:260px 1fr;min-height:calc(100dvh - 58px)}
+@media(max-width:800px){.layout{grid-template-columns:1fr}}
+
+/* Sidebar */
+.sidebar{border-right:1px solid var(--border);background:rgba(255,255,255,0.012);padding:20px 14px;display:flex;flex-direction:column;gap:6px;overflow-y:auto;max-height:calc(100dvh - 58px);position:sticky;top:58px}
+@media(max-width:800px){.sidebar{display:none}}
+.sb-section{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;color:rgba(255,255,255,0.2);padding:12px 8px 6px}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:500;color:rgba(255,255,255,0.55);transition:var(--t-snap);border:1px solid transparent;text-decoration:none}
+.sb-item:hover{background:rgba(255,255,255,0.05);color:white;border-color:rgba(255,255,255,0.05)}
+.sb-item.active{background:rgba(168,85,247,0.12);color:rgba(200,150,255,0.95);border-color:rgba(168,85,247,0.2)}
+.sb-item .si{font-size:15px;width:20px;text-align:center}
+.sb-badge{margin-left:auto;padding:2px 7px;border-radius:99px;font-size:9px;font-weight:800;background:rgba(168,85,247,0.2);color:rgba(200,150,255,0.8)}
+.sb-badge.new{background:rgba(249,115,22,0.2);color:rgba(250,180,100,0.9)}
+.sb-sep{height:1px;background:rgba(255,255,255,0.05);margin:8px 0}
+
+/* Main area */
+.main{padding:28px 32px;overflow-y:auto;max-height:calc(100dvh - 58px)}
+@media(max-width:900px){.main{padding:20px 18px}}
+
+/* Page header */
+.page-header{margin-bottom:28px}
+.page-eyebrow{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;color:rgba(168,85,247,0.7);margin-bottom:8px}
+.page-title{font-size:clamp(24px,4vw,36px);font-weight:900;letter-spacing:-1.5px;margin-bottom:8px}
+.page-desc{font-size:14px;color:rgba(255,255,255,0.45);line-height:1.6;max-width:600px}
+
+/* Tab system */
+.tabs{display:flex;gap:4px;margin-bottom:28px;border-bottom:1px solid var(--border);padding-bottom:0}
+.tab-btn{padding:10px 18px;border-radius:10px 10px 0 0;border:1px solid transparent;background:transparent;font-size:13px;font-weight:700;color:rgba(255,255,255,0.4);cursor:pointer;transition:var(--t-snap);font-family:inherit;border-bottom:none;position:relative;bottom:-1px}
+.tab-btn:hover{color:rgba(255,255,255,0.7)}
+.tab-btn.active{background:rgba(168,85,247,0.12);border-color:rgba(168,85,247,0.25);border-bottom-color:var(--bg);color:rgba(200,150,255,0.95)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+
+/* Cards */
+.card{background:rgba(255,255,255,0.025);border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:20px}
+.card-title{font-size:13px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card-title .ct-icon{font-size:16px}
+
+/* Form elements */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:700px){.form-grid{grid-template-columns:1fr}}
+.form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+@media(max-width:700px){.form-grid-3{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:6px}
+.field-label{font-size:11px;font-weight:700;color:rgba(255,255,255,0.45);letter-spacing:0.03em}
+.field-input,.field-select,.field-textarea{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:9px 13px;font-size:13px;color:white;font-family:inherit;transition:var(--t-snap);outline:none;width:100%}
+.field-input:focus,.field-select:focus,.field-textarea:focus{border-color:rgba(168,85,247,0.45);background:rgba(168,85,247,0.06)}
+.field-textarea{resize:vertical;min-height:90px;line-height:1.6}
+.field-select option{background:#0d0d26;color:white}
+
+/* Prompt area */
+.prompt-wrap{position:relative}
+.prompt-area{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:14px 16px;font-size:14px;color:white;font-family:inherit;line-height:1.7;resize:vertical;min-height:110px;width:100%;outline:none;transition:var(--t-snap)}
+.prompt-area:focus{border-color:rgba(168,85,247,0.45);background:rgba(168,85,247,0.05)}
+.prompt-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.prompt-chip{padding:5px 12px;border-radius:99px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.5);font-size:11px;font-weight:700;cursor:pointer;transition:var(--t-snap)}
+.prompt-chip:hover{background:rgba(168,85,247,0.12);border-color:rgba(168,85,247,0.3);color:rgba(200,150,255,0.9)}
+
+/* Model selector grid */
+.model-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:16px}
+.model-card{padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.03);cursor:pointer;transition:var(--t-snap)}
+.model-card:hover{border-color:rgba(168,85,247,0.3);background:rgba(168,85,247,0.06)}
+.model-card.selected{border-color:rgba(168,85,247,0.5);background:rgba(168,85,247,0.1)}
+.model-name{font-size:12px;font-weight:800;margin-bottom:3px}
+.model-provider{font-size:10px;color:rgba(255,255,255,0.35);font-weight:600}
+.model-badge{display:inline-block;margin-top:5px;padding:2px 7px;border-radius:99px;font-size:9px;font-weight:800;background:rgba(16,185,129,0.15);color:rgba(100,240,180,0.85)}
+.model-badge.paid{background:rgba(249,115,22,0.15);color:rgba(250,180,100,0.85)}
+
+/* Generate button */
+.gen-btn{display:inline-flex;align-items:center;gap:8px;padding:11px 28px;border-radius:12px;border:none;background:linear-gradient(135deg,#a855f7,#22d3ee);color:white;font-size:14px;font-weight:800;cursor:pointer;transition:var(--t-spring);font-family:inherit}
+.gen-btn:hover:not(:disabled){transform:scale(1.03);box-shadow:0 6px 24px rgba(168,85,247,0.35)}
+.gen-btn:disabled{opacity:0.45;cursor:not-allowed;transform:none}
+.gen-btn.loading .btn-icon{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Output grid */
+.output-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-top:20px}
+.output-card{border-radius:14px;overflow:hidden;background:rgba(255,255,255,0.03);border:1px solid var(--border);transition:var(--t-snap)}
+.output-card:hover{border-color:rgba(168,85,247,0.3);transform:translateY(-2px)}
+.output-img{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:rgba(255,255,255,0.03)}
+.output-meta{padding:10px 12px}
+.output-model{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:rgba(255,255,255,0.3);margin-bottom:3px}
+.output-prompt{font-size:11px;color:rgba(255,255,255,0.5);line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.output-actions{display:flex;gap:6px;padding:0 12px 10px}
+.out-btn{flex:1;padding:5px 0;border-radius:7px;border:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.03);color:rgba(255,255,255,0.45);font-size:10px;font-weight:700;cursor:pointer;transition:var(--t-snap);font-family:inherit}
+.out-btn:hover{background:rgba(255,255,255,0.08);color:white}
+
+/* Audio output */
+.audio-card{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px;display:flex;align-items:center;gap:14px}
+.audio-icon{width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,rgba(168,85,247,0.3),rgba(34,211,238,0.2));border:1px solid rgba(168,85,247,0.2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.audio-info{flex:1;min-width:0}
+.audio-title{font-size:13px;font-weight:700;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.audio-model{font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:8px}
+.audio-player{width:100%;height:32px}
+.audio-dl{width:32px;height:32px;border-radius:8px;border:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.03);color:rgba(255,255,255,0.4);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:var(--t-snap);flex-shrink:0}
+.audio-dl:hover{background:rgba(168,85,247,0.15);color:white;border-color:rgba(168,85,247,0.3)}
+
+/* SoundCloud panel */
+.sc-search-row{display:flex;gap:10px;margin-bottom:16px}
+.sc-input{flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:9px 14px;font-size:13px;color:white;font-family:inherit;outline:none;transition:var(--t-snap)}
+.sc-input:focus{border-color:rgba(168,85,247,0.4);background:rgba(168,85,247,0.05)}
+.sc-btn{padding:9px 18px;border-radius:10px;border:none;background:linear-gradient(135deg,#f97316,#a855f7);color:white;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;transition:var(--t-spring)}
+.sc-btn:hover{transform:scale(1.03)}
+.sc-embed-wrap{border-radius:14px;overflow:hidden;border:1px solid var(--border)}
+.sc-playlist-items{display:grid;gap:10px;margin-top:16px}
+.sc-track{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);cursor:pointer;transition:var(--t-snap)}
+.sc-track:hover{background:rgba(255,255,255,0.06);border-color:rgba(168,85,247,0.2)}
+.sc-art{width:42px;height:42px;border-radius:8px;background:linear-gradient(135deg,rgba(168,85,247,0.4),rgba(34,211,238,0.3));flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px}
+.sc-title{font-size:13px;font-weight:700;margin-bottom:2px}
+.sc-artist{font-size:11px;color:rgba(255,255,255,0.4)}
+.sc-play{margin-left:auto;width:32px;height:32px;border-radius:50%;background:rgba(168,85,247,0.2);border:1px solid rgba(168,85,247,0.3);color:rgba(200,150,255,0.9);font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* Pipeline workflow UI */
+.pipeline-board{display:flex;gap:12px;overflow-x:auto;padding-bottom:12px;min-height:160px;align-items:flex-start}
+.pipe-node{min-width:160px;border-radius:14px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);padding:14px;flex-shrink:0;position:relative;cursor:pointer;transition:var(--t-snap)}
+.pipe-node:hover{border-color:rgba(168,85,247,0.3);background:rgba(168,85,247,0.06)}
+.pipe-node.active{border-color:rgba(168,85,247,0.5);background:rgba(168,85,247,0.1)}
+.pipe-node-icon{font-size:22px;margin-bottom:8px}
+.pipe-node-name{font-size:12px;font-weight:800;margin-bottom:3px}
+.pipe-node-desc{font-size:10px;color:rgba(255,255,255,0.35);line-height:1.4}
+.pipe-arrow{display:flex;align-items:center;color:rgba(255,255,255,0.2);font-size:18px;margin-top:30px;flex-shrink:0}
+.pipe-add{min-width:44px;height:44px;border-radius:12px;border:2px dashed rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.2);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:20px;flex-shrink:0;transition:var(--t-snap)}
+.pipe-add:hover{border-color:rgba(168,85,247,0.35);color:rgba(168,85,247,0.6)}
+
+/* Progress / status */
+.gen-status{padding:12px 16px;border-radius:10px;background:rgba(168,85,247,0.07);border:1px solid rgba(168,85,247,0.15);font-size:12px;color:rgba(200,150,255,0.8);display:none;align-items:center;gap:10px;margin-top:14px}
+.gen-status.visible{display:flex}
+.gen-status.error{background:rgba(236,72,153,0.07);border-color:rgba(236,72,153,0.2);color:rgba(255,150,180,0.9)}
+.gen-status.success{background:rgba(16,185,129,0.07);border-color:rgba(16,185,129,0.2);color:rgba(100,240,180,0.9)}
+.spinner{width:14px;height:14px;border:2px solid rgba(168,85,247,0.3);border-top-color:#a855f7;border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0}
+
+/* API Key modal */
+.modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.85);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity 0.2s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal-box{background:linear-gradient(160deg,#0d0822,#07041a);border:1px solid rgba(168,85,247,0.2);border-radius:22px;max-width:520px;width:100%;padding:32px;position:relative;transform:scale(0.92);transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);max-height:90vh;overflow-y:auto}
+.modal-overlay.open .modal-box{transform:scale(1)}
+.modal-close{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.5);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:var(--t-snap)}
+.modal-close:hover{background:rgba(236,72,153,0.2);color:white}
+.modal-title{font-size:18px;font-weight:900;margin-bottom:6px}
+.modal-sub{font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:22px;line-height:1.5}
+.key-service{margin-bottom:18px;padding:16px;border-radius:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07)}
+.key-service-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.key-service-icon{font-size:18px}
+.key-service-name{font-size:13px;font-weight:800}
+.key-service-link{margin-left:auto;font-size:11px;color:rgba(168,85,247,0.7);text-decoration:none;font-weight:600}
+.key-service-link:hover{color:rgba(200,150,255,0.9)}
+.key-input-row{display:flex;gap:8px}
+.key-input{flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);border-radius:9px;padding:8px 12px;font-size:12px;color:white;font-family:'JetBrains Mono',monospace;outline:none;transition:var(--t-snap)}
+.key-input:focus{border-color:rgba(168,85,247,0.4)}
+.key-save-btn{padding:8px 14px;border-radius:9px;border:none;background:rgba(168,85,247,0.2);color:rgba(200,150,255,0.9);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:var(--t-snap);white-space:nowrap}
+.key-save-btn:hover{background:rgba(168,85,247,0.35);color:white}
+.key-status{font-size:10px;margin-top:6px;color:rgba(255,255,255,0.3)}
+.key-status.ok{color:rgba(100,240,180,0.8)}
+.save-all-btn{width:100%;padding:12px;border-radius:11px;border:none;background:linear-gradient(135deg,#a855f7,#22d3ee);color:white;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;transition:var(--t-spring)}
+.save-all-btn:hover{transform:scale(1.02)}
+
+/* Gallery */
+.gallery-empty{text-align:center;padding:60px 20px;color:rgba(255,255,255,0.2);font-size:14px}
+.gallery-empty .ge-icon{font-size:40px;margin-bottom:12px;opacity:0.5}
+
+/* Image output canvas placeholder */
+.img-placeholder{width:100%;aspect-ratio:1;background:rgba(255,255,255,0.03);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:rgba(255,255,255,0.2);font-size:12px}
+.img-placeholder .ph-icon{font-size:32px;opacity:0.4}
+
+/* Pill row */
+.pill-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.pill{padding:4px 11px;border-radius:99px;font-size:11px;font-weight:700;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:rgba(255,255,255,0.45);cursor:pointer;transition:var(--t-snap)}
+.pill:hover,.pill.active{background:rgba(168,85,247,0.12);border-color:rgba(168,85,247,0.3);color:rgba(200,150,255,0.9)}
+
+/* Neg prompt toggle */
+.neg-toggle{font-size:11px;font-weight:700;color:rgba(255,255,255,0.3);cursor:pointer;margin-bottom:8px;display:inline-flex;align-items:center;gap:5px}
+.neg-toggle:hover{color:rgba(255,255,255,0.6)}
+.neg-area{display:none}
+.neg-area.open{display:block}
+
+/* Generation history strip */
+.hist-strip{display:flex;gap:8px;overflow-x:auto;padding:4px 0 10px;margin-bottom:20px}
+.hist-thumb{width:60px;height:60px;border-radius:10px;object-fit:cover;flex-shrink:0;cursor:pointer;border:2px solid transparent;transition:var(--t-snap);background:rgba(255,255,255,0.04)}
+.hist-thumb:hover{border-color:rgba(168,85,247,0.5)}
+.hist-thumb.selected{border-color:#a855f7}
+
+/* Step counter */
+.step-badge{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:rgba(168,85,247,0.2);border:1px solid rgba(168,85,247,0.3);font-size:11px;font-weight:800;color:rgba(200,150,255,0.9);flex-shrink:0}
+
+/* Range input */
+.range-field{display:flex;flex-direction:column;gap:6px}
+.range-row{display:flex;align-items:center;gap:10px}
+input[type=range]{flex:1;accent-color:#a855f7;height:4px;cursor:pointer}
+.range-val{font-size:12px;font-weight:800;color:rgba(200,150,255,0.9);min-width:32px;text-align:right;font-family:'JetBrains Mono',monospace}
+
+/* Divider */
+.div-text{display:flex;align-items:center;gap:12px;margin:18px 0;color:rgba(255,255,255,0.2);font-size:11px;font-weight:700}
+.div-text::before,.div-text::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.06)}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo"><a href="index.html">Chroma<span>Flora</span></a> <span style="font-size:11px;opacity:.4;font-weight:500;margin-left:6px">AI Studio</span></div>
+  <div class="nav-links">
+    <a href="index.html" class="nl">System</a>
+    <a href="player.html" class="nl">Synth</a>
+    <a href="studio.html" class="nl">Studio</a>
+    <a href="band.html" class="nl">Band</a>
+    <a href="plotter.html" class="nl">Plotter</a>
+    <a href="ai-studio.html" class="nl active">AI Studio</a>
+  </div>
+  <div class="hdr-right">
+    <div class="api-status" id="apiStatus">
+      <div class="api-dot" id="dotHF" title="HuggingFace"></div>
+      <div class="api-dot-label">HF</div>
+      <div class="api-dot" id="dotLeo" title="Leonardo.ai"></div>
+      <div class="api-dot-label">LEO</div>
+      <div class="api-dot" id="dotRep" title="Replicate"></div>
+      <div class="api-dot-label">REP</div>
+    </div>
+    <button class="btn-keys" onclick="openKeysModal()">⚙ API Keys</button>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sb-section">Generate</div>
+    <div class="sb-item active" data-tab="image" onclick="switchTab('image',this)">
+      <span class="si">🖼</span> Image Gen
+      <span class="sb-badge">Free+</span>
+    </div>
+    <div class="sb-item" data-tab="audio" onclick="switchTab('audio',this)">
+      <span class="si">🎵</span> Audio Gen
+      <span class="sb-badge">Free+</span>
+    </div>
+    <div class="sb-item" data-tab="pipeline" onclick="switchTab('pipeline',this)">
+      <span class="si">⬡</span> Pipelines
+      <span class="sb-badge new">New</span>
+    </div>
+    <div class="sb-sep"></div>
+    <div class="sb-section">Discover</div>
+    <div class="sb-item" data-tab="soundcloud" onclick="switchTab('soundcloud',this)">
+      <span class="si">☁</span> SoundCloud
+    </div>
+    <div class="sb-item" data-tab="spaces" onclick="switchTab('spaces',this)">
+      <span class="si">🤗</span> HF Spaces
+    </div>
+    <div class="sb-sep"></div>
+    <div class="sb-section">Library</div>
+    <div class="sb-item" data-tab="gallery" onclick="switchTab('gallery',this)">
+      <span class="si">◈</span> My Gallery
+      <span class="sb-badge" id="galleryCount">0</span>
+    </div>
+    <div class="sb-item" href="band.html" onclick="location.href='band.html'">
+      <span class="si">🎸</span> Band Manager
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="main">
+
+    <!-- ══ IMAGE GEN TAB ══ -->
+    <div class="tab-panel active" id="tab-image">
+      <div class="page-header">
+        <div class="page-eyebrow">Generative AI</div>
+        <div class="page-title">Image Generation</div>
+        <div class="page-desc">Generate bioluminescent art, concept images, and visual assets using state-of-the-art diffusion models.</div>
+      </div>
+
+      <!-- Model selector -->
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">⬡</span> Select Model</div>
+        <div class="model-grid" id="imageModelGrid">
+          <div class="model-card selected" data-model="stabilityai/stable-diffusion-xl-base-1.0" data-provider="hf" onclick="selectImageModel(this)">
+            <div class="model-name">SDXL 1.0</div>
+            <div class="model-provider">HuggingFace</div>
+            <div class="model-badge">Free</div>
+          </div>
+          <div class="model-card" data-model="black-forest-labs/FLUX.1-schnell" data-provider="hf" onclick="selectImageModel(this)">
+            <div class="model-name">FLUX.1 Schnell</div>
+            <div class="model-provider">HuggingFace</div>
+            <div class="model-badge">Free</div>
+          </div>
+          <div class="model-card" data-model="black-forest-labs/FLUX.1-dev" data-provider="hf" onclick="selectImageModel(this)">
+            <div class="model-name">FLUX.1 Dev</div>
+            <div class="model-provider">HuggingFace</div>
+            <div class="model-badge">Free</div>
+          </div>
+          <div class="model-card" data-model="runwayml/stable-diffusion-v1-5" data-provider="hf" onclick="selectImageModel(this)">
+            <div class="model-name">SD 1.5</div>
+            <div class="model-provider">HuggingFace</div>
+            <div class="model-badge">Free</div>
+          </div>
+          <div class="model-card" data-model="prompthero/openjourney-v4" data-provider="hf" onclick="selectImageModel(this)">
+            <div class="model-name">OpenJourney v4</div>
+            <div class="model-provider">HuggingFace</div>
+            <div class="model-badge">Free</div>
+          </div>
+          <div class="model-card" data-model="leonardo" data-provider="leonardo" onclick="selectImageModel(this)">
+            <div class="model-name">Leonardo Phoenix</div>
+            <div class="model-provider">Leonardo.ai</div>
+            <div class="model-badge paid">API Key</div>
+          </div>
+          <div class="model-card" data-model="stability-ai/sdxl" data-provider="replicate" onclick="selectImageModel(this)">
+            <div class="model-name">Replicate SDXL</div>
+            <div class="model-provider">Replicate</div>
+            <div class="model-badge paid">API Key</div>
+          </div>
+          <div class="model-card" data-model="midjourney-style" data-provider="replicate" onclick="selectImageModel(this)">
+            <div class="model-name">MJ-Style (Replicate)</div>
+            <div class="model-provider">Replicate</div>
+            <div class="model-badge paid">API Key</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Prompt -->
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">✦</span> Prompt</div>
+        <div class="pill-row" id="styleChips">
+          <div class="pill" onclick="appendStyle('bioluminescent, cosmic')">Bioluminescent</div>
+          <div class="pill" onclick="appendStyle('neon glow, deep space')">Cosmic Neon</div>
+          <div class="pill" onclick="appendStyle('sacred geometry, golden ratio')">Sacred Geometry</div>
+          <div class="pill" onclick="appendStyle('fluid art, pour painting, iridescent')">Fluid Art</div>
+          <div class="pill" onclick="appendStyle('cyberpunk, neon city, rain')">Cyberpunk</div>
+          <div class="pill" onclick="appendStyle('watercolor, botanical illustration')">Botanical</div>
+          <div class="pill" onclick="appendStyle('8k, ultra detailed, hyperrealistic, octane render')">Hyperreal</div>
+          <div class="pill" onclick="appendStyle('Jennipher Troup style, chromaflora aesthetic')">ChromaFlora</div>
+        </div>
+        <textarea class="prompt-area" id="imagePrompt" placeholder="Describe your image… e.g. bioluminescent orchids floating in deep space, cosmic fluid art, purple and aqua glow…"></textarea>
+        <div class="prompt-actions">
+          <button class="prompt-chip" onclick="enhancePrompt('image')">✦ Enhance prompt</button>
+          <button class="prompt-chip" onclick="randomPrompt('image')">⬡ Random</button>
+          <button class="prompt-chip" onclick="document.getElementById('imagePrompt').value=''">✕ Clear</button>
+        </div>
+
+        <div class="div-text">Parameters</div>
+
+        <div class="neg-toggle" onclick="toggleNeg('imageNeg')">▸ Negative prompt</div>
+        <div class="neg-area" id="imageNeg">
+          <textarea class="field-textarea" id="imageNegPrompt" placeholder="low quality, blurry, bad anatomy, watermark…" style="min-height:60px;margin-bottom:14px"></textarea>
+        </div>
+
+        <div class="form-grid">
+          <div class="range-field">
+            <div class="field-label">Steps</div>
+            <div class="range-row">
+              <input type="range" id="imgSteps" min="10" max="50" value="25" oninput="document.getElementById('imgStepsVal').textContent=this.value">
+              <div class="range-val" id="imgStepsVal">25</div>
+            </div>
+          </div>
+          <div class="range-field">
+            <div class="field-label">Guidance Scale (CFG)</div>
+            <div class="range-row">
+              <input type="range" id="imgCFG" min="1" max="20" value="7" step="0.5" oninput="document.getElementById('imgCFGVal').textContent=this.value">
+              <div class="range-val" id="imgCFGVal">7</div>
+            </div>
+          </div>
+        </div>
+        <div class="form-grid" style="margin-top:12px">
+          <div class="field">
+            <div class="field-label">Width</div>
+            <select class="field-select" id="imgWidth">
+              <option value="512">512px</option>
+              <option value="768">768px</option>
+              <option value="1024" selected>1024px</option>
+            </select>
+          </div>
+          <div class="field">
+            <div class="field-label">Height</div>
+            <select class="field-select" id="imgHeight">
+              <option value="512">512px</option>
+              <option value="768">768px</option>
+              <option value="1024" selected>1024px</option>
+            </select>
+          </div>
+          <div class="field">
+            <div class="field-label">Seed</div>
+            <input type="number" class="field-input" id="imgSeed" placeholder="Random" style="font-family:'JetBrains Mono',monospace">
+          </div>
+          <div class="field">
+            <div class="field-label">Batch Size</div>
+            <select class="field-select" id="imgBatch">
+              <option value="1" selected>1 image</option>
+              <option value="2">2 images</option>
+              <option value="4">4 images</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-top:18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button class="gen-btn" id="genImgBtn" onclick="generateImage()">
+            <span class="btn-icon">✦</span> Generate Image
+          </button>
+          <div style="font-size:11px;color:rgba(255,255,255,0.25);font-family:'JetBrains Mono',monospace" id="imgModelLabel">Model: SDXL 1.0 · HuggingFace</div>
+        </div>
+
+        <div class="gen-status" id="imgStatus">
+          <div class="spinner"></div>
+          <span id="imgStatusMsg">Generating via HuggingFace Inference API…</span>
+        </div>
+      </div>
+
+      <!-- Output -->
+      <div id="imageOutputSection"></div>
+
+      <!-- History strip -->
+      <div id="imgHistoryWrap" style="display:none">
+        <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.3);margin-bottom:8px">Generation History</div>
+        <div class="hist-strip" id="imgHistory"></div>
+      </div>
+    </div>
+
+    <!-- ══ AUDIO GEN TAB ══ -->
+    <div class="tab-panel" id="tab-audio">
+      <div class="page-header">
+        <div class="page-eyebrow">Generative AI</div>
+        <div class="page-title">Audio Generation</div>
+        <div class="page-desc">Generate music, soundscapes, and stems using MusicGen, AudioLDM, and AudioCraft models.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">⬡</span> Select Model</div>
+        <div class="model-grid">
+          <div class="model-card selected" data-audio-model="facebook/musicgen-small" onclick="selectAudioModel(this)">
+            <div class="model-name">MusicGen Small</div>
+            <div class="model-provider">Meta / HuggingFace</div>
+            <div class="model-badge">Free · ~30s</div>
+          </div>
+          <div class="model-card" data-audio-model="facebook/musicgen-medium" onclick="selectAudioModel(this)">
+            <div class="model-name">MusicGen Medium</div>
+            <div class="model-provider">Meta / HuggingFace</div>
+            <div class="model-badge">Free · ~60s</div>
+          </div>
+          <div class="model-card" data-audio-model="facebook/musicgen-melody" onclick="selectAudioModel(this)">
+            <div class="model-name">MusicGen Melody</div>
+            <div class="model-provider">Meta / HuggingFace</div>
+            <div class="model-badge">Free</div>
+          </div>
+          <div class="model-card" data-audio-model="cvssp/audioldm2" onclick="selectAudioModel(this)">
+            <div class="model-name">AudioLDM 2</div>
+            <div class="model-provider">CVSSP / HuggingFace</div>
+            <div class="model-badge">Free</div>
+          </div>
+          <div class="model-card" data-audio-model="cvssp/audioldm2-music" onclick="selectAudioModel(this)">
+            <div class="model-name">AudioLDM 2 Music</div>
+            <div class="model-provider">CVSSP / HuggingFace</div>
+            <div class="model-badge">Free</div>
+          </div>
+          <div class="model-card" data-audio-model="facebook/audiogen-medium" onclick="selectAudioModel(this)">
+            <div class="model-name">AudioGen Medium</div>
+            <div class="model-provider">Meta / HuggingFace</div>
+            <div class="model-badge">Free · SFX</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">✦</span> Audio Prompt</div>
+        <div class="pill-row">
+          <div class="pill" onclick="appendAudioStyle('ambient, cosmic, ethereal')">Cosmic Ambient</div>
+          <div class="pill" onclick="appendAudioStyle('lo-fi hip hop, relaxing, beats')">Lo-Fi Beats</div>
+          <div class="pill" onclick="appendAudioStyle('cinematic orchestral, epic, emotional')">Cinematic</div>
+          <div class="pill" onclick="appendAudioStyle('electronic, synth wave, 80s')">Synthwave</div>
+          <div class="pill" onclick="appendAudioStyle('bioluminescent soundscape, nature, deep sea')">Biolume</div>
+          <div class="pill" onclick="appendAudioStyle('jazz, piano, late night')">Late Night Jazz</div>
+          <div class="pill" onclick="appendAudioStyle('trap beats, 808, dark')">Dark Trap</div>
+          <div class="pill" onclick="appendAudioStyle('forest, birds, rain, peaceful nature sounds')">Nature SFX</div>
+        </div>
+        <textarea class="prompt-area" id="audioPrompt" placeholder="Describe the music or sound… e.g. dreamy ambient electronic music with bioluminescent synth pads and distant cosmic reverb, 90 BPM…"></textarea>
+        <div class="prompt-actions">
+          <button class="prompt-chip" onclick="enhancePrompt('audio')">✦ Enhance prompt</button>
+          <button class="prompt-chip" onclick="randomPrompt('audio')">⬡ Random</button>
+        </div>
+
+        <div class="div-text">Parameters</div>
+
+        <div class="form-grid" style="margin-top:0">
+          <div class="range-field">
+            <div class="field-label">Duration (seconds)</div>
+            <div class="range-row">
+              <input type="range" id="audioDuration" min="5" max="30" value="10" oninput="document.getElementById('audioDurVal').textContent=this.value+'s'">
+              <div class="range-val" id="audioDurVal">10s</div>
+            </div>
+          </div>
+          <div class="field">
+            <div class="field-label">BPM (optional hint)</div>
+            <input type="number" class="field-input" id="audioBPM" placeholder="e.g. 90" min="40" max="200" style="font-family:'JetBrains Mono',monospace">
+          </div>
+          <div class="field">
+            <div class="field-label">Key / Mode (optional)</div>
+            <select class="field-select" id="audioKey">
+              <option value="">Any</option>
+              <option>C Major</option><option>A Minor</option><option>G Major</option>
+              <option>E Minor</option><option>D Major</option><option>B Minor</option>
+              <option>F Major</option><option>D Minor</option>
+            </select>
+          </div>
+          <div class="field">
+            <div class="field-label">Stem Type</div>
+            <select class="field-select" id="audioStem">
+              <option value="full">Full Mix</option>
+              <option value="melody">Melody / Lead</option>
+              <option value="bass">Bass</option>
+              <option value="drums">Drums / Percussion</option>
+              <option value="pads">Pads / Atmosphere</option>
+              <option value="sfx">Sound Effects</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-top:18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button class="gen-btn" id="genAudioBtn" onclick="generateAudio()">
+            <span class="btn-icon">♫</span> Generate Audio
+          </button>
+          <div style="font-size:11px;color:rgba(255,255,255,0.25);font-family:'JetBrains Mono',monospace" id="audioModelLabel">Model: MusicGen Small · HuggingFace</div>
+        </div>
+
+        <div class="gen-status" id="audioStatus">
+          <div class="spinner"></div>
+          <span id="audioStatusMsg">Generating via HuggingFace… this may take 30–90 seconds</span>
+        </div>
+      </div>
+
+      <div id="audioOutputSection"></div>
+    </div>
+
+    <!-- ══ PIPELINE TAB ══ -->
+    <div class="tab-panel" id="tab-pipeline">
+      <div class="page-header">
+        <div class="page-eyebrow">Workflow</div>
+        <div class="page-title">AI Pipelines</div>
+        <div class="page-desc">Chain multiple AI models into generative workflows — ComfyUI-style node pipelines for images, audio, and mixed media.</div>
+      </div>
+
+      <!-- Pipeline preset cards -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:24px">
+        <div class="card" style="cursor:pointer;margin-bottom:0" onclick="loadPipeline('chromaflora-visual')">
+          <div style="font-size:24px;margin-bottom:8px">🌸</div>
+          <div style="font-size:13px;font-weight:800;margin-bottom:4px">ChromaFlora Visual</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.35);line-height:1.5">Prompt → FLUX → ChromaFlora style overlay → Export</div>
+        </div>
+        <div class="card" style="cursor:pointer;margin-bottom:0" onclick="loadPipeline('audio-visual')">
+          <div style="font-size:24px;margin-bottom:8px">🎵</div>
+          <div style="font-size:13px;font-weight:800;margin-bottom:4px">Audio + Visual</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.35);line-height:1.5">Prompt → MusicGen (audio) + SDXL (cover art) → Save to Band</div>
+        </div>
+        <div class="card" style="cursor:pointer;margin-bottom:0" onclick="loadPipeline('audioldm-stem')">
+          <div style="font-size:24px;margin-bottom:8px">🎸</div>
+          <div style="font-size:13px;font-weight:800;margin-bottom:4px">AudioLoRA Stem</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.35);line-height:1.5">Genre prompt → AudioLDM 2 → Stem classification → Band library</div>
+        </div>
+        <div class="card" style="cursor:pointer;margin-bottom:0" onclick="loadPipeline('comfyui-img2img')">
+          <div style="font-size:24px;margin-bottom:8px">⬡</div>
+          <div style="font-size:13px;font-weight:800;margin-bottom:4px">Img2Img Restyle</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.35);line-height:1.5">Upload image → SDXL img2img → ChromaFlora aesthetic → Export</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">⬡</span> Pipeline Builder</div>
+        <div class="pipeline-board" id="pipelineBoard">
+          <!-- nodes rendered by JS -->
+        </div>
+        <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+          <button class="gen-btn" id="runPipelineBtn" onclick="runPipeline()">
+            <span class="btn-icon">▶</span> Run Pipeline
+          </button>
+          <button class="prompt-chip" onclick="addPipelineNode()">+ Add Node</button>
+          <button class="prompt-chip" onclick="clearPipeline()">✕ Clear</button>
+        </div>
+        <div class="gen-status" id="pipelineStatus">
+          <div class="spinner"></div>
+          <span id="pipelineStatusMsg">Running pipeline…</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SOUNDCLOUD TAB ══ -->
+    <div class="tab-panel" id="tab-soundcloud">
+      <div class="page-header">
+        <div class="page-eyebrow">Discovery</div>
+        <div class="page-title">SoundCloud</div>
+        <div class="page-desc">Embed SoundCloud tracks and playlists, save tracks to your band library, and draw inspiration for AI generation.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">☁</span> Embed Track or Playlist</div>
+        <div class="sc-search-row">
+          <input class="sc-input" id="scUrlInput" placeholder="Paste SoundCloud track or playlist URL… https://soundcloud.com/…" type="url">
+          <button class="sc-btn" onclick="embedSoundCloud()">Embed ▶</button>
+        </div>
+        <div id="scEmbedContainer"></div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.25);margin-top:10px;line-height:1.5">
+          Supports any public SoundCloud track, playlist, or artist URL. The SoundCloud widget will appear above.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">◈</span> Saved SC Tracks</div>
+        <div class="sc-search-row">
+          <input class="sc-input" id="scSaveTitle" placeholder="Track title">
+          <input class="sc-input" id="scSaveArtist" placeholder="Artist" style="max-width:180px">
+          <input class="sc-input" id="scSaveUrl" placeholder="SoundCloud URL" style="max-width:260px">
+          <button class="sc-btn" onclick="saveSCTrack()">Save</button>
+        </div>
+        <div class="sc-playlist-items" id="scSavedList">
+          <!-- saved tracks rendered by JS -->
+        </div>
+      </div>
+
+      <!-- Curated inspirational embedded tracks -->
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">✦</span> Embedded Widget</div>
+        <div id="scInspirePlayer">
+          <div class="sc-embed-wrap">
+            <iframe width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay"
+              src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/293&color=%23a855f7&auto_play=false&hide_related=false&show_comments=false&show_user=true&show_reposts=false&show_teaser=true"
+              style="display:block"></iframe>
+          </div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.25);margin-top:8px">Enter a SoundCloud URL above to load your own track here.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ HF SPACES TAB ══ -->
+    <div class="tab-panel" id="tab-spaces">
+      <div class="page-header">
+        <div class="page-eyebrow">Discovery</div>
+        <div class="page-title">HuggingFace Spaces</div>
+        <div class="page-desc">Curated HuggingFace Spaces for image generation, audio LoRA, and multi-modal AI. Open directly in-app or launch in a new tab.</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px" id="spacesGrid">
+        <!-- rendered by JS -->
+      </div>
+    </div>
+
+    <!-- ══ GALLERY TAB ══ -->
+    <div class="tab-panel" id="tab-gallery">
+      <div class="page-header">
+        <div class="page-eyebrow">Library</div>
+        <div class="page-title">My Gallery</div>
+        <div class="page-desc">All generated images and audio from this session, saved to your local library.</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
+        <div class="pill active" id="galleryFilterAll" onclick="filterGallery('all',this)">All</div>
+        <div class="pill" id="galleryFilterImage" onclick="filterGallery('image',this)">Images</div>
+        <div class="pill" id="galleryFilterAudio" onclick="filterGallery('audio',this)">Audio</div>
+        <div class="pill" onclick="clearGallery()" style="margin-left:auto;border-color:rgba(236,72,153,0.2);color:rgba(255,120,160,0.6)">Clear All</div>
+      </div>
+      <div id="galleryGrid"></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- API Keys Modal -->
+<div class="modal-overlay" id="keysModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeKeysModal()">✕</button>
+    <div class="modal-title">API Keys</div>
+    <div class="modal-sub">Keys are stored in your browser only (localStorage). Never shared or transmitted except to the respective API endpoints.</div>
+
+    <div class="key-service">
+      <div class="key-service-header">
+        <div class="key-service-icon">🤗</div>
+        <div class="key-service-name">HuggingFace Inference API</div>
+        <a class="key-service-link" href="https://huggingface.co/settings/tokens" target="_blank">Get token →</a>
+      </div>
+      <div class="key-input-row">
+        <input type="password" class="key-input" id="keyHF" placeholder="hf_…">
+        <button class="key-save-btn" onclick="saveKey('hf')">Save</button>
+      </div>
+      <div class="key-status" id="keyStatusHF">Free tier: 1000 req/day · Image + Audio + Text models</div>
+    </div>
+
+    <div class="key-service">
+      <div class="key-service-header">
+        <div class="key-service-icon">🎨</div>
+        <div class="key-service-name">Leonardo.ai</div>
+        <a class="key-service-link" href="https://app.leonardo.ai/api-access" target="_blank">Get key →</a>
+      </div>
+      <div class="key-input-row">
+        <input type="password" class="key-input" id="keyLeo" placeholder="Leonardo API key…">
+        <button class="key-save-btn" onclick="saveKey('leo')">Save</button>
+      </div>
+      <div class="key-status" id="keyStatusLeo">150 tokens/day free · Phoenix · Kino XL · DreamShaper XL</div>
+    </div>
+
+    <div class="key-service">
+      <div class="key-service-header">
+        <div class="key-service-icon">⬡</div>
+        <div class="key-service-name">Replicate</div>
+        <a class="key-service-link" href="https://replicate.com/account/api-tokens" target="_blank">Get token →</a>
+      </div>
+      <div class="key-input-row">
+        <input type="password" class="key-input" id="keyReplicate" placeholder="r8_…">
+        <button class="key-save-btn" onclick="saveKey('replicate')">Save</button>
+      </div>
+      <div class="key-status" id="keyStatusReplicate">Pay-per-use · SDXL · FLUX · Stable Video · ComfyUI</div>
+    </div>
+
+    <div class="key-service">
+      <div class="key-service-header">
+        <div class="key-service-icon">☁</div>
+        <div class="key-service-name">SoundCloud (optional)</div>
+        <a class="key-service-link" href="https://developers.soundcloud.com/" target="_blank">Get client ID →</a>
+      </div>
+      <div class="key-input-row">
+        <input type="password" class="key-input" id="keySC" placeholder="SoundCloud client_id…">
+        <button class="key-save-btn" onclick="saveKey('sc')">Save</button>
+      </div>
+      <div class="key-status" id="keyStatusSC">Widget embed works without a key · Search requires client ID</div>
+    </div>
+
+    <button class="save-all-btn" onclick="saveAllKeys()">✓ Save All Keys</button>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════ */
+const LS = key => localStorage.getItem(key);
+const LSSet = (k,v) => localStorage.setItem(k,v);
+
+let selectedImageModel = 'stabilityai/stable-diffusion-xl-base-1.0';
+let selectedImageProvider = 'hf';
+let selectedAudioModel = 'facebook/musicgen-small';
+
+const gallery = JSON.parse(LS('cf_ai_gallery') || '[]');
+const scSaved = JSON.parse(LS('cf_sc_saved') || '[]');
+
+/* ═══════════════════════════════════════════
+   TABS
+═══════════════════════════════════════════ */
+function switchTab(id, el) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(s => s.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  if (el) el.classList.add('active');
+  if (id === 'gallery') renderGallery();
+  if (id === 'spaces') renderSpaces();
+}
+
+/* ═══════════════════════════════════════════
+   MODEL SELECTION
+═══════════════════════════════════════════ */
+function selectImageModel(el) {
+  document.querySelectorAll('#imageModelGrid .model-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedImageModel = el.dataset.model;
+  selectedImageProvider = el.dataset.provider;
+  document.getElementById('imgModelLabel').textContent = `Model: ${el.querySelector('.model-name').textContent} · ${el.querySelector('.model-provider').textContent}`;
+}
+
+function selectAudioModel(el) {
+  document.querySelectorAll('[data-audio-model]').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedAudioModel = el.dataset.audioModel;
+  document.getElementById('audioModelLabel').textContent = `Model: ${el.querySelector('.model-name').textContent} · ${el.querySelector('.model-provider').textContent}`;
+}
+
+/* ═══════════════════════════════════════════
+   PROMPT HELPERS
+═══════════════════════════════════════════ */
+const IMG_RANDOMS = [
+  'bioluminescent orchids floating in deep space, purple aqua cosmic glow, fluid art pour',
+  'sacred geometry mandala, flower of life, golden ratio, glowing neon on black',
+  'deep sea bioluminescent creatures, ethereal light, ocean dark, otherworldly',
+  'chromaflora cosmic garden, alien botanical illustration, neon glow, 8k',
+  'crystal cave with glowing formations, cool blue purple light, fantasy landscape',
+  'abstract fluid pour painting, iridescent, metallic, macro photo',
+  'neon cyberpunk botanical garden, rain, reflections, purple tones',
+  'cosmic nebula closeup, star formation, purple gold pink, ultra detailed',
+];
+const AUDIO_RANDOMS = [
+  'dreamy ambient electronic music with cosmic synth pads, slow bpm, reverb heavy',
+  'lo-fi hip hop beats with bioluminescent nature sounds, 85 bpm, peaceful',
+  'dark synthwave, 80s inspired, neon, atmospheric, minor key',
+  'acoustic guitar with rain and forest ambience, peaceful, warm',
+  'epic cinematic orchestral, strings, choir, emotional swell, 4/4 time',
+  'deep house techno with hypnotic arpeggios, 120 bpm, dark basement',
+  'jazz piano trio, late night, melancholic, slow swing',
+  'psychedelic trance, 143 bpm, cosmic, flowing leads',
+];
+
+function appendStyle(style) {
+  const ta = document.getElementById('imagePrompt');
+  ta.value = ta.value ? ta.value.trimEnd() + ', ' + style : style;
+  ta.focus();
+}
+function appendAudioStyle(style) {
+  const ta = document.getElementById('audioPrompt');
+  ta.value = ta.value ? ta.value.trimEnd() + ', ' + style : style;
+  ta.focus();
+}
+function randomPrompt(type) {
+  if (type === 'image') document.getElementById('imagePrompt').value = IMG_RANDOMS[Math.floor(Math.random()*IMG_RANDOMS.length)];
+  else document.getElementById('audioPrompt').value = AUDIO_RANDOMS[Math.floor(Math.random()*AUDIO_RANDOMS.length)];
+}
+function enhancePrompt(type) {
+  const id = type === 'image' ? 'imagePrompt' : 'audioPrompt';
+  const el = document.getElementById(id);
+  if (!el.value.trim()) { el.value = type === 'image' ? IMG_RANDOMS[0] : AUDIO_RANDOMS[0]; return; }
+  const extras = type === 'image'
+    ? ', highly detailed, 8k uhd, bioluminescent, cosmic, masterpiece, best quality'
+    : ', high quality, professional mix, pristine audio, immersive';
+  if (!el.value.includes('8k') && !el.value.includes('detailed')) el.value = el.value.trimEnd() + extras;
+}
+function toggleNeg(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+  el.previousElementSibling.textContent = el.classList.contains('open') ? '▾ Negative prompt' : '▸ Negative prompt';
+}
+
+/* ═══════════════════════════════════════════
+   IMAGE GENERATION
+═══════════════════════════════════════════ */
+async function generateImage() {
+  const prompt = document.getElementById('imagePrompt').value.trim();
+  if (!prompt) { alert('Enter a prompt first.'); return; }
+
+  const hfKey = LS('cf_api_hf');
+  const leoKey = LS('cf_api_leo');
+  const repKey = LS('cf_api_replicate');
+
+  if (selectedImageProvider === 'hf' && !hfKey) {
+    const demo = confirm('No HuggingFace API key set.\n\nHuggingFace has a free tier — get a token at huggingface.co/settings/tokens\n\nTry a demo request anyway? (may fail without auth)');
+    if (!demo) { openKeysModal(); return; }
+  }
+  if (selectedImageProvider === 'leonardo' && !leoKey) { alert('Leonardo.ai API key required. Add it in API Keys.'); openKeysModal(); return; }
+  if (selectedImageProvider === 'replicate' && !repKey) { alert('Replicate API key required. Add it in API Keys.'); openKeysModal(); return; }
+
+  const btn = document.getElementById('genImgBtn');
+  const status = document.getElementById('imgStatus');
+  const statusMsg = document.getElementById('imgStatusMsg');
+  btn.disabled = true; btn.classList.add('loading');
+  status.className = 'gen-status visible';
+  statusMsg.textContent = 'Generating… this may take 15–60 seconds';
+
+  const negPrompt = document.getElementById('imageNegPrompt').value.trim();
+  const steps = parseInt(document.getElementById('imgSteps').value);
+  const cfg = parseFloat(document.getElementById('imgCFG').value);
+  const seed = parseInt(document.getElementById('imgSeed').value) || Math.floor(Math.random()*99999999);
+
+  try {
+    let imageBlob;
+
+    if (selectedImageProvider === 'hf') {
+      statusMsg.textContent = `Calling ${selectedImageModel} via HuggingFace Inference API…`;
+      const headers = { 'Content-Type': 'application/json' };
+      if (hfKey) headers['Authorization'] = `Bearer ${hfKey}`;
+
+      const body = {
+        inputs: prompt,
+        parameters: {
+          negative_prompt: negPrompt || undefined,
+          num_inference_steps: steps,
+          guidance_scale: cfg,
+          seed
+        }
+      };
+
+      const resp = await fetch(`https://api-inference.huggingface.co/models/${selectedImageModel}`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(body)
+      });
+
+      if (!resp.ok) {
+        const err = await resp.text();
+        throw new Error(`HF API ${resp.status}: ${err.slice(0,200)}`);
+      }
+      imageBlob = await resp.blob();
+
+    } else if (selectedImageProvider === 'leonardo') {
+      statusMsg.textContent = 'Calling Leonardo.ai API…';
+      const genResp = await fetch('https://cloud.leonardo.ai/api/rest/v1/generations', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${leoKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt,
+          negative_prompt: negPrompt || undefined,
+          num_images: 1,
+          width: parseInt(document.getElementById('imgWidth').value),
+          height: parseInt(document.getElementById('imgHeight').value),
+          guidance_scale: cfg,
+          num_inference_steps: steps,
+          modelId: 'b24e16ff-06e3-43eb-8d33-4416c2d75876'
+        })
+      });
+      if (!genResp.ok) throw new Error(`Leonardo ${genResp.status}`);
+      const genData = await genResp.json();
+      const genId = genData.sdGenerationJob?.generationId;
+      if (!genId) throw new Error('No generation ID from Leonardo');
+
+      statusMsg.textContent = 'Polling Leonardo.ai for result…';
+      let imgUrl = null;
+      for (let i = 0; i < 30; i++) {
+        await new Promise(r => setTimeout(r, 3000));
+        const pollResp = await fetch(`https://cloud.leonardo.ai/api/rest/v1/generations/${genId}`, {
+          headers: { 'Authorization': `Bearer ${leoKey}` }
+        });
+        const pollData = await pollResp.json();
+        const imgs = pollData.generations_by_pk?.generated_images;
+        if (imgs && imgs.length > 0) { imgUrl = imgs[0].url; break; }
+      }
+      if (!imgUrl) throw new Error('Leonardo generation timed out');
+      const imgResp = await fetch(imgUrl);
+      imageBlob = await imgResp.blob();
+
+    } else if (selectedImageProvider === 'replicate') {
+      statusMsg.textContent = 'Calling Replicate API…';
+      const modelVersions = {
+        'stability-ai/sdxl': 'da77bc59ee60423279fd632efb4795ab731d9e3ca9705d97b27bd9d77ae8de82',
+        'midjourney-style': 'ac732df83cea7fff18b8472768c88ad041fa750ff7682a21affe81863cbe77e4'
+      };
+      const version = modelVersions[selectedImageModel] || modelVersions['stability-ai/sdxl'];
+      const predResp = await fetch('https://api.replicate.com/v1/predictions', {
+        method: 'POST',
+        headers: { 'Authorization': `Token ${repKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ version, input: { prompt, negative_prompt: negPrompt, num_inference_steps: steps, guidance_scale: cfg, seed } })
+      });
+      if (!predResp.ok) throw new Error(`Replicate ${predResp.status}`);
+      const pred = await predResp.json();
+
+      statusMsg.textContent = 'Polling Replicate…';
+      let outputUrl = null;
+      for (let i = 0; i < 40; i++) {
+        await new Promise(r => setTimeout(r, 2000));
+        const poll = await fetch(pred.urls.get, { headers: { 'Authorization': `Token ${repKey}` } });
+        const pollData = await poll.json();
+        if (pollData.status === 'succeeded') { outputUrl = pollData.output?.[0]; break; }
+        if (pollData.status === 'failed') throw new Error('Replicate generation failed');
+      }
+      if (!outputUrl) throw new Error('Replicate timed out');
+      const imgResp = await fetch(outputUrl);
+      imageBlob = await imgResp.blob();
+    }
+
+    const imageUrl = URL.createObjectURL(imageBlob);
+    displayImageResult(imageUrl, prompt, seed);
+    status.className = 'gen-status visible success';
+    statusMsg.textContent = '✓ Image generated successfully';
+    setTimeout(() => status.className = 'gen-status', 3000);
+
+  } catch (err) {
+    status.className = 'gen-status visible error';
+    statusMsg.textContent = '✕ ' + err.message;
+  } finally {
+    btn.disabled = false; btn.classList.remove('loading');
+  }
+}
+
+function displayImageResult(url, prompt, seed) {
+  const section = document.getElementById('imageOutputSection');
+  const modelName = document.querySelector('#imageModelGrid .selected .model-name').textContent;
+  const ts = Date.now();
+
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `
+    <div class="card-title"><span class="ct-icon">🖼</span> Generated Image</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      <img src="${url}" style="width:100%;border-radius:12px;display:block" alt="AI generated">
+      <div>
+        <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,0.3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em">PROMPT</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.6;margin-bottom:12px">${prompt}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:4px"><span style="color:rgba(200,150,255,0.7)">Model:</span> ${modelName}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:4px"><span style="color:rgba(200,150,255,0.7)">Seed:</span> ${seed}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:16px"><span style="color:rgba(200,150,255,0.7)">Steps:</span> ${document.getElementById('imgSteps').value} · CFG: ${document.getElementById('imgCFG').value}</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <a href="${url}" download="chromaflora-ai-${ts}.png" class="prompt-chip" style="text-decoration:none">⬇ Download</a>
+          <button class="prompt-chip" onclick="saveToGallery('image','${url}','${prompt.replace(/'/g,"\\'")}','${modelName}')">+ Gallery</button>
+          <button class="prompt-chip" onclick="useAsReference('${url}')">↺ Remix</button>
+        </div>
+      </div>
+    </div>
+  `;
+  section.innerHTML = '';
+  section.appendChild(card);
+
+  addToHistory('image', url, prompt);
+}
+
+function addToHistory(type, url, prompt) {
+  const strip = document.getElementById('imgHistory');
+  const wrap = document.getElementById('imgHistoryWrap');
+  if (type === 'image') {
+    wrap.style.display = 'block';
+    const thumb = document.createElement('img');
+    thumb.src = url;
+    thumb.className = 'hist-thumb';
+    thumb.title = prompt;
+    strip.prepend(thumb);
+  }
+}
+
+/* ═══════════════════════════════════════════
+   AUDIO GENERATION
+═══════════════════════════════════════════ */
+async function generateAudio() {
+  const prompt = document.getElementById('audioPrompt').value.trim();
+  if (!prompt) { alert('Enter a prompt first.'); return; }
+
+  const hfKey = LS('cf_api_hf');
+  if (!hfKey) {
+    const demo = confirm('No HuggingFace API key set.\n\nGet a free token at huggingface.co/settings/tokens\n\nTry without auth? (may fail or be rate limited)');
+    if (!demo) { openKeysModal(); return; }
+  }
+
+  const btn = document.getElementById('genAudioBtn');
+  const status = document.getElementById('audioStatus');
+  const msg = document.getElementById('audioStatusMsg');
+  btn.disabled = true; btn.classList.add('loading');
+  status.className = 'gen-status visible';
+
+  const bpm = document.getElementById('audioBPM').value;
+  const key = document.getElementById('audioKey').value;
+  const duration = document.getElementById('audioDuration').value;
+  const stemType = document.getElementById('audioStem').value;
+
+  let fullPrompt = prompt;
+  if (bpm) fullPrompt += `, ${bpm} BPM`;
+  if (key) fullPrompt += `, ${key}`;
+
+  msg.textContent = `Generating with ${selectedAudioModel}… may take 30–90s`;
+
+  try {
+    const headers = { 'Content-Type': 'application/json' };
+    if (hfKey) headers['Authorization'] = `Bearer ${hfKey}`;
+
+    const body = { inputs: fullPrompt };
+    if (selectedAudioModel.includes('musicgen')) {
+      body.parameters = { max_new_tokens: Math.floor(parseInt(duration) * 50) };
+    }
+
+    const resp = await fetch(`https://api-inference.huggingface.co/models/${selectedAudioModel}`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body)
+    });
+
+    if (!resp.ok) {
+      const err = await resp.text();
+      throw new Error(`HF API ${resp.status}: ${err.slice(0,200)}`);
+    }
+
+    const audioBlob = await resp.blob();
+    const audioUrl = URL.createObjectURL(audioBlob);
+
+    displayAudioResult(audioUrl, fullPrompt, stemType);
+    status.className = 'gen-status visible success';
+    msg.textContent = '✓ Audio generated successfully';
+    setTimeout(() => status.className = 'gen-status', 3000);
+
+  } catch (err) {
+    status.className = 'gen-status visible error';
+    msg.textContent = '✕ ' + err.message;
+  } finally {
+    btn.disabled = false; btn.classList.remove('loading');
+  }
+}
+
+function displayAudioResult(url, prompt, stemType) {
+  const section = document.getElementById('audioOutputSection');
+  const modelName = document.querySelector('[data-audio-model].selected .model-name').textContent;
+  const ts = Date.now();
+
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `
+    <div class="card-title"><span class="ct-icon">♫</span> Generated Audio — ${stemType.toUpperCase()}</div>
+    <div class="audio-card">
+      <div class="audio-icon">♫</div>
+      <div class="audio-info">
+        <div class="audio-title">${stemType} · ${new Date().toLocaleTimeString()}</div>
+        <div class="audio-model">${modelName} · <span style="opacity:.6">${prompt.slice(0,60)}…</span></div>
+        <audio class="audio-player" controls src="${url}"></audio>
+      </div>
+      <a href="${url}" download="chromaflora-audio-${ts}.wav" class="audio-dl" title="Download">⬇</a>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+      <button class="prompt-chip" onclick="saveAudioToGallery('${url}','${prompt.replace(/'/g,'\\\'')}','${modelName}','${stemType}')">+ Gallery</button>
+      <button class="prompt-chip" onclick="saveAudioToBand('${url}','${prompt.replace(/'/g,'\\\'')}','${stemType}')">+ Band Library</button>
+    </div>
+  `;
+  section.innerHTML = '';
+  section.appendChild(card);
+}
+
+function saveAudioToBand(url, prompt, stemType) {
+  const stems = JSON.parse(LS('cf_band_gen_stems') || '[]');
+  stems.push({ id: Date.now(), url, prompt, stemType, model: selectedAudioModel, createdAt: new Date().toISOString() });
+  LSSet('cf_band_gen_stems', JSON.stringify(stems));
+  alert('Saved to Band Library! View it on the Band Manager page.');
+}
+
+/* ═══════════════════════════════════════════
+   GALLERY
+═══════════════════════════════════════════ */
+function saveToGallery(type, url, prompt, model) {
+  const g = JSON.parse(LS('cf_ai_gallery') || '[]');
+  g.unshift({ id: Date.now(), type, url, prompt, model, createdAt: new Date().toISOString() });
+  LSSet('cf_ai_gallery', JSON.stringify(g));
+  document.getElementById('galleryCount').textContent = g.length;
+  const notice = document.createElement('span');
+  notice.textContent = ' Saved!';
+  notice.style.cssText = 'color:#10b981;font-size:11px;font-weight:700';
+  event.target.appendChild(notice);
+  setTimeout(() => notice.remove(), 1500);
+}
+function saveAudioToGallery(url, prompt, model, stemType) {
+  saveToGallery('audio', url, prompt, `${model} (${stemType})`);
+}
+
+let galleryFilter = 'all';
+function filterGallery(f, el) {
+  galleryFilter = f;
+  document.querySelectorAll('#tab-gallery .pill').forEach(p => p.classList.remove('active'));
+  if (el) el.classList.add('active');
+  renderGallery();
+}
+function renderGallery() {
+  const g = JSON.parse(LS('cf_ai_gallery') || '[]').filter(i => galleryFilter === 'all' || i.type === galleryFilter);
+  const container = document.getElementById('galleryGrid');
+  document.getElementById('galleryCount').textContent = JSON.parse(LS('cf_ai_gallery') || '[]').length;
+  if (!g.length) {
+    container.innerHTML = `<div class="gallery-empty"><div class="ge-icon">◈</div>No items yet. Generate images or audio and save them here.</div>`;
+    return;
+  }
+  container.innerHTML = `<div class="output-grid">${g.map(item => `
+    <div class="output-card">
+      ${item.type === 'image'
+        ? `<img src="${item.url}" class="output-img" alt="generated">`
+        : `<div class="output-img" style="display:flex;align-items:center;justify-content:center;font-size:36px;background:linear-gradient(135deg,rgba(168,85,247,0.2),rgba(34,211,238,0.1))">♫</div>`
+      }
+      <div class="output-meta">
+        <div class="output-model">${item.model}</div>
+        <div class="output-prompt">${item.prompt}</div>
+      </div>
+      ${item.type === 'audio' ? `<div style="padding:0 12px 10px"><audio controls style="width:100%;height:28px" src="${item.url}"></audio></div>` : ''}
+      <div class="output-actions">
+        <a href="${item.url}" download class="out-btn" style="text-align:center;display:block">⬇</a>
+        <button class="out-btn" onclick="removeFromGallery(${item.id})">✕</button>
+      </div>
+    </div>
+  `).join('')}</div>`;
+}
+function removeFromGallery(id) {
+  const g = JSON.parse(LS('cf_ai_gallery') || '[]').filter(i => i.id !== id);
+  LSSet('cf_ai_gallery', JSON.stringify(g));
+  renderGallery();
+}
+function clearGallery() {
+  if (!confirm('Clear all gallery items?')) return;
+  LSSet('cf_ai_gallery', '[]');
+  renderGallery();
+}
+
+/* ═══════════════════════════════════════════
+   SOUNDCLOUD
+═══════════════════════════════════════════ */
+function embedSoundCloud() {
+  const url = document.getElementById('scUrlInput').value.trim();
+  if (!url) return;
+  const encoded = encodeURIComponent(url);
+  const iframe = `<iframe width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay"
+    src="https://w.soundcloud.com/player/?url=${encoded}&color=%23a855f7&auto_play=true&hide_related=false&show_comments=false&show_user=true&show_reposts=false&show_teaser=true"
+    style="display:block;border-radius:0"></iframe>`;
+  const container = document.getElementById('scEmbedContainer');
+  container.innerHTML = `<div class="sc-embed-wrap">${iframe}</div>`;
+  document.getElementById('scInspirePlayer').style.display = 'none';
+}
+
+function saveSCTrack() {
+  const title = document.getElementById('scSaveTitle').value.trim();
+  const artist = document.getElementById('scSaveArtist').value.trim();
+  const url = document.getElementById('scSaveUrl').value.trim();
+  if (!title || !url) { alert('Title and URL required.'); return; }
+  const saved = JSON.parse(LS('cf_sc_saved') || '[]');
+  saved.unshift({ id: Date.now(), title, artist, url, createdAt: new Date().toISOString() });
+  LSSet('cf_sc_saved', JSON.stringify(saved));
+  document.getElementById('scSaveTitle').value = '';
+  document.getElementById('scSaveArtist').value = '';
+  document.getElementById('scSaveUrl').value = '';
+  renderSCSaved();
+}
+function renderSCSaved() {
+  const saved = JSON.parse(LS('cf_sc_saved') || '[]');
+  const list = document.getElementById('scSavedList');
+  if (!saved.length) { list.innerHTML = '<div style="font-size:12px;color:rgba(255,255,255,0.2);padding:12px 0">No saved tracks yet.</div>'; return; }
+  list.innerHTML = saved.map(t => `
+    <div class="sc-track" onclick="loadSCTrack('${encodeURIComponent(t.url)}')">
+      <div class="sc-art">♫</div>
+      <div>
+        <div class="sc-title">${t.title}</div>
+        <div class="sc-artist">${t.artist || 'Unknown artist'}</div>
+      </div>
+      <div class="sc-play">▶</div>
+      <button onclick="event.stopPropagation();removeSCTrack(${t.id})" style="background:none;border:none;color:rgba(255,255,255,0.2);cursor:pointer;font-size:13px;margin-left:4px">✕</button>
+    </div>
+  `).join('');
+}
+function loadSCTrack(encodedUrl) {
+  const container = document.getElementById('scEmbedContainer');
+  container.innerHTML = `<div class="sc-embed-wrap"><iframe width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay"
+    src="https://w.soundcloud.com/player/?url=${encodedUrl}&color=%23a855f7&auto_play=true&show_user=true"
+    style="display:block"></iframe></div>`;
+  document.getElementById('scInspirePlayer').style.display = 'none';
+}
+function removeSCTrack(id) {
+  const saved = JSON.parse(LS('cf_sc_saved') || '[]').filter(t => t.id !== id);
+  LSSet('cf_sc_saved', JSON.stringify(saved));
+  renderSCSaved();
+}
+
+/* ═══════════════════════════════════════════
+   HF SPACES
+═══════════════════════════════════════════ */
+const SPACES = [
+  { name:'FLUX.1 Demo', provider:'HuggingFace', desc:'FLUX.1-dev image gen — state-of-the-art open model', tag:'Image', url:'https://huggingface.co/spaces/black-forest-labs/FLUX.1-dev', free:true },
+  { name:'SDXL Turbo', provider:'HuggingFace', desc:'Real-time image synthesis with SDXL Turbo', tag:'Image', url:'https://huggingface.co/spaces/stabilityai/sdxl-turbo', free:true },
+  { name:'MusicGen', provider:'Meta AI', desc:'Generate music from text descriptions', tag:'Audio', url:'https://huggingface.co/spaces/facebook/MusicGen', free:true },
+  { name:'AudioLDM 2', provider:'CVSSP', desc:'Text-to-audio and text-to-music generation', tag:'Audio', url:'https://huggingface.co/spaces/haoheliu/audioldm2-text2audio-text2music', free:true },
+  { name:'AudioCraft', provider:'Meta AI', desc:'MusicGen + AudioGen multi-modal generation', tag:'Audio', url:'https://huggingface.co/spaces/facebook/audiocraft', free:true },
+  { name:'Stable Audio', provider:'Stability AI', desc:'High-quality long-form music generation', tag:'Audio', url:'https://huggingface.co/spaces/stabilityai/stable-audio', free:true },
+  { name:'ControlNet', provider:'HuggingFace', desc:'Controlled image generation with edge maps, depth, pose', tag:'Image', url:'https://huggingface.co/spaces/hysts/ControlNet-v1-1', free:true },
+  { name:'IP-Adapter', provider:'HuggingFace', desc:'Image prompt adapter for style transfer', tag:'Image', url:'https://huggingface.co/spaces/h94/IP-Adapter', free:true },
+  { name:'Suno Bark', provider:'Suno AI', desc:'Realistic text-to-speech and audio generation', tag:'Audio', url:'https://huggingface.co/spaces/suno/bark', free:true },
+  { name:'DreamBooth', provider:'HuggingFace', desc:'Train custom LoRA on your images', tag:'Training', url:'https://huggingface.co/spaces/multimodalart/dreambooth-training', free:true },
+  { name:'Illusion Diffusion', provider:'AP', desc:'Hidden images with spiral QR and illusion art', tag:'Image', url:'https://huggingface.co/spaces/AP123/IllusionDiffusion', free:true },
+  { name:'ComfyUI Online', provider:'Community', desc:'Full ComfyUI workflow interface in-browser', tag:'Workflow', url:'https://huggingface.co/spaces/SpacesExamples/ComfyUI', free:true },
+  { name:'AnimateDiff', provider:'HuggingFace', desc:'Animate still images with motion modules', tag:'Video', url:'https://huggingface.co/spaces/guoyww/animatediff', free:true },
+  { name:'LLaVA', provider:'HuggingFace', desc:'Visual question answering — analyze your generated art', tag:'Multimodal', url:'https://huggingface.co/spaces/ysharma/llava13b', free:true },
+];
+
+function renderSpaces() {
+  const grid = document.getElementById('spacesGrid');
+  const tagColors = { Image:'rgba(168,85,247,0.2)', Audio:'rgba(34,211,238,0.2)', Training:'rgba(249,115,22,0.2)', Video:'rgba(236,72,153,0.2)', Workflow:'rgba(16,185,129,0.2)', Multimodal:'rgba(168,85,247,0.15)' };
+  grid.innerHTML = SPACES.map(s => `
+    <div class="card" style="margin-bottom:0;cursor:pointer" onclick="window.open('${s.url}','_blank')">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="padding:2px 8px;border-radius:99px;font-size:9px;font-weight:800;background:${tagColors[s.tag]||'rgba(255,255,255,0.1)'};color:rgba(255,255,255,0.6)">${s.tag}</div>
+        ${s.free ? '<div style="font-size:9px;font-weight:800;color:rgba(100,240,180,0.7)">FREE</div>' : ''}
+      </div>
+      <div style="font-size:13px;font-weight:800;margin-bottom:3px">${s.name}</div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:10px">${s.provider}</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.45);line-height:1.5;margin-bottom:12px">${s.desc}</div>
+      <div style="font-size:11px;color:rgba(168,85,247,0.7);font-weight:700">Open Space ↗</div>
+    </div>
+  `).join('');
+}
+
+/* ═══════════════════════════════════════════
+   PIPELINES
+═══════════════════════════════════════════ */
+const PIPE_NODES = {
+  prompt: { icon:'✦', name:'Text Prompt', desc:'Input text for generation' },
+  sdxl: { icon:'🖼', name:'SDXL Image', desc:'Generate image via SDXL' },
+  flux: { icon:'⚡', name:'FLUX.1', desc:'FLUX.1-schnell generation' },
+  musicgen: { icon:'🎵', name:'MusicGen', desc:'Generate audio from prompt' },
+  audioldm: { icon:'♫', name:'AudioLDM 2', desc:'Text-to-audio generation' },
+  overlay: { icon:'🌸', name:'CF Overlay', desc:'Apply ChromaFlora style' },
+  save_gallery: { icon:'◈', name:'Save Gallery', desc:'Save output to gallery' },
+  save_band: { icon:'🎸', name:'Save Band', desc:'Save audio to band library' },
+};
+
+let pipelineNodes = [];
+
+function loadPipeline(id) {
+  const presets = {
+    'chromaflora-visual': ['prompt','flux','overlay','save_gallery'],
+    'audio-visual': ['prompt','musicgen','sdxl','save_band'],
+    'audioldm-stem': ['prompt','audioldm','save_band'],
+    'comfyui-img2img': ['prompt','sdxl','overlay','save_gallery'],
+  };
+  pipelineNodes = presets[id] || [];
+  renderPipelineBoard();
+}
+
+function renderPipelineBoard() {
+  const board = document.getElementById('pipelineBoard');
+  board.innerHTML = '';
+  pipelineNodes.forEach((nodeId, i) => {
+    const node = PIPE_NODES[nodeId];
+    if (i > 0) {
+      const arrow = document.createElement('div');
+      arrow.className = 'pipe-arrow'; arrow.textContent = '→';
+      board.appendChild(arrow);
+    }
+    const el = document.createElement('div');
+    el.className = 'pipe-node';
+    el.innerHTML = `<div class="pipe-node-icon">${node.icon}</div><div class="pipe-node-name">${node.name}</div><div class="pipe-node-desc">${node.desc}</div>`;
+    board.appendChild(el);
+  });
+  const addBtn = document.createElement('div');
+  addBtn.className = 'pipe-add'; addBtn.textContent = '+'; addBtn.title = 'Add node';
+  addBtn.onclick = addPipelineNode;
+  if (pipelineNodes.length > 0) {
+    const arrow = document.createElement('div');
+    arrow.className = 'pipe-arrow'; arrow.textContent = '→';
+    board.appendChild(arrow);
+  }
+  board.appendChild(addBtn);
+}
+
+function addPipelineNode() {
+  const keys = Object.keys(PIPE_NODES);
+  const choice = prompt('Add node:\n' + keys.map((k,i) => `${i+1}. ${PIPE_NODES[k].name}`).join('\n') + '\n\nEnter number:');
+  const idx = parseInt(choice) - 1;
+  if (idx >= 0 && idx < keys.length) { pipelineNodes.push(keys[idx]); renderPipelineBoard(); }
+}
+
+function clearPipeline() { pipelineNodes = []; renderPipelineBoard(); }
+
+async function runPipeline() {
+  if (!pipelineNodes.length) { alert('Build a pipeline first by selecting a preset or adding nodes.'); return; }
+  const prompt = document.getElementById('imagePrompt').value || document.getElementById('audioPrompt').value;
+  if (!prompt) { alert('Enter a prompt in the Image Gen or Audio Gen tab first.'); return; }
+
+  const status = document.getElementById('pipelineStatus');
+  const msg = document.getElementById('pipelineStatusMsg');
+  status.className = 'gen-status visible';
+  msg.textContent = 'Running pipeline… switching to relevant tabs';
+
+  for (const nodeId of pipelineNodes) {
+    msg.textContent = `Running: ${PIPE_NODES[nodeId].name}…`;
+    if (nodeId === 'flux' || nodeId === 'sdxl') {
+      switchTab('image', null);
+      if (nodeId === 'flux') {
+        document.querySelector('[data-model="black-forest-labs/FLUX.1-schnell"]').click();
+      }
+      await generateImage();
+    } else if (nodeId === 'musicgen' || nodeId === 'audioldm') {
+      switchTab('audio', null);
+      if (nodeId === 'audioldm') {
+        document.querySelector('[data-audio-model="cvssp/audioldm2"]').click();
+      }
+      await generateAudio();
+    }
+    await new Promise(r => setTimeout(r, 500));
+  }
+
+  status.className = 'gen-status visible success';
+  msg.textContent = '✓ Pipeline complete';
+  setTimeout(() => status.className = 'gen-status', 4000);
+}
+
+function useAsReference(url) {
+  switchTab('image', document.querySelector('[data-tab="image"]'));
+  document.getElementById('imagePrompt').value = 'Restyle with ChromaFlora bioluminescent aesthetic, cosmic glow, purple aqua palette, ultra detailed';
+  document.getElementById('imagePrompt').focus();
+}
+
+/* ═══════════════════════════════════════════
+   API KEY MODAL
+═══════════════════════════════════════════ */
+function openKeysModal() {
+  document.getElementById('keyHF').value = LS('cf_api_hf') ? '••••••••' + LS('cf_api_hf').slice(-4) : '';
+  document.getElementById('keyLeo').value = LS('cf_api_leo') ? '••••••••' + LS('cf_api_leo').slice(-4) : '';
+  document.getElementById('keyReplicate').value = LS('cf_api_replicate') ? '••••••••' + LS('cf_api_replicate').slice(-4) : '';
+  document.getElementById('keySC').value = LS('cf_api_sc') ? '••••••••' : '';
+  updateKeyStatuses();
+  document.getElementById('keysModal').classList.add('open');
+}
+function closeKeysModal() { document.getElementById('keysModal').classList.remove('open'); }
+document.getElementById('keysModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('keysModal')) closeKeysModal();
+});
+
+function saveKey(type) {
+  const map = { hf: 'keyHF', leo: 'keyLeo', replicate: 'keyReplicate', sc: 'keySC' };
+  const lsMap = { hf: 'cf_api_hf', leo: 'cf_api_leo', replicate: 'cf_api_replicate', sc: 'cf_api_sc' };
+  const val = document.getElementById(map[type]).value.trim();
+  if (val && !val.startsWith('••')) {
+    LSSet(lsMap[type], val);
+    updateKeyStatuses();
+  }
+}
+function saveAllKeys() {
+  ['hf','leo','replicate','sc'].forEach(saveKey);
+  closeKeysModal();
+  updateApiDots();
+}
+function updateKeyStatuses() {
+  const hf = LS('cf_api_hf');
+  const leo = LS('cf_api_leo');
+  const rep = LS('cf_api_replicate');
+  const sc = LS('cf_api_sc');
+  if (hf) { document.getElementById('keyStatusHF').textContent = '✓ Key saved · ' + hf.slice(0,6) + '…'; document.getElementById('keyStatusHF').className = 'key-status ok'; }
+  if (leo) { document.getElementById('keyStatusLeo').textContent = '✓ Key saved'; document.getElementById('keyStatusLeo').className = 'key-status ok'; }
+  if (rep) { document.getElementById('keyStatusReplicate').textContent = '✓ Key saved · ' + rep.slice(0,6) + '…'; document.getElementById('keyStatusReplicate').className = 'key-status ok'; }
+  if (sc) { document.getElementById('keyStatusSC').textContent = '✓ Client ID saved'; document.getElementById('keyStatusSC').className = 'key-status ok'; }
+}
+function updateApiDots() {
+  document.getElementById('dotHF').className = 'api-dot' + (LS('cf_api_hf') ? ' connected' : '');
+  document.getElementById('dotLeo').className = 'api-dot' + (LS('cf_api_leo') ? ' connected' : '');
+  document.getElementById('dotRep').className = 'api-dot' + (LS('cf_api_replicate') ? ' connected' : '');
+}
+
+/* ═══════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════ */
+updateApiDots();
+renderSCSaved();
+loadPipeline('chromaflora-visual');
+document.getElementById('galleryCount').textContent = JSON.parse(LS('cf_ai_gallery') || '[]').length;
+</script>
+</body>
+</html>

@@ -2,8 +2,11 @@
 type ModuleMap = Record<string, () => Promise<Record<string, unknown>>>;
 export const modules: ModuleMap = {
   "./components/mockups/chromaflora-homepage/AccessibleReadable.tsx": () => import("../components/mockups/chromaflora-homepage/AccessibleReadable.tsx"),
+  "./components/mockups/chromaflora-homepage/AtomicZoom.tsx": () => import("../components/mockups/chromaflora-homepage/AtomicZoom.tsx"),
   "./components/mockups/chromaflora-homepage/ClearHierarchy.tsx": () => import("../components/mockups/chromaflora-homepage/ClearHierarchy.tsx"),
   "./components/mockups/chromaflora-homepage/InteractionAffordance.tsx": () => import("../components/mockups/chromaflora-homepage/InteractionAffordance.tsx"),
+  "./components/mockups/chromaflora-homepage/LiveSystemDemo.tsx": () => import("../components/mockups/chromaflora-homepage/LiveSystemDemo.tsx"),
   "./components/mockups/chromaflora-homepage/LuminousDepth.tsx": () => import("../components/mockups/chromaflora-homepage/LuminousDepth.tsx"),
-  "./components/mockups/chromaflora-homepage/TighterHierarchy.tsx": () => import("../components/mockups/chromaflora-homepage/TighterHierarchy.tsx")
+  "./components/mockups/chromaflora-homepage/TighterHierarchy.tsx": () => import("../components/mockups/chromaflora-homepage/TighterHierarchy.tsx"),
+  "./components/mockups/chromaflora-homepage/VoidEmergence.tsx": () => import("../components/mockups/chromaflora-homepage/VoidEmergence.tsx")
 };

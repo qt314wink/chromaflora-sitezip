@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Discovery Engine · ChromaFlora</title>
+<meta name="description" content="ChromaFlora Discovery Engine — anti-feedback-loop curiosity exploration. Pulls from design systems, philosophy, ecology, engineering, cultural theory, and natural phenomena to push your thinking into new territories.">
+<meta name="author" content="Jennipher Troup">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#04040f;--purple:#a855f7;--aqua:#22d3ee;--pink:#ec4899;--orange:#f97316;--green:#10b981;--border:rgba(255,255,255,0.08);--t-snap:0.12s cubic-bezier(0.4,0,0.2,1);--t-spring:0.4s cubic-bezier(0.34,1.56,0.64,1)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:#fff;min-height:100dvh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 60% 50% at 20% 10%,rgba(168,85,247,.1) 0%,transparent 60%),radial-gradient(ellipse 40% 30% at 80% 90%,rgba(34,211,238,.07) 0%,transparent 60%)}
+
+.header{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:58px;background:rgba(4,4,15,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.logo{font-weight:800;font-size:15px}.logo a{color:white;text-decoration:none}.logo span{color:var(--purple)}
+.nav-links{display:flex;gap:4px}
+.nl{padding:5px 13px;border-radius:8px;font-size:12px;font-weight:600;color:rgba(255,255,255,0.5);text-decoration:none;transition:var(--t-snap)}
+.nl:hover,.nl.active{color:white;background:rgba(255,255,255,0.07)}
+
+.hero{position:relative;z-index:1;padding:60px 40px 40px;text-align:center;max-width:760px;margin:0 auto}
+.hero-eyebrow{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.16em;color:rgba(168,85,247,0.7);margin-bottom:14px}
+.hero-title{font-size:clamp(32px,6vw,58px);font-weight:900;letter-spacing:-2.5px;background:linear-gradient(135deg,#a855f7,#ec4899,#22d3ee);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:16px;line-height:1.05}
+.hero-desc{font-size:16px;color:rgba(255,255,255,0.45);line-height:1.75;max-width:560px;margin:0 auto 30px}
+.hero-anti-algo{display:inline-flex;align-items:center;gap:8px;padding:8px 18px;border-radius:99px;border:1px solid rgba(168,85,247,0.25);background:rgba(168,85,247,0.06);font-size:12px;font-weight:700;color:rgba(200,150,255,0.8)}
+
+.filter-bar{display:flex;justify-content:center;gap:6px;padding:0 24px 32px;flex-wrap:wrap;position:relative;z-index:1}
+.fb-chip{padding:6px 16px;border-radius:99px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.4);font-size:12px;font-weight:700;cursor:pointer;transition:var(--t-snap);font-family:inherit}
+.fb-chip:hover{background:rgba(255,255,255,0.06);color:white}
+.fb-chip.active{border-color:rgba(168,85,247,0.5);background:rgba(168,85,247,0.12);color:rgba(200,150,255,0.9)}
+
+.bait-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;padding:0 32px 60px;position:relative;z-index:1;max-width:1400px;margin:0 auto}
+@media(max-width:700px){.bait-grid{grid-template-columns:1fr;padding:0 16px 40px}}
+
+.bait-card{border-radius:20px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.025);overflow:hidden;cursor:pointer;transition:var(--t-spring);position:relative}
+.bait-card:hover{transform:translateY(-4px);border-color:rgba(168,85,247,0.3);box-shadow:0 16px 40px rgba(0,0,0,0.4)}
+.bait-card::before{content:'';position:absolute;inset:0;background:var(--card-gradient,transparent);opacity:0;transition:opacity 0.3s}
+.bait-card:hover::before{opacity:0.07}
+.bait-glyph{font-size:40px;padding:28px 28px 0}
+.bait-origin{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,0.3);padding:12px 28px 4px}
+.bait-title{font-size:18px;font-weight:800;letter-spacing:-0.5px;padding:0 28px 8px;color:rgba(255,255,255,0.92);line-height:1.3}
+.bait-region{font-size:11px;font-weight:600;padding:0 28px 12px;color:var(--card-accent,rgba(168,85,247,0.7))}
+.bait-teaser{font-size:13px;color:rgba(255,255,255,0.45);line-height:1.65;padding:0 28px 20px}
+.bait-footer{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;border-top:1px solid rgba(255,255,255,0.05)}
+.bait-tags{display:flex;gap:4px;flex-wrap:wrap}
+.bait-tag{padding:2px 8px;border-radius:99px;font-size:9px;font-weight:800;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.35)}
+.bait-cta{font-size:11px;font-weight:700;color:var(--card-accent,rgba(200,150,255,0.7));display:flex;align-items:center;gap:4px;flex-shrink:0}
+
+/* Expanded view (lightbox) */
+.lightbox{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.92);backdrop-filter:blur(20px);display:flex;align-items:flex-start;justify-content:center;padding:24px;overflow-y:auto;opacity:0;pointer-events:none;transition:opacity 0.25s}
+.lightbox.open{opacity:1;pointer-events:all}
+.lb-box{background:linear-gradient(160deg,#0e0824,#07041a);border:1px solid rgba(168,85,247,0.2);border-radius:24px;max-width:780px;width:100%;padding:40px;position:relative;transform:scale(0.94);transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);margin:auto}
+.lightbox.open .lb-box{transform:scale(1)}
+.lb-close{position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:50%;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.6);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:var(--t-snap)}
+.lb-close:hover{background:rgba(255,255,255,0.12);color:white}
+.lb-glyph{font-size:54px;margin-bottom:10px}
+.lb-origin-badge{display:inline-block;padding:4px 12px;border-radius:99px;font-size:10px;font-weight:800;border:1px solid rgba(168,85,247,0.3);background:rgba(168,85,247,0.08);color:rgba(200,150,255,0.8);margin-bottom:14px}
+.lb-title{font-size:32px;font-weight:900;letter-spacing:-1px;margin-bottom:6px;line-height:1.15}
+.lb-region{font-size:13px;color:rgba(168,85,247,0.7);margin-bottom:20px;font-weight:600}
+.lb-section{margin-bottom:20px}
+.lb-section-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,0.25);margin-bottom:8px}
+.lb-section-body{font-size:14px;color:rgba(255,255,255,0.7);line-height:1.75}
+.lb-images{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
+.lb-image-placeholder{width:160px;height:100px;border-radius:12px;background:linear-gradient(135deg,rgba(168,85,247,0.15),rgba(34,211,238,0.1));border:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.lb-applications{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.lb-app{background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:12px 14px;font-size:13px;color:rgba(255,255,255,0.65);line-height:1.6}
+.lb-app-label{font-size:9px;font-weight:800;color:rgba(168,85,247,0.6);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
+.lb-actions{display:flex;gap:10px;margin-top:24px;flex-wrap:wrap}
+.lb-btn-primary{padding:10px 22px;border-radius:11px;border:none;background:linear-gradient(135deg,#a855f7,#22d3ee);color:white;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;transition:var(--t-spring)}
+.lb-btn-primary:hover{transform:scale(1.04)}
+.lb-btn-sec{padding:9px 18px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.6);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:var(--t-snap)}
+.lb-btn-sec:hover{background:rgba(255,255,255,0.09);color:white}
+
+/* Mystery question */
+.mystery-bar{position:relative;z-index:1;margin:0 32px 32px;border-radius:20px;background:linear-gradient(135deg,rgba(168,85,247,0.08),rgba(34,211,238,0.05));border:1px solid rgba(168,85,247,0.2);padding:28px 32px;display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+@media(max-width:700px){.mystery-bar{margin:0 16px 24px;gap:14px}}
+.mystery-eyebrow{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.14em;color:rgba(168,85,247,0.7);margin-bottom:6px}
+.mystery-question{font-size:18px;font-weight:800;letter-spacing:-0.3px;color:white;line-height:1.35;flex:1;min-width:200px}
+.mystery-input-wrap{display:flex;flex-direction:column;gap:8px;min-width:280px}
+.mystery-input{flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px;font-size:13px;color:white;font-family:inherit;outline:none;transition:var(--t-snap)}
+.mystery-input:focus{border-color:rgba(168,85,247,0.4)}
+.mystery-submit-btn{padding:9px 20px;border-radius:10px;border:none;background:rgba(168,85,247,0.2);color:rgba(200,150,255,0.9);font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;transition:var(--t-snap)}
+.mystery-submit-btn:hover{background:rgba(168,85,247,0.35);color:white}
+.mystery-hint{font-size:11px;color:rgba(255,255,255,0.25);margin-top:4px}
+#mysteryGuesses{margin-top:10px;display:flex;flex-direction:column;gap:6px;max-height:120px;overflow-y:auto;width:100%}
+.guess-item{font-size:12px;padding:6px 10px;border-radius:7px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);color:rgba(255,255,255,0.5);display:flex;align-items:center;gap:8px}
+.guess-user{font-weight:700;color:rgba(200,150,255,0.7)}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo"><a href="index.html">Chroma<span>Flora</span></a> <span style="font-size:11px;opacity:.4;font-weight:500;margin-left:6px">Discovery Engine</span></div>
+  <div class="nav-links">
+    <a href="index.html" class="nl">System</a>
+    <a href="studio.html" class="nl">Studio</a>
+    <a href="mandala.html" class="nl">Mandala</a>
+    <a href="ai-studio.html" class="nl">AI Studio</a>
+    <a href="discovery.html" class="nl active">Discover</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-eyebrow">Anti-Feedback Loop · Curiosity Engine</div>
+  <div class="hero-title">What You Don't Know You Need</div>
+  <div class="hero-desc">Deliberately pulling from territories outside your known domain. Not what you like — what you haven't encountered. The point is friction. The point is the bait.</div>
+  <div class="hero-anti-algo">⬡ Algorithm-resistant · no tracking · no optimization · pure discovery</div>
+</section>
+
+<!-- Mystery Question Bar -->
+<div class="mystery-bar" id="mysteryBar">
+  <div style="flex:1;min-width:220px">
+    <div class="mystery-eyebrow">Community Mystery — Not "what is the answer?" but:</div>
+    <div class="mystery-question" id="mysteryQ">Loading mystery question…</div>
+    <div style="margin-top:10px;font-size:12px;color:rgba(255,255,255,0.3)">Hint: the answer describes a <span id="mysteryDomain" style="color:rgba(168,85,247,0.7)">philosophical concept</span></div>
+  </div>
+  <div class="mystery-input-wrap">
+    <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.35)">Guess what <em>question</em> this is…</div>
+    <input class="mystery-input" id="mysteryGuessInput" placeholder="The question being asked is…" onkeydown="if(event.key==='Enter')submitMysteryGuess()">
+    <button class="mystery-submit-btn" onclick="submitMysteryGuess()">Submit guess →</button>
+    <div class="mystery-hint">Everyone sees the answer. Your job: guess the question.</div>
+    <div id="mysteryGuesses"></div>
+    <button style="margin-top:8px;font-size:10px;background:none;border:none;color:rgba(255,255,255,0.2);cursor:pointer;font-family:inherit;text-align:left" onclick="newMystery()">↻ New mystery</button>
+  </div>
+</div>
+
+<!-- Filter bar -->
+<div class="filter-bar">
+  <button class="fb-chip active" onclick="filterCards('all',this)">All Territories</button>
+  <button class="fb-chip" onclick="filterCards('philosophy',this)">Philosophy</button>
+  <button class="fb-chip" onclick="filterCards('natural',this)">Natural Phenomena</button>
+  <button class="fb-chip" onclick="filterCards('engineering',this)">Engineering / Systems</button>
+  <button class="fb-chip" onclick="filterCards('cultural',this)">Cultural / Ritual</button>
+  <button class="fb-chip" onclick="filterCards('material',this)">Materials Science</button>
+  <button class="fb-chip" onclick="filterCards('ecological',this)">Ecological</button>
+  <button class="fb-chip" onclick="filterCards('spiritual',this)">Spiritual / Cosmology</button>
+  <button class="fb-chip" onclick="filterCards('mathematical',this)">Mathematics</button>
+  <button class="fb-chip" onclick="filterCards('human',this)">Human Behavior</button>
+</div>
+
+<!-- Bait Cards Grid -->
+<div class="bait-grid" id="baitGrid"></div>
+
+<!-- Expanded Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+  <div class="lb-box">
+    <button class="lb-close" onclick="closeLightbox()">✕</button>
+    <div class="lb-glyph" id="lbGlyph"></div>
+    <div class="lb-origin-badge" id="lbOrigin"></div>
+    <div class="lb-title" id="lbTitle"></div>
+    <div class="lb-region" id="lbRegion"></div>
+
+    <div class="lb-section">
+      <div class="lb-section-label">What it is</div>
+      <div class="lb-section-body" id="lbWhat"></div>
+    </div>
+
+    <div class="lb-section">
+      <div class="lb-section-label">Why it exists — the view it offers</div>
+      <div class="lb-section-body" id="lbWhy"></div>
+    </div>
+
+    <div class="lb-images" id="lbImages"></div>
+
+    <div class="lb-section">
+      <div class="lb-section-label">Non-obvious applications to creative work</div>
+      <div class="lb-applications" id="lbApps"></div>
+    </div>
+
+    <div class="lb-section" style="margin-top:20px">
+      <div class="lb-section-label">The provenance thread</div>
+      <div class="lb-section-body" id="lbProvenance"></div>
+    </div>
+
+    <div class="lb-actions">
+      <button class="lb-btn-primary" onclick="generateReport()">♪ Generate mini-report</button>
+      <button class="lb-btn-sec" onclick="generatePollinations()">🌸 Generate image</button>
+      <button class="lb-btn-sec" onclick="saveToNotebook()">◈ Save to notebook</button>
+      <button class="lb-btn-sec" onclick="newMystery()">⬡ Make this a mystery</button>
+    </div>
+
+    <div id="lbReport" style="margin-top:20px"></div>
+  </div>
+</div>
+
+<script>
+const LS = k => localStorage.getItem(k);
+const LSSet = (k,v) => localStorage.setItem(k,v);
+
+/* ═══════════════════════════════
+   BAIT CARD DATA — 24 entries across all territories
+═══════════════════════════════ */
+const BAIT_CARDS = [
+  {
+    id:1, category:'philosophy', glyph:'⊗', origin:'Post-Structuralist Philosophy',
+    title:'The Rhizome', region:'France · Deleuze & Guattari · 1980',
+    teaser:'A model of culture without a center, without hierarchy, without a single root. Everything connects laterally. No beginning, no end.',
+    gradient:'linear-gradient(135deg,rgba(168,85,247,0.2),rgba(236,72,153,0.1))', accent:'#a855f7',
+    tags:['network theory','anti-hierarchy','multiplicity'],
+    what:'In A Thousand Plateaus, Deleuze and Guattari proposed the rhizome as an alternative to tree-thinking. A rhizome has no fixed origin, no privileged path — it can be entered from any point, connects to any other point, and can be broken at any place without losing function.',
+    why:'It offers a way of thinking about knowledge, design systems, and culture that resists the compulsion to root everything in a single authority or origin. It models how subcultures, internet culture, and generative systems actually behave.',
+    applications:['Design systems as rhizomes — no master component, everything a peer that can branch', 'Musical improvisation structures with no "main theme" — just emergence from constraint', 'Navigation UX as lateral exploration rather than hierarchy — no "home" needed', 'Social media content strategy as root-free propagation'],
+    provenance:'Born from the political frustration of May 1968 Paris — a philosophy that models revolution as distributed, not commanded. Later adopted by network theorists, digital humanities, and complexity science.',
+    imagePrompts:['rhizome underground root system, cross-section, bioluminescent, macro photography','mycelium network glowing threads, dark soil, bioluminescent','fractal branching lateral nodes, neon on void']
+  },
+  {
+    id:2, category:'natural', glyph:'⬡', origin:'Mycelial Network Biology',
+    title:'Wood Wide Web', region:'Pacific Northwest Forests · Global · 1997–present',
+    teaser:'Trees in a forest are not competing. They are connected through fungal networks, passing nutrients, chemical warnings, and possibly information.',
+    gradient:'linear-gradient(135deg,rgba(16,185,129,0.2),rgba(34,211,238,0.12))', accent:'#10b981',
+    tags:['symbiosis','networks','emergence','ecology'],
+    what:'Mycorrhizal fungi connect the root systems of trees across hundreds of meters. "Mother trees" — old-growth anchor trees — actively subsidize seedlings, including unrelated species. The network transfers carbon, phosphorus, nitrogen, and chemical distress signals.',
+    why:'It reframes competition as the exception, cooperation as the rule. Every forest is a distributed intelligence. The "individual" organism is a fiction — the unit of survival is the network.',
+    applications:['Product ecosystems designed as mutualistic not extractive', 'Mentorship networks modeled on nutrient sharing, not hierarchy', 'Generative pattern systems where components "feed" each other\'s growth state', 'Sound design: low-frequency underground information channels beneath audible melody'],
+    provenance:'Suzanne Simard\'s doctoral research at UBC — initially rejected, now foundational to forest ecology. Inspired the film Avatar and Peter Wohlleben\'s The Hidden Life of Trees.',
+    imagePrompts:['mycelium threads glowing gold underground, bioluminescent, macro','forest root network cross section, warm amber light, soil layers','fungal web connecting trees, top-down aerial view, bioluminescent night']
+  },
+  {
+    id:3, category:'engineering', glyph:'◈', origin:'Japanese Manufacturing Philosophy',
+    title:'Ma — The Productive Interval', region:'Japan · Shinto aesthetic · Architecture · Music',
+    teaser:'"Ma" is the Japanese concept of negative space — the pause, the gap, the interval. Not emptiness but generative void.',
+    gradient:'linear-gradient(135deg,rgba(245,158,11,0.15),rgba(249,115,22,0.1))', accent:'#f59e0b',
+    tags:['negative space','timing','architecture','silence'],
+    what:'Ma (間) describes the pregnant pause in music, the empty room in architecture, the silence between words in conversation. It is not absence — it is the space that gives meaning to what surrounds it. In manufacturing: the space between operations that allows quality inspection, cooling, reflection.',
+    why:'Western design optimizes for content density. Ma offers the counterintuitive principle: meaning lives in the interval. The rest note is the music. The white space is the composition.',
+    applications:['Animation timing — the hold before the action is the action', 'UI breathing room as intentional syntax, not wasted space', 'Music production: the 808 that doesn\'t hit on beat 1 defines the groove', 'Meeting design: the unscheduled window where insight happens'],
+    provenance:'Rooted in Shinto awareness of sacred space (torii gates frame void deliberately), refined through Noh theater\'s art of stillness, and reframed in Kengo Kuma\'s architectural practice.',
+    imagePrompts:['japanese torii gate in fog, negative space, minimal, dawn light','empty zen garden raked sand, single stone, aerial view, morning light','architectural void between concrete forms, sunlight beam through gap']
+  },
+  {
+    id:4, category:'mathematical', glyph:'∿', origin:'Nonlinear Dynamics',
+    title:'Strange Attractors', region:'Meteorology → Mathematics · Lorenz 1963',
+    teaser:'Systems that never repeat but never escape. The orbit of chaos that has a shape.',
+    gradient:'linear-gradient(135deg,rgba(34,211,238,0.18),rgba(99,102,241,0.12))', accent:'#22d3ee',
+    tags:['chaos theory','fractals','dynamics','pattern'],
+    what:'A strange attractor is the geometric structure in phase space that a chaotic system orbits without ever exactly repeating. The Lorenz attractor — shaped like a butterfly — emerged from three equations describing atmospheric convection. Chaotic, yet shaped. Random, yet patterned.',
+    why:'It proves that deterministic systems can be unpredictable. That structure and chaos are not opposites but aspects of the same underlying dynamic. That beauty is possible without repetition.',
+    applications:['Generative visual systems with attractor-based particle paths', 'Music composition with chaotic LFO paths that have shape but never loop', 'Brand systems with deterministic variation — consistent yet never identical', 'UX flows that respond to user behavior attractors — high-traffic patterns with variation'],
+    provenance:'Edward Lorenz discovered this while running climate simulations in 1961. A rounding error created the butterfly effect — he noticed tiny changes produced wildly divergent outcomes. "Can the flap of a butterfly\'s wings in Brazil set off a tornado in Texas?"',
+    imagePrompts:['lorenz attractor 3d visualization, glowing neon lines on void, long exposure','strange attractor phase space trajectory, violet aqua gradient, mathematical art','butterfly effect particle simulation, chromatic light trails, dark background']
+  },
+  {
+    id:5, category:'cultural', glyph:'◯', origin:'West African Griot Tradition',
+    title:'Oral Archive Architecture', region:'Sahel & West Africa · Ancient–present',
+    teaser:'A people who stored their entire civilization — genealogy, law, medicine, cosmology — in trained human memory. No writing. No loss.',
+    gradient:'linear-gradient(135deg,rgba(249,115,22,0.18),rgba(236,72,153,0.1))', accent:'#f97316',
+    tags:['memory','oral culture','information design','lineage'],
+    what:'Griots (jeli in Mande) are hereditary keepers of history, music, and social function. A single griot could recite 700 years of family lineage, mediate conflicts by citing precedent, and encode cultural law in rhythmic speech and song. Memory was the architecture of civilization.',
+    why:'It challenges the assumption that writing is superior to memory. The griot tradition produced extraordinary information density, redundancy, and social utility — embedded in performance, relationship, and community validation.',
+    applications:['Documentation as performed narration, not static text', 'Brand storytelling that lives in trained humans, not style guides', 'Community knowledge management: redundancy through distributed human memory', 'Music as database — rhythm, melody, and lyric as information architecture'],
+    provenance:'The tradition predates the Mali Empire (c.1200 CE). Sundiata Keita\'s rise to power was preserved by griots for 800 years before being written down. Alex Haley traced his lineage to Kunta Kinte through a Gambian griot.',
+    imagePrompts:['west african griot musician at night, fire light, kora instrument, storytelling','ancient oral tradition, village gathering at dusk, golden light, ancestral ceremony','kora strings close up, warm amber, geometric textile patterns background']
+  },
+  {
+    id:6, category:'material', glyph:'⊛', origin:'Materials Science / Crystallography',
+    title:'Quasicrystals', region:'Israel/USA · Dan Shechtman · 1984',
+    teaser:'Crystals that are ordered but not periodic. Patterns that tile space without ever repeating. Mathematically impossible — until they existed.',
+    gradient:'linear-gradient(135deg,rgba(99,102,241,0.18),rgba(168,85,247,0.12))', accent:'#6366f1',
+    tags:['crystallography','aperiodic','Penrose','structure'],
+    what:'Standard crystals repeat in regular lattices. Quasicrystals have long-range order (they\'re not random) but no translational periodicity (they never repeat). They tile space using Penrose-like non-repeating patterns and display 5-fold symmetry — impossible in classical crystallography.',
+    why:'They dissolved the binary of order vs chaos, revealing a third state: structured aperiodicity. Shechtman was mocked for years. He won the Nobel Prize in Chemistry in 2011. The lesson: impossible is a category error.',
+    applications:['Design systems with structured variation — grid logic without repetition', 'Pattern generation using Penrose tiling algorithms', 'Music composition with aperiodic rhythmic structure that still feels ordered', 'Material texture design: organized randomness'],
+    provenance:'Penrose tiling (1974) prefigured quasicrystals mathematically. Ancient Islamic geometric art from the 13th century shows quasi-crystalline patterns, suggesting craftspeople discovered the mathematics empirically.',
+    imagePrompts:['quasicrystal electron diffraction pattern, fivefold symmetry, neon glow on dark','penrose tiling pattern, iridescent metallic surface, close-up texture','islamic geometric art quasicrystal pattern, gold and violet, mathematical precision']
+  },
+  {
+    id:7, category:'ecological', glyph:'⟳', origin:'Systems Ecology / Permaculture',
+    title:'Edge Effect', region:'Ecology · Universal law',
+    teaser:'The most productive, diverse, and dynamic places in any ecosystem are the edges between zones. Where forest meets meadow, where river meets bank, where biomes collide.',
+    gradient:'linear-gradient(135deg,rgba(16,185,129,0.18),rgba(245,158,11,0.1))', accent:'#10b981',
+    tags:['ecology','systems','margins','diversity'],
+    what:'Where two distinct ecosystems meet — called an ecotone — biodiversity spikes dramatically. The edge gets resources from both systems, experiences different microclimates, and attracts species that need both environments. The margin outperforms the center.',
+    why:'It inverts the logic of optimization: the highest value doesn\'t live in the center of excellence but at the boundary between domains. Cross-disciplinary thinkers, liminal spaces, and hybrid forms leverage edge effect.',
+    applications:['Cross-disciplinary research as deliberate edge creation', 'Creative briefs that force collision between distant domains', 'Community design: the lobby, the hallway, the coffee station as high-value edge zones', 'Music that lives at genre edges: jazz-metal, folk-electronic, classical-ambient'],
+    provenance:'Aldo Leopold formalized the concept in Game Management (1933). Bill Mollison made it a permaculture design principle. Urban planners now design edges deliberately in green infrastructure.',
+    imagePrompts:['forest meadow edge at golden hour, biodiversity transition zone, atmospheric','ecotone wetland forest boundary, misty dawn, bird silhouettes','cross-section biome boundary underground and above, rich ecosystem detail']
+  },
+  {
+    id:8, category:'spiritual', glyph:'⬣', origin:'Tantric Buddhism / Vajrayana',
+    title:'Bardo — The Between-State', region:'Tibet · 8th century CE',
+    teaser:'The 49-day liminal state between death and rebirth — a navigable territory with its own geography, dangers, and liberation opportunities.',
+    gradient:'linear-gradient(135deg,rgba(168,85,247,0.2),rgba(34,211,238,0.08))', accent:'#a855f7',
+    tags:['liminal','transition','consciousness','navigation'],
+    what:'The Tibetan Book of the Dead (Bardo Thodol) describes bardo as a state of pure consciousness between lives — where the mind encounters its own nature. Peaceful deities, wrathful deities, the Clear Light of awareness. Navigation depends on recognition, not force.',
+    why:'It offers a framework for understanding transition, dissolution, and the territories between established states. Applied secularly: every creative process has its bardo — the formless middle where the work is neither what it was nor what it will become.',
+    applications:['Naming the "bardo" phase of a project: the messy middle that precedes emergence', 'Transition UX: how to design the between-state when users are changing contexts', 'Branding during pivots: the liminal identity period as navigable, not threatening', 'Music production: the breakdown before the drop as bardo structure'],
+    provenance:'Compiled by Padmasambhava in the 8th century. Discovered as a terma (hidden text) by Karma Lingpa in the 14th century. Popularized in the West by Timothy Leary\'s psychedelic-mapped version and later by Sogyal Rinpoche.',
+    imagePrompts:['tibetan thangka painting style, peaceful deity, mandala background, gold and blue','bardo navigation consciousness map, geometric sacred art, cosmic void','clear light consciousness visualization, radiant emanation, void meditation']
+  },
+  {
+    id:9, category:'engineering', glyph:'⊶', origin:'Soviet Engineering / TRIZ',
+    title:'Ideality Principle', region:'Russia · Genrich Altshuller · 1956–1985',
+    teaser:'The ideal machine is one that doesn\'t exist but whose function is fully performed. The best solution is the one that requires the fewest resources.',
+    gradient:'linear-gradient(135deg,rgba(34,211,238,0.15),rgba(16,185,129,0.1))', accent:'#22d3ee',
+    tags:['systems thinking','TRIZ','problem solving','simplicity'],
+    what:'TRIZ (Theory of Inventive Problem Solving) was developed by Altshuller after analyzing 400,000 patents. The Ideality Principle states: the ideal system delivers its function without existing. Evolution of technology trends toward systems that need fewer and fewer resources to deliver increasing function.',
+    why:'It reframes the design problem entirely: instead of asking "how do we build this?" ask "what function are we delivering, and how do we deliver it without adding anything?" The ideal fire alarm is one that never allows fire to start.',
+    applications:['Feature reduction: what function is the minimum viable?', 'Sound design: the implied sound is often more powerful than the heard one', 'Brand design: what is the minimum mark that still communicates the full identity?', 'UX: the best interaction is the one that doesn\'t require interaction'],
+    provenance:'Altshuller was a Soviet engineer and science fiction writer (as "Altov"). He was imprisoned in Stalinist gulags and continued his research in secret. TRIZ is now used by Samsung, Boeing, and Intel engineering teams.',
+    imagePrompts:['invisible machine performing work, ghost engine, x-ray visualization, industrial','triz inventive principle diagram, schematic art, glowing lines on dark','function without form, conceptual physics visualization, force fields and energy']
+  },
+  {
+    id:10, category:'human', glyph:'◑', origin:'Cognitive Science / Phenomenology',
+    title:'Embodied Cognition', region:'Chile/USA · Maturana, Varela, Lakoff · 1980s–90s',
+    teaser:'The mind is not in the brain. Thinking is in the body, the gesture, the room, the relationship. Cognition is the act of living, not the processing of symbols.',
+    gradient:'linear-gradient(135deg,rgba(236,72,153,0.18),rgba(168,85,247,0.1))', accent:'#ec4899',
+    tags:['cognitive science','body','mind','phenomenology'],
+    what:'Embodied cognition (Maturana & Varela\'s "enactivism") argues that cognition is enacted through the body\'s interaction with its environment. We don\'t represent the world internally and then act — we act, and cognition IS the acting. Lakoff and Johnson showed that abstract thought is built from bodily metaphor: we "grasp" ideas, "hold" positions, "see" meaning.',
+    why:'It dissolves the screen/interface/machine divide. Design that ignores the body ignores the primary organ of cognition. Physical feedback, haptics, spatial audio — these aren\'t enhancements, they\'re where thought lives.',
+    applications:['Haptic design as cognitive architecture, not UI decoration', 'Physical workspace design as thinking environment', 'Musical performance as thinking-in-time, not execution of pre-formed ideas', 'Typography that mimics physical gesture to prime cognitive states'],
+    provenance:'Francisco Varela and Humberto Maturana developed autopoiesis theory at the University of Chile. Their work merged with phenomenology (Merleau-Ponty) and cognitive science. Applied in robotics, dance therapy, and interaction design.',
+    imagePrompts:['human body gesture creating thought form, bioluminescent nervous system, art','embodied cognition hand reaching towards floating concept forms, ethereal','brain body connection visualization, neural pathways extending into limbs, neon']
+  },
+  {
+    id:11, category:'philosophy', glyph:'∞', origin:'Process Philosophy',
+    title:'Prehension — Grasping Becoming', region:'UK/USA · Alfred North Whitehead · 1929',
+    teaser:'The universe is not made of things but of events. Every moment of experience grasps all previous experience and synthesizes something new.',
+    gradient:'linear-gradient(135deg,rgba(245,158,11,0.15),rgba(168,85,247,0.1))', accent:'#f59e0b',
+    tags:['process philosophy','time','emergence','creativity'],
+    what:'Whitehead\'s "prehension" describes how every actual entity (every event, every moment) grasps or takes account of all previous entities to form something novel. Reality is not substance but process. Being is becoming. The universe is fundamentally creative — novelty is its defining characteristic.',
+    why:'It frames creativity not as exceptional but as the basic nature of the real. Every moment of genuine attention synthesizes something that has never existed before. Applied: design, music, and code are not describing the world — they are participating in its becoming.',
+    applications:['Understanding creative work as ontological act — literally making new reality', 'Design processes that honor the "grasping" of context before making', 'Music as event-based, not object-based — the composition lives in performance', 'Systems design as processes, not states — what does this system BECOME?'],
+    provenance:'Whitehead co-wrote Principia Mathematica with Bertrand Russell, then rejected the mechanistic worldview entirely. Process philosophy influenced ecology, theology, neuroscience, and AI consciousness research.',
+    imagePrompts:['process philosophy time flow visualization, event cascade, cosmic scale','whitehead prehension concept art, light grasping light, emergence visualization','universe as becoming, event ripples in spacetime, bioluminescent cosmic art']
+  },
+  {
+    id:12, category:'natural', glyph:'⊸', origin:'Fluid Dynamics',
+    title:'Vortex Street — The Kármán Pattern', region:'Fluid Mechanics · 1911',
+    teaser:'When a fluid flows past a blunt object, it sheds vortices in an alternating pattern. The pattern is universal. It appears in clouds, Jupiter, rivers, smoke, and the Tacoma Narrows Bridge collapse.',
+    gradient:'linear-gradient(135deg,rgba(99,102,241,0.18),rgba(34,211,238,0.1))', accent:'#6366f1',
+    tags:['fluid dynamics','pattern','frequency','oscillation'],
+    what:'A Kármán vortex street is the periodic shedding of vortices from opposite sides of a bluff body in a flow. The shedding frequency is determined by the Strouhal number — a dimensionless relationship between object size, flow velocity, and frequency. It causes structural resonance and has destroyed bridges.',
+    why:'It reveals that ordered pattern is not imposed on fluids — it emerges from the interaction of flow and obstacle. Every obstacle creates its own rhythm. Every constraint generates frequency.',
+    applications:['Sound design: physical modeling synthesis from fluid resonance frequencies', 'Structural design: constraints as rhythm generators, not just problems', 'Workflow design: knowing when obstacles create productive vortex patterns', 'Visual animation: procedural fluid patterns for background systems'],
+    provenance:'Theodor von Kármán (1911) systematized the mathematics. The Tacoma Narrows Bridge (1940) collapsed dramatically from Kármán vortex resonance — the constraint of the deck created the frequency that destroyed it.',
+    imagePrompts:['karman vortex street in clouds from above, nasa satellite photography style','fluid vortex pattern behind cylinder, bioluminescent dye flow visualization','tacoma narrows bridge resonance abstract visualization, wave harmonics']
+  },
+  {
+    id:13, category:'cultural', glyph:'⊕', origin:'Indigenous Cosmology',
+    title:'Dreamtime — The Simultaneous Map', region:'Australia · Aboriginal Peoples · Ancient',
+    teaser:'A songline is simultaneously a map, a legal document, a musical score, and a genesis narrative. Country and song are the same thing.',
+    gradient:'linear-gradient(135deg,rgba(249,115,22,0.18),rgba(16,185,129,0.08))', accent:'#f97316',
+    tags:['cosmology','territory','music','knowledge systems'],
+    what:'In Aboriginal Australian tradition, the Dreamtime (Jukurrpa) is not a past era but a layer of reality co-existing with the present. Songlines are routes across the continent — each sung in a specific pitch, tempo, and word sequence — that encode topography, water sources, sacred sites, and law. The land is the score.',
+    why:'It collapses the distinction between art and information system, between aesthetic and utilitarian, between place and narrative. A single song can serve as navigation system, legal code, and spiritual ceremony simultaneously.',
+    applications:['Multi-layered information systems where aesthetics and utility are identical', 'Sound branding as genuine territorial mapping, not just identity', 'Navigation design that uses emotional memory rather than visual instruction', 'Music that encodes spatial information — soundscapes as maps'],
+    provenance:'Documented extensively by W.E.H. Stanner in the 1950s-60s. Bruce Chatwin\'s The Songlines (1987) introduced the concept widely. Aboriginal communities are now co-authoring digital songline preservation projects.',
+    imagePrompts:['aboriginal australian dot painting from above, aerial territory map, ochre and blue','dreamtime songline visual journey, point-to-point constellation path, night sky','australian outback aerial view with ancestral story paths overlaid, sacred geography']
+  },
+  {
+    id:14, category:'mathematical', glyph:'⊗', origin:'Information Theory',
+    title:'Entropy as Information', region:'USA · Claude Shannon · 1948',
+    teaser:'Information is surprise. The less expected a message, the more information it carries. Certainty contains zero bits of information.',
+    gradient:'linear-gradient(135deg,rgba(34,211,238,0.18),rgba(168,85,247,0.08))', accent:'#22d3ee',
+    tags:['information theory','entropy','communication','surprise'],
+    what:'Shannon entropy (H) measures the average information content in a message source. The more uncertain the outcome, the higher the entropy, the more bits needed to encode it. But also: the more information conveyed by each symbol. A maximally random source is maximally informative — but uninterpretable without context.',
+    why:'It mathematizes surprise. It proves that communication requires a balance of predictability and unpredictability — enough pattern to form expectation, enough violation to carry information. Boredom is low entropy. Pure noise is maximum entropy but no meaning.',
+    applications:['Music composition: balancing entropy — predictable enough to feel inevitable, surprising enough to feel alive', 'Brand voice: low-entropy predictability builds recognition; high-entropy surprises create memorable moments', 'Visual rhythm: pattern regularity as low entropy, focal violations as information spikes', 'Generative systems: target a specific entropy level for aesthetic complexity'],
+    provenance:'Shannon published "A Mathematical Theory of Communication" in 1948, founding information theory. He built machines that played chess and juggled while riding a unicycle. He never explained the connection.',
+    imagePrompts:['information entropy visualization, bits flowing through noise and signal, tech art','shannon information theory abstract, binary tree branching into chaos, glowing','signal and noise spectrum, frequency visualization, teal purple gradient']
+  },
+  {
+    id:15, category:'engineering', glyph:'⋈', origin:'Biological Engineering',
+    title:'Morphogenesis — Form from Gradient', region:'Mathematics/Biology · Turing 1952',
+    teaser:'Alan Turing — after cracking Enigma — published a paper proving that complex biological patterns (spots, stripes, spirals) emerge from the interaction of just two chemical signals diffusing at different rates.',
+    gradient:'linear-gradient(135deg,rgba(16,185,129,0.18),rgba(168,85,247,0.12))', accent:'#10b981',
+    tags:['pattern formation','reaction-diffusion','Turing','emergence'],
+    what:'Turing\'s reaction-diffusion model shows that a short-range activator and long-range inhibitor — diffusing at different speeds — spontaneously generate stable spatial patterns. Jaguar spots, zebrafish stripes, coral reef patterns, and fingerprints all emerge from this basic mechanism.',
+    why:'Two rules, interacting in space, generate all biological surface patterns. Complexity from simplicity. The pattern is not encoded — it emerges. This is the difference between specification (draw this) and generative systems (run these rules).',
+    applications:['Generative texture systems based on reaction-diffusion equations', 'Parametric pattern design that produces natural-feeling organic complexity', 'Organizational design: short-range incentive + long-range regulation = self-organizing structure', 'Sound synthesis: activator/inhibitor dynamics as evolving filter topology'],
+    provenance:'Turing was convicted of "gross indecency" (homosexuality) by the British government in 1952 — the same year he published this paper. He died in 1954. The British government issued a formal apology in 2009. He was pardoned in 2013.',
+    imagePrompts:['turing reaction diffusion pattern, leopard spots emerging from mathematical equations','reaction diffusion texture simulation, organic chemistry art, teal orange gradient','morphogenesis pattern formation biology art, cellular automata organic, bioluminescent']
+  },
+  {
+    id:16, category:'spiritual', glyph:'⬢', origin:'Hermetic Philosophy',
+    title:'As Above, So Below', region:'Egypt/Greco-Roman · 3rd century CE',
+    teaser:'The fundamental principle of correspondence: the structure of the macrocosm mirrors the structure of the microcosm. What operates at cosmic scale operates at human scale.',
+    gradient:'linear-gradient(135deg,rgba(245,158,11,0.15),rgba(168,85,247,0.15))', accent:'#f59e0b',
+    tags:['hermetics','scale','correspondence','pattern'],
+    what:'From the Emerald Tablet attributed to Hermes Trismegistus: "That which is below corresponds to that which is above, and that which is above corresponds to that which is below, to accomplish the miracles of the one thing." Used in alchemy, astrology, Kabbalah, and Jungian psychology.',
+    why:'It proposes that pattern is scale-invariant — the same structures appear at every level of reality. This is not merely metaphor: fractals, self-similarity, and scale-free networks provide mathematical support for the observation.',
+    applications:['Fractal branding: the same visual logic from icon to billboard', 'Organizational design mirroring the design philosophy it produces', 'Music: micro-structure (phrase) mirroring macro-structure (form)', 'Code architecture: the file structure reflects the product architecture reflects the business'],
+    provenance:'The Emerald Tablet was first documented in Arabic sources around the 6th-8th century CE. It became central to European alchemy through Latin translations, influencing Newton, who translated it personally. Jung interpreted it psychologically as inner/outer correspondence.',
+    imagePrompts:['hermetic emerald tablet art, above below microcosm macrocosm, sacred geometry','as above so below mandala reflection, cosmic and cellular scale, gold violet','fractal self-similarity at multiple scales, cosmic zoom from galaxy to atom']
+  },
+  {
+    id:17, category:'human', glyph:'⊞', origin:'Developmental Psychology',
+    title:'The Zone of Proximal Development', region:'Soviet Union · Vygotsky · 1934',
+    teaser:'Learning only happens in the gap between what you can do alone and what you can do with skilled support. Too easy: no growth. Too hard: no entry.',
+    gradient:'linear-gradient(135deg,rgba(236,72,153,0.18),rgba(245,158,11,0.1))', accent:'#ec4899',
+    tags:['learning','pedagogy','challenge','scaffolding'],
+    what:'Vygotsky\'s ZPD describes the fertile zone between the learner\'s current independent capability and their potential capability with expert support (the "more knowledgeable other"). Effective instruction scaffolds the ZPD — present at the right difficulty level, pulling toward the edge without leaving learners stranded.',
+    why:'It defines precisely why both too-easy and too-hard are failures of design. Applied beyond education: any experience that doesn\'t put the user in their ZPD — games, products, creative tools — fails to generate engagement or growth.',
+    applications:['Gamification design: calibrate challenge to ZPD, not fixed difficulty', 'Onboarding design: scaffold toward mastery rather than explaining everything upfront', 'Creative tool design: enable what the user cannot yet do, but just barely can\'t do alone', 'Music teaching: the arrangement pitched one step beyond the player\'s current reach'],
+    provenance:'Lev Vygotsky died of tuberculosis at 37, leaving a massive unpublished body of work. The KGB suppressed his books for decades. His ideas were smuggled West and transformed education, cognitive science, and design theory.',
+    imagePrompts:['zone of proximal development visualization, concentric circles of capability, glowing','scaffolding learning tower abstract art, knowledge building architecture, light beams','bridge between current and potential, human figure crossing gap, dawn light']
+  },
+  {
+    id:18, category:'material', glyph:'⊡', origin:'Metallurgy / Materials Science',
+    title:'Work Hardening — Strength Through Stress', region:'Metallurgy · Universal',
+    teaser:'When metal is deformed plastically — hammered, bent, drawn — it gets stronger at the point of deformation. Controlled stress makes it more resistant to future stress.',
+    gradient:'linear-gradient(135deg,rgba(99,102,241,0.18),rgba(249,115,22,0.1))', accent:'#6366f1',
+    tags:['materials','resilience','stress','metallurgy'],
+    what:'Work hardening (strain hardening) occurs because deformation introduces dislocations into the metal\'s crystal lattice. These dislocations tangle, blocking the movement of future dislocations — making the material harder. Swords, springs, coins, and the filaments in lightbulbs depend on this property.',
+    why:'Strength is not the absence of deformation but its product. Controlled damage increases resistance to future damage. The metaphor translates directly to systems, organizations, and creative practice — not as motivation but as structural truth.',
+    applications:['System design with deliberate stress-testing as a strengthening mechanism', 'Creative practice viewed through the lens of productive constraint', 'Organizational resilience: which "deformations" produce increased systemic strength?', 'Sound compression as acoustic work hardening — controlled dynamic limitation creates punch'],
+    provenance:'Ancient bladesmiths intuitively understood work hardening — folded steel swords gained strength through repeated hammering. The metallurgical mechanism was formalized with X-ray crystallography in the early 20th century.',
+    imagePrompts:['forged steel surface microscopic, crystal lattice dislocation, industrial beauty','swordsmith hammering steel, sparks, dark forge, close up hands and metal','metal grain structure under microscope, beautiful crystalline dislocations, bioluminescent colored']
+  },
+  {
+    id:19, category:'philosophy', glyph:'◉', origin:'Phenomenology',
+    title:'Intentionality — Consciousness Is Always Of Something', region:'Europe · Husserl 1900 · Heidegger · Sartre',
+    teaser:'Consciousness does not exist by itself. Every act of mind is directed at an object. There is no neutral awareness — only attention structured by its target.',
+    gradient:'linear-gradient(135deg,rgba(168,85,247,0.2),rgba(236,72,153,0.08))', accent:'#a855f7',
+    tags:['phenomenology','attention','consciousness','direction'],
+    what:'Intentionality (from Brentano, developed by Husserl) is the property of mental states whereby they are directed toward or about something. Fear is always fear of something. Desire is always desire for something. This means consciousness is inherently relational, not self-contained.',
+    why:'It grounds the design of attention. If every conscious act is directed, then experience design is direction design — what is the user\'s awareness structured toward, and why? UI design is intentionality architecture.',
+    applications:['UX design as attention direction: what does each screen ask the user\'s consciousness to be toward?', 'Photography/filmmaking as intentionality machines — structuring the viewer\'s directed awareness', 'Sound design: music that directs the listener\'s attention to specific emotional objects', 'Writing: every sentence points toward its object — the art is controlling that pointing'],
+    provenance:'Franz Brentano first articulated intentionality in Psychology from an Empirical Standpoint (1874). Husserl made it the foundation of phenomenology. Sartre and Heidegger pushed it toward existentialism. Dennett and Chalmers debate it in contemporary consciousness studies.',
+    imagePrompts:['attention beam of light directed at object in void, consciousness visualization','intentionality arrow of awareness, directed light in dark space, philosophical art','mind and world connection, intentional arc visualization, glowing neural to environment']
+  },
+  {
+    id:20, category:'ecological', glyph:'⟲', origin:'Evolutionary Biology',
+    title:'Convergent Evolution — Same Solution, Different Path', region:'Global · Charles Darwin → Modern Synthesis',
+    teaser:'Eyes evolved independently at least 40 times. Wings emerged separately in birds, bats, insects, and pterosaurs. The same optimal solutions keep appearing because physics constrained the options.',
+    gradient:'linear-gradient(135deg,rgba(16,185,129,0.2),rgba(34,211,238,0.12))', accent:'#10b981',
+    tags:['evolution','convergence','optimization','design'],
+    what:'Convergent evolution occurs when unrelated lineages independently evolve similar traits — not through inheritance but through adaptation to similar challenges. Dolphins and sharks are anatomically similar despite dolphins being mammals. The solutions converge because the physics of moving through water are fixed.',
+    why:'It suggests that some solutions are genuinely optimal — they will be discovered by any sufficiently pressured adaptive system. Design problems have convergent optimal zones. Finding them is reverse-engineering evolutionary logic.',
+    applications:['Design principles as convergent solutions — many cultures independently arrived at the golden ratio, the arch, the dome', 'Pattern language: identifying convergent UX solutions across cultures and platforms', 'Creative constraints as evolutionary pressure — limited resources force convergent innovation', 'Brand strategy: what solution will your market convergently evolve toward regardless?'],
+    provenance:'Darwin noted convergence but lacked the genetic tools to explain it. Modern evo-devo (evolutionary developmental biology) shows many convergent traits arise through the same or homologous genetic pathways — suggesting the solution space is even more constrained than thought.',
+    imagePrompts:['dolphin and shark convergent anatomy comparison, elegant scientific illustration','eye evolution convergence diagram, 40 different eye types, beautiful scientific art','convergent wings bird bat insect pterosaur, anatomical overlay comparison, natural history style']
+  },
+  {
+    id:21, category:'mathematical', glyph:'⊋', origin:'Topology',
+    title:'Topological Invariants — What Doesn\'t Change', region:'Mathematics · 19th–20th century',
+    teaser:'A coffee mug and a donut are the same shape. A sphere and a cube are the same shape. Topology studies what remains constant when you stretch, twist, and deform — but never cut or glue.',
+    gradient:'linear-gradient(135deg,rgba(34,211,238,0.18),rgba(99,102,241,0.15))', accent:'#22d3ee',
+    tags:['topology','invariants','transformation','mathematics'],
+    what:'Topology is the study of properties preserved under continuous deformation. The number of holes in a shape (its genus) is a topological invariant — it doesn\'t change when you stretch or twist the shape, only when you cut or puncture it. The Möbius strip has one side and one edge. The Klein bottle has no inside.',
+    why:'It shifts focus from measurement to structure. What properties survive transformation? Applied: what are the invariants of your brand, product, or creative practice — the things that remain true regardless of medium, context, or execution?',
+    applications:['Brand invariants: what survives translation across every possible medium?', 'Musical identity: what topological structure makes a melody recognizable even when harmonized, transposed, and re-arranged?', 'Organizational invariants: what culture property should remain constant through growth?', 'Visual identity: the logo deformation test — what must never change?'],
+    provenance:'Leonhard Euler\'s solution of the Königsberg bridge problem (1736) founded topology. Poincaré formalized it. The Poincaré Conjecture (proposed 1904) was the last of Hilbert\'s problems to be solved — by Grigori Perelman in 2003, who refused the $1M prize.',
+    imagePrompts:['coffee mug morphing into donut torus, topology transformation sequence, smooth 3d','mobius strip bioluminescent surface, single side, infinite loop, dark void','klein bottle impossible surface visualization, mathematical art, iridescent glass']
+  },
+  {
+    id:22, category:'human', glyph:'⊎', origin:'Social Psychology',
+    title:'Diffusion of Responsibility', region:'USA · Kitty Genovese 1964 · Darley & Latané 1968',
+    teaser:'The more people witness an emergency, the less likely any individual is to respond. Responsibility diffuses across observers until it belongs to no one.',
+    gradient:'linear-gradient(135deg,rgba(236,72,153,0.18),rgba(99,102,241,0.12))', accent:'#ec4899',
+    tags:['social psychology','responsibility','behavior','design'],
+    what:'The bystander effect demonstrates that the presence of others inhibits individual helping behavior. Each bystander assumes others will act, or that others\' inaction signals no action is needed. The mechanism is diffusion of responsibility combined with pluralistic ignorance. Fewer observers = faster response.',
+    why:'It\'s a design constraint that appears in communities, organizations, interfaces, and social media. Anonymous mass participation produces less contribution than named individual responsibility. Design for accountability.',
+    applications:['Community design: named individual responsibility outperforms anonymous collective responsibility', 'Meeting design: explicit assignment prevents diffusion', 'UX calls to action: addressing the individual ("You can help") over the collective', 'Open source governance: diffusion of responsibility is why issues stay open for years'],
+    provenance:'Kitty Genovese was murdered in 1964 while 38 witnesses reportedly watched — though this account was later found to be exaggerated by the NY Times. The psychological research it spawned was real and reproducible. The story reveals how a simplified narrative shapes a generation of science.',
+    imagePrompts:['crowd scene with one person standing out, individual responsibility, spotlight','diffusion of responsibility visualization, crowd arrows dispersing responsibility','social network node highlighted amid passive nodes, accountability visualization']
+  },
+  {
+    id:23, category:'cultural', glyph:'⊙', origin:'Japanese Aesthetic Philosophy',
+    title:'Wabi-Sabi — The Beauty of Imperfection', region:'Japan · Zen · 15th century CE',
+    teaser:'The patina of age, the crack in the cup, the asymmetry of the bowl. Wabi-sabi is the aesthetic of transience, incompleteness, and the texture of time\'s passage.',
+    gradient:'linear-gradient(135deg,rgba(245,158,11,0.15),rgba(249,115,22,0.1))', accent:'#f59e0b',
+    tags:['aesthetics','imperfection','transience','japan'],
+    what:'Wabi (rough, irregular, weathered) and sabi (patina, the beauty that comes with age) together describe an aesthetic sensibility that finds value in imperfection, incompleteness, and transience. Kintsugi (repairing pottery with gold) is its most famous applied form — the break is emphasized, not hidden.',
+    why:'In a design culture that fetishizes polish and completeness, wabi-sabi is a genuine philosophical counterweight. It argues that authenticity, use, age, and imperfection carry meaning that perfection cannot.',
+    applications:['Design systems that allow and celebrate degradation over time', 'Brand authenticity: the deliberate imperfection that signals human presence', 'Music production: the vinyl crackle, the tape hiss, the breath before the note', 'Photography: the shot that reveals the making of the shot'],
+    provenance:'Originated in Zen Buddhism\'s challenge to elaborate Heian aesthetic culture. The tea master Sen no Rikyū (1522–1591) formalized wabi-cha (rustic tea ceremony) as a spiritual counterculture. He was later ordered to commit seppuku by his patron — possibly for becoming too influential.',
+    imagePrompts:['kintsugi golden repair cracked ceramic bowl, japanese aesthetics, close up beauty','wabi sabi tea bowl rough texture, moss, aged patina, soft morning light','rustic weathered wooden surface, time texture, imperfect beauty, japanese aesthetic']
+  },
+  {
+    id:24, category:'natural', glyph:'⊚', origin:'Physics / Perception',
+    title:'Acoustic Levitation — Standing Waves Hold Matter', region:'Physics · Universal · Applied 1980s',
+    teaser:'Sound waves can suspend physical objects in mid-air. No magic — pure interference patterns creating nodes of zero pressure where matter can rest.',
+    gradient:'linear-gradient(135deg,rgba(168,85,247,0.18),rgba(34,211,238,0.15))', accent:'#a855f7',
+    tags:['acoustics','levitation','physics','standing waves'],
+    what:'Acoustic levitation uses ultrasonic standing waves — where peaks and troughs of pressure interfere to create nodes of minimal pressure. Small objects (water droplets, polystyrene beads, even live ants) are trapped at these nodes against gravity. The force comes from radiation pressure gradients.',
+    why:'Sound is physical force. Vibration is structure. The wave patterns that we call music also exert force on matter. This collapses the distinction between the aesthetic and the physical — sound is already material.',
+    applications:['Sound design with explicit acknowledgment of sound\'s physical force on the body', 'Spatial audio as literal spatial organization of attention', 'Exhibition design using acoustic levitation as interactive installation', 'Brand experiences designed around physical-acoustic sensation'],
+    provenance:'First achieved in the 1980s in NASA microgravity research. Now used to handle biological samples contamination-free and manufacture materials in zero-g equivalent conditions. Japanese researchers levitated live insects in 2014.',
+    imagePrompts:['acoustic levitation water droplet suspended in sound waves, macro photography','standing wave visualization with matter trapped at nodes, physics art, glowing blue','ultrasonic levitation experiment, multiple droplets in pattern, lab aesthetic dark background']
+  }
+];
+
+/* ═══════════════════════════════
+   MYSTERY QUESTIONS
+═══════════════════════════════ */
+const MYSTERIES = [
+  {answer:'What you know that you don\'t know you know.', domain:'epistemological concept', hint:'tacit'},
+  {answer:'The moment before a decision becomes irreversible.', domain:'decision theory', hint:'critical threshold'},
+  {answer:'The pattern that is too large to fit inside itself.', domain:'mathematical paradox', hint:'self-reference'},
+  {answer:'The rule that generates all the exceptions.', domain:'systems thinking', hint:'meta-rule'},
+  {answer:'The frequency that objects break themselves to match.', domain:'physics / resonance', hint:'oscillation'},
+  {answer:'The thing that gets stronger the more you oppose it.', domain:'resistance mechanics', hint:'dialectics'},
+  {answer:'The map that is identical to the territory.', domain:'philosophy of language', hint:'Borges'},
+  {answer:'The constraint that is also the permission.', domain:'design theory', hint:'creative constraint'},
+  {answer:'The boundary between two systems where both are most alive.', domain:'ecology', hint:'edge effect'},
+  {answer:'The memory that belongs to the body, not the mind.', domain:'embodied cognition', hint:'procedural'},
+];
+
+let currentMystery = null;
+let localGuesses = JSON.parse(LS('cf_mystery_guesses') || '[]');
+
+function newMystery() {
+  currentMystery = MYSTERIES[Math.floor(Math.random()*MYSTERIES.length)];
+  document.getElementById('mysteryQ').textContent = currentMystery.answer;
+  document.getElementById('mysteryDomain').textContent = currentMystery.domain;
+  localGuesses = JSON.parse(LS('cf_mystery_guesses') || '[]');
+  renderGuesses();
+}
+
+function submitMysteryGuess() {
+  const val = document.getElementById('mysteryGuessInput').value.trim();
+  if (!val) return;
+  const guess = {user: 'You', text: val, ts: Date.now()};
+  localGuesses.unshift(guess);
+  if (localGuesses.length > 8) localGuesses.pop();
+  LSSet('cf_mystery_guesses', JSON.stringify(localGuesses));
+  document.getElementById('mysteryGuessInput').value = '';
+  renderGuesses();
+}
+
+function renderGuesses() {
+  const el = document.getElementById('mysteryGuesses');
+  if (!el || !localGuesses.length) return;
+  el.innerHTML = localGuesses.map(g => '<div class="guess-item"><span class="guess-user">'+g.user+'</span><span>'+g.text+'</span></div>').join('');
+}
+
+/* ═══════════════════════════════
+   CARD RENDERING
+═══════════════════════════════ */
+let activeFilter = 'all';
+let activeLightboxCard = null;
+
+function filterCards(cat, btn) {
+  activeFilter = cat;
+  document.querySelectorAll('.fb-chip').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderBaitGrid();
+}
+
+function renderBaitGrid() {
+  const cards = activeFilter === 'all' ? BAIT_CARDS : BAIT_CARDS.filter(c=>c.category===activeFilter);
+  document.getElementById('baitGrid').innerHTML = cards.map(c => `
+    <div class="bait-card" style="--card-gradient:${c.gradient};--card-accent:${c.accent}" onclick="openCard(${c.id})">
+      <div class="bait-glyph">${c.glyph}</div>
+      <div class="bait-origin">${c.origin}</div>
+      <div class="bait-title">${c.title}</div>
+      <div class="bait-region">${c.region}</div>
+      <div class="bait-teaser">${c.teaser}</div>
+      <div class="bait-footer">
+        <div class="bait-tags">${c.tags.map(t=>'<span class="bait-tag">'+t+'</span>').join('')}</div>
+        <div class="bait-cta">Take the bait →</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openCard(id) {
+  const card = BAIT_CARDS.find(c=>c.id===id);
+  if (!card) return;
+  activeLightboxCard = card;
+  document.getElementById('lbGlyph').textContent = card.glyph;
+  document.getElementById('lbOrigin').textContent = card.origin;
+  document.getElementById('lbTitle').textContent = card.title;
+  document.getElementById('lbRegion').textContent = card.region;
+  document.getElementById('lbWhat').textContent = card.what;
+  document.getElementById('lbWhy').textContent = card.why;
+  document.getElementById('lbProvenance').textContent = card.provenance;
+  document.getElementById('lbImages').innerHTML = card.imagePrompts.map(p=>'<div class="lb-image-placeholder">'+card.glyph+'</div>').join('');
+  document.getElementById('lbApps').innerHTML = card.applications.map(a=>'<div class="lb-app"><div class="lb-app-label">Apply</div>'+a+'</div>').join('');
+  document.getElementById('lbReport').innerHTML = '';
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox(e) {
+  if (e && e.target !== document.getElementById('lightbox') && !e.target.classList.contains('lb-close')) return;
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function generateReport() {
+  if (!activeLightboxCard) return;
+  const c = activeLightboxCard;
+  document.getElementById('lbReport').innerHTML = `
+    <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:20px;margin-top:4px">
+      <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,0.25);margin-bottom:12px">Mini Report — Generated</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.65);line-height:1.8">
+        <strong style="color:rgba(200,150,255,0.9)">${c.title}</strong> emerges from <strong>${c.region}</strong> as a response to a specific pressure or insight: the need to describe ${c.teaser.toLowerCase()}
+        <br><br>
+        Its relevance to contemporary creative and design practice lies in what it reveals about the nature of ${c.tags[0]} and ${c.tags[1]}. The concept offers a framework for approaching problems where conventional ${c.tags[2]} thinking falls short.
+        <br><br>
+        Key tensions it introduces: the relationship between ${c.tags[0]} and constraint; the question of what enables versus what limits; and the possibility that the most productive moves are lateral rather than direct.
+        <br><br>
+        <em style="color:rgba(255,255,255,0.35)">Generated locally — no AI APIs required. This is a structural outline seeded by the concept\'s own metadata.</em>
+      </div>
+    </div>`;
+}
+
+function generatePollinations() {
+  if (!activeLightboxCard) return;
+  const prompt = activeLightboxCard.imagePrompts[0];
+  window.open('ai-studio.html', '_blank');
+  sessionStorage.setItem('cf_discovery_prompt', prompt);
+}
+
+function saveToNotebook() {
+  if (!activeLightboxCard) return;
+  const saved = JSON.parse(LS('cf_discovery_notebook') || '[]');
+  if (!saved.find(s=>s.id===activeLightboxCard.id)) {
+    saved.push({id:activeLightboxCard.id, title:activeLightboxCard.title, savedAt:new Date().toISOString()});
+    LSSet('cf_discovery_notebook', JSON.stringify(saved));
+  }
+  const btn = event.target;
+  btn.textContent = '✓ Saved!';
+  setTimeout(()=>{btn.textContent='◈ Save to notebook';},2000);
+}
+
+/* ═══════════════════════════════
+   INIT
+═══════════════════════════════ */
+renderBaitGrid();
+newMystery();
+renderGuesses();
+
+// Keyboard nav
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeLightbox({target:document.getElementById('lightbox')});
+});
+</script>
+</body>
+</html>

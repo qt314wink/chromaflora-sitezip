@@ -162,7 +162,42 @@ input[type=file]{display:none}
 .band-header-name{font-size:22px;font-weight:900;letter-spacing:-0.5px;margin-bottom:3px}
 .band-header-meta{font-size:12px;color:rgba(255,255,255,0.4)}
 .band-header-actions{margin-left:auto;display:flex;gap:8px}
+
+/* ── Sequencer ── */
+.seq-transport{display:flex;align-items:center;gap:12px;padding:18px 20px;background:rgba(0,0,0,0.3);border-bottom:1px solid rgba(255,255,255,0.06);flex-wrap:wrap}
+.seq-play-btn{width:44px;height:44px;border-radius:50%;border:none;background:linear-gradient(135deg,#a855f7,#ec4899);color:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:0.2s cubic-bezier(0.34,1.56,0.64,1);flex-shrink:0}
+.seq-play-btn:hover{transform:scale(1.1)}
+.seq-play-btn.playing{background:linear-gradient(135deg,#10b981,#22d3ee)}
+.seq-ctrl-group{display:flex;flex-direction:column;gap:3px;min-width:80px}
+.seq-ctrl-label{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,0.3)}
+.seq-ctrl-val{font-size:14px;font-weight:900;font-family:'JetBrains Mono',monospace;color:white}
+.seq-slider{-webkit-appearance:none;appearance:none;width:90px;height:4px;border-radius:4px;background:rgba(255,255,255,0.1);outline:none;cursor:pointer}
+.seq-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#a855f7;cursor:pointer;box-shadow:0 0 6px rgba(168,85,247,0.6)}
+.seq-step-btns{display:flex;gap:4px}
+.seq-step-btn{padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.4);font-size:11px;font-weight:700;cursor:pointer;font-family:'JetBrains Mono',monospace;transition:0.12s}
+.seq-step-btn:hover,.seq-step-btn.active{background:rgba(168,85,247,0.2);border-color:rgba(168,85,247,0.4);color:rgba(200,150,255,0.9)}
+.seq-gen-btns{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+.seq-gen-btn{padding:5px 12px;border-radius:7px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:rgba(255,255,255,0.5);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:0.12s}
+.seq-gen-btn:hover{background:rgba(168,85,247,0.15);border-color:rgba(168,85,247,0.3);color:rgba(200,150,255,0.9)}
+.seq-grid-wrap{overflow-x:auto;padding:12px 16px}
+.seq-grid{display:flex;flex-direction:column;gap:3px;min-width:640px}
+.seq-row{display:flex;align-items:center;gap:3px}
+.seq-row-label{width:60px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,0.35);flex-shrink:0;text-align:right;padding-right:8px}
+.seq-row-mute{width:22px;height:22px;border-radius:5px;border:1px solid rgba(255,255,255,0.08);background:transparent;color:rgba(255,255,255,0.3);font-size:10px;cursor:pointer;flex-shrink:0;transition:0.12s;display:flex;align-items:center;justify-content:center}
+.seq-row-mute.muted{background:rgba(236,72,153,0.15);border-color:rgba(236,72,153,0.3);color:rgba(255,120,160,0.7)}
+.seq-steps{display:flex;gap:3px;flex:1}
+.seq-cell{width:32px;height:32px;border-radius:6px;border:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.03);cursor:pointer;transition:0.08s;flex-shrink:0;position:relative}
+.seq-cell:hover{border-color:rgba(168,85,247,0.4);background:rgba(168,85,247,0.08)}
+.seq-cell.on{border-color:transparent}
+.seq-cell.active-step{box-shadow:0 0 0 2px rgba(255,255,255,0.5)!important}
+.seq-cell.group-sep{margin-left:5px}
+.seq-pattern-row{display:flex;align-items:center;gap:8px;padding:12px 16px 4px;flex-wrap:wrap}
+.seq-pattern-label{font-size:10px;font-weight:800;color:rgba(255,255,255,0.25);text-transform:uppercase;letter-spacing:.1em}
+.seq-pat-btn{padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.08);background:transparent;color:rgba(255,255,255,0.4);font-size:10px;font-weight:700;cursor:pointer;font-family:'JetBrains Mono',monospace;transition:0.12s}
+.seq-pat-btn:hover{background:rgba(34,211,238,0.1);border-color:rgba(34,211,238,0.3);color:rgba(100,230,240,0.9)}
+.seq-pat-btn.saved{border-color:rgba(16,185,129,0.35);color:rgba(100,240,180,0.8)}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/tone@14/build/Tone.js"></script>
 </head>
 <body>
 
@@ -228,6 +263,7 @@ input[type=file]{display:none}
         <button class="mt-btn" onclick="switchBandTab('stems',this)">Stems</button>
         <button class="mt-btn" onclick="switchBandTab('soundcloud',this)">SoundCloud</button>
         <button class="mt-btn" onclick="switchBandTab('info',this)">Band Info</button>
+        <button class="mt-btn" onclick="switchBandTab('sequencer',this)">⬡ Sequencer</button>
       </div>
 
       <!-- Tracks tab -->
@@ -380,6 +416,66 @@ input[type=file]{display:none}
         </div>
       </div>
     </div>
+
+      <!-- Sequencer tab -->
+      <div class="tab-panel" id="btab-sequencer">
+        <!-- Transport Bar -->
+        <div class="seq-transport">
+          <button class="seq-play-btn" id="seqPlayBtn" onclick="seqTogglePlay()">▶</button>
+          <div class="seq-ctrl-group">
+            <div class="seq-ctrl-label">BPM</div>
+            <div class="seq-ctrl-val" id="seqBpmVal">120</div>
+            <input class="seq-slider" type="range" min="60" max="220" value="120" id="seqBpmSlider" oninput="seqSetBpm(this.value)">
+          </div>
+          <div class="seq-ctrl-group">
+            <div class="seq-ctrl-label">Swing</div>
+            <div class="seq-ctrl-val" id="seqSwingVal">0%</div>
+            <input class="seq-slider" type="range" min="0" max="80" value="0" id="seqSwingSlider" oninput="seqSetSwing(this.value)">
+          </div>
+          <div class="seq-ctrl-group">
+            <div class="seq-ctrl-label">Steps</div>
+            <div class="seq-step-btns">
+              <button class="seq-step-btn active" onclick="seqSetSteps(8,this)">8</button>
+              <button class="seq-step-btn active" onclick="seqSetSteps(16,this)">16</button>
+              <button class="seq-step-btn" onclick="seqSetSteps(32,this)">32</button>
+            </div>
+          </div>
+          <div class="seq-ctrl-group">
+            <div class="seq-ctrl-label">Vol</div>
+            <div class="seq-ctrl-val" id="seqVolVal">70%</div>
+            <input class="seq-slider" type="range" min="0" max="100" value="70" id="seqVolSlider" oninput="seqSetVol(this.value)">
+          </div>
+          <div class="seq-gen-btns">
+            <button class="seq-gen-btn" onclick="seqGenEuclidean()">⬡ Euclidean</button>
+            <button class="seq-gen-btn" onclick="seqGenRandom()">⚄ Random</button>
+            <button class="seq-gen-btn" onclick="seqGenChaos()">☯ Chaos</button>
+            <button class="seq-gen-btn" onclick="seqGenHuman()">♪ Human</button>
+            <button class="seq-gen-btn" style="color:rgba(236,72,153,0.7)" onclick="seqClear()">✕ Clear</button>
+          </div>
+        </div>
+
+        <!-- Step Grid -->
+        <div class="seq-grid-wrap">
+          <div class="seq-grid" id="seqGrid">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Pattern memory -->
+        <div class="seq-pattern-row">
+          <span class="seq-pattern-label">Patterns:</span>
+          <button class="seq-pat-btn" id="seqPat0" onclick="seqLoadPat(0)">A</button>
+          <button class="seq-pat-btn" id="seqPat1" onclick="seqLoadPat(1)">B</button>
+          <button class="seq-pat-btn" id="seqPat2" onclick="seqLoadPat(2)">C</button>
+          <button class="seq-pat-btn" id="seqPat3" onclick="seqLoadPat(3)">D</button>
+          <button class="seq-gen-btn" onclick="seqSavePat()">💾 Save to Slot</button>
+          <span style="font-size:10px;color:rgba(255,255,255,0.2);margin-left:8px" id="seqStatus">Ready</span>
+        </div>
+
+        <div style="padding:10px 16px 16px;font-size:10px;color:rgba(255,255,255,0.2);font-family:'JetBrains Mono',monospace">
+          Tone.js step sequencer · Web Audio synthesis · patterns saved to localStorage · click cells to toggle · mute rows with M
+        </div>
+      </div>
 
     <!-- AI Gen stems view -->
     <div id="aiGenStemsView" style="display:none;padding:28px">
@@ -1079,6 +1175,285 @@ function clearAIStems() {
   LSSet('cf_band_gen_stems', '[]');
   renderAIGenStems();
 }
+
+/* ═══════════════════════════════════════════
+   TONE.JS STEP SEQUENCER
+═══════════════════════════════════════════ */
+const SEQ_TRACKS = [
+  {name:'Kick',  color:'#f97316', darken:'rgba(249,115,22,0.35)'},
+  {name:'Snare', color:'#ec4899', darken:'rgba(236,72,153,0.35)'},
+  {name:'Hat',   color:'#22d3ee', darken:'rgba(34,211,238,0.3)'},
+  {name:'Clap',  color:'#a855f7', darken:'rgba(168,85,247,0.3)'},
+  {name:'Bass',  color:'#10b981', darken:'rgba(16,185,129,0.3)'},
+  {name:'Lead',  color:'#f59e0b', darken:'rgba(245,158,11,0.3)'},
+  {name:'Pad',   color:'#6366f1', darken:'rgba(99,102,241,0.3)'},
+  {name:'Perc',  color:'#e11d48', darken:'rgba(225,29,72,0.3)'},
+];
+
+let seqPattern = Array.from({length:8},()=>new Array(32).fill(false));
+let seqMuted = new Array(8).fill(false);
+let seqCurrentStep = 0;
+let seqIsPlaying = false;
+let seqStepCount = 16;
+let seqBpm = 120;
+let seqSwingVal2 = 0;
+let seqVolume = 0.7;
+let seqCurrentPatSlot = -1;
+let toneLoaded = false;
+let seqSequence = null;
+let seqSynths = null;
+let seqMasterGain = null;
+
+function seqEnsureTone() {
+  if (!toneLoaded && typeof Tone !== 'undefined') {
+    seqMasterGain = new Tone.Gain(seqVolume).toDestination();
+    seqSynths = [
+      new Tone.MembraneSynth({pitchDecay:0.08,octaves:5,envelope:{attack:0.001,decay:0.3,sustain:0,release:0.1}}).connect(seqMasterGain),
+      new Tone.NoiseSynth({noise:{type:'white'},envelope:{attack:0.001,decay:0.14,sustain:0,release:0.05}}).connect(seqMasterGain),
+      new Tone.MetalSynth({frequency:400,envelope:{attack:0.001,decay:0.05,release:0.01},harmonicity:3,modulationIndex:16,resonance:4000,octaves:0.5}).connect(seqMasterGain),
+      new Tone.NoiseSynth({noise:{type:'pink'},envelope:{attack:0.005,decay:0.08,sustain:0,release:0.02}}).connect(seqMasterGain),
+      new Tone.MonoSynth({oscillator:{type:'sawtooth'},envelope:{attack:0.01,decay:0.3,sustain:0.4,release:0.4},filterEnvelope:{attack:0.01,decay:0.15,sustain:0.5,release:0.4,baseFrequency:100,octaves:2.5}}).connect(seqMasterGain),
+      new Tone.Synth({oscillator:{type:'square'},envelope:{attack:0.005,decay:0.1,sustain:0.3,release:0.3}}).connect(seqMasterGain),
+      new Tone.PolySynth(Tone.Synth,{oscillator:{type:'sine'},envelope:{attack:0.2,decay:0.6,sustain:0.5,release:1.5}}).connect(seqMasterGain),
+      new Tone.MetalSynth({frequency:200,envelope:{attack:0.001,decay:0.12,release:0.02},harmonicity:5.1,modulationIndex:32,resonance:3000,octaves:1}).connect(seqMasterGain),
+    ];
+    toneLoaded = true;
+  }
+}
+
+const SEQ_NOTES = ['C2','C4','F#4','A3','A1','C5','C4','G3'];
+
+function seqTriggerNote(row, time) {
+  if (!seqSynths || seqMuted[row]) return;
+  try {
+    const s = seqSynths[row];
+    if (row===0) s.triggerAttackRelease('C1','8n',time);
+    else if (row===1) s.triggerAttackRelease('16n',time);
+    else if (row===2) s.triggerAttackRelease('32n',time);
+    else if (row===3) s.triggerAttackRelease('16n',time);
+    else if (row===4) s.triggerAttackRelease(SEQ_NOTES[4],'8n',time);
+    else if (row===5) s.triggerAttackRelease(SEQ_NOTES[5],'16n',time);
+    else if (row===6) s.triggerAttackRelease([SEQ_NOTES[6],'E4','G4'],'4n',time);
+    else if (row===7) s.triggerAttackRelease('16n',time);
+  } catch(e) {}
+}
+
+function seqRenderGrid() {
+  const grid = document.getElementById('seqGrid');
+  if (!grid) return;
+  grid.innerHTML = SEQ_TRACKS.map((tr,row) => {
+    const cells = Array.from({length:seqStepCount},(_,step) => {
+      const on = seqPattern[row][step];
+      const sep = step>0 && step%4===0 ? ' group-sep':'';
+      return '<div class="seq-cell' + (on?' on':'') + sep + '" '
+        + 'data-row="'+row+'" data-step="'+step+'" '
+        + 'style="' + (on?'background:'+tr.darken+';border-color:'+tr.color+';box-shadow:0 0 8px '+tr.color+'44':'') + '" '
+        + 'onclick="seqToggleCell('+row+','+step+')" title="'+tr.name+' step '+(step+1)+'">'
+        + (on ? '<span style="display:block;width:6px;height:6px;border-radius:50%;background:'+tr.color+';margin:auto;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)"></span>' : '')
+        + '</div>';
+    }).join('');
+    return '<div class="seq-row">'
+      + '<div class="seq-row-label">'+tr.name+'</div>'
+      + '<button class="seq-row-mute'+(seqMuted[row]?' muted':'') + '" onclick="seqToggleMute('+row+')" title="Mute">M</button>'
+      + '<div class="seq-steps">'+cells+'</div>'
+      + '</div>';
+  }).join('');
+}
+
+function seqToggleCell(row, step) {
+  seqPattern[row][step] = !seqPattern[row][step];
+  seqRenderGrid();
+}
+
+function seqToggleMute(row) {
+  seqMuted[row] = !seqMuted[row];
+  seqRenderGrid();
+}
+
+async function seqTogglePlay() {
+  await Tone.start();
+  seqEnsureTone();
+  if (seqIsPlaying) {
+    Tone.Transport.stop();
+    Tone.Transport.cancel();
+    seqIsPlaying = false;
+    seqCurrentStep = 0;
+    document.getElementById('seqPlayBtn').textContent = '▶';
+    document.getElementById('seqPlayBtn').classList.remove('playing');
+    document.querySelectorAll('.seq-cell.active-step').forEach(c=>c.classList.remove('active-step'));
+  } else {
+    Tone.Transport.bpm.value = seqBpm;
+    Tone.Transport.swing = seqSwingVal2 / 100;
+    Tone.Transport.swingSubdivision = '16n';
+    seqCurrentStep = 0;
+    const stepTime = '16n';
+    seqSequence = new Tone.Sequence((time, step) => {
+      document.querySelectorAll('.seq-cell.active-step').forEach(c=>c.classList.remove('active-step'));
+      for (let row=0; row<8; row++) {
+        if (seqPattern[row][step]) {
+          seqTriggerNote(row, time);
+          Tone.getDraw().schedule(()=>{
+            const cell = document.querySelector('.seq-cell[data-row="'+row+'"][data-step="'+step+'"]');
+            if(cell) cell.classList.add('active-step');
+          }, time);
+        }
+      }
+      const activeCells = document.querySelectorAll('.seq-cell[data-step="'+step+'"]');
+      Tone.getDraw().schedule(()=>{
+        document.querySelectorAll('.seq-cell.active-step').forEach(c=>c.classList.remove('active-step'));
+        activeCells.forEach(c=>c.classList.add('active-step'));
+      }, time);
+    }, Array.from({length:seqStepCount},(_,i)=>i), stepTime);
+    seqSequence.start(0);
+    Tone.Transport.start();
+    seqIsPlaying = true;
+    document.getElementById('seqPlayBtn').textContent = '■';
+    document.getElementById('seqPlayBtn').classList.add('playing');
+    document.getElementById('seqStatus').textContent = 'Playing · '+seqBpm+' BPM';
+  }
+}
+
+function seqSetBpm(val) {
+  seqBpm = parseInt(val);
+  document.getElementById('seqBpmVal').textContent = seqBpm;
+  if (typeof Tone !== 'undefined') Tone.Transport.bpm.value = seqBpm;
+}
+
+function seqSetSwing(val) {
+  seqSwingVal2 = parseInt(val);
+  document.getElementById('seqSwingVal').textContent = seqSwingVal2 + '%';
+  if (typeof Tone !== 'undefined') Tone.Transport.swing = seqSwingVal2 / 100;
+}
+
+function seqSetSteps(n, btn) {
+  seqStepCount = n;
+  document.querySelectorAll('.seq-step-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  if (seqIsPlaying) { seqTogglePlay().then(()=>seqTogglePlay()); }
+  seqRenderGrid();
+}
+
+function seqSetVol(val) {
+  seqVolume = parseInt(val)/100;
+  document.getElementById('seqVolVal').textContent = val + '%';
+  if (seqMasterGain) seqMasterGain.gain.value = seqVolume;
+}
+
+function seqClear() {
+  seqPattern = Array.from({length:8},()=>new Array(32).fill(false));
+  seqRenderGrid();
+  document.getElementById('seqStatus').textContent = 'Cleared';
+}
+
+// Bjorklund Euclidean rhythm algorithm
+function bjorklund(steps, pulses) {
+  if (pulses >= steps) return new Array(steps).fill(true);
+  if (pulses === 0) return new Array(steps).fill(false);
+  let pattern = [], counts = [], remainders = [];
+  let divisor = steps - pulses;
+  remainders.push(pulses);
+  let level = 0;
+  while (remainders[level] > 1) {
+    counts.push(Math.floor(divisor / remainders[level]));
+    remainders.push(divisor % remainders[level]);
+    divisor = remainders[level];
+    level++;
+  }
+  counts.push(divisor);
+  function build(level) {
+    if (level === -1) pattern.push(false);
+    else if (level === -2) pattern.push(true);
+    else {
+      for (let i=0; i<counts[level]; i++) build(level-1);
+      if (remainders[level] !== 0) build(level-2);
+    }
+  }
+  build(level);
+  return pattern;
+}
+
+function seqGenEuclidean() {
+  const densities = [4,3,2,2,3,4,2,3];
+  seqPattern = SEQ_TRACKS.map((_,row)=>{
+    const full = bjorklund(seqStepCount, densities[row]);
+    const out = new Array(32).fill(false);
+    for(let i=0;i<seqStepCount;i++) out[i] = full[i]||false;
+    return out;
+  });
+  seqRenderGrid();
+  document.getElementById('seqStatus').textContent = 'Euclidean pattern generated';
+}
+
+function seqGenRandom() {
+  const densities = [0.35,0.25,0.45,0.2,0.3,0.4,0.15,0.25];
+  seqPattern = SEQ_TRACKS.map((_,row)=>{
+    const out = new Array(32).fill(false);
+    for(let i=0;i<seqStepCount;i++) out[i] = Math.random() < densities[row];
+    return out;
+  });
+  seqRenderGrid();
+  document.getElementById('seqStatus').textContent = 'Random pattern generated';
+}
+
+function seqGenChaos() {
+  // Logistic map chaos
+  let x = 0.3 + Math.random()*0.4;
+  const r = 3.7 + Math.random()*0.3;
+  const vals = [];
+  for(let i=0;i<seqStepCount*8+50;i++){x=r*x*(1-x);if(i>50)vals.push(x);}
+  seqPattern = SEQ_TRACKS.map((_,row)=>{
+    const out = new Array(32).fill(false);
+    const threshold = 0.3 + row*0.07;
+    for(let i=0;i<seqStepCount;i++) out[i] = vals[row*seqStepCount+i] > threshold;
+    return out;
+  });
+  seqRenderGrid();
+  document.getElementById('seqStatus').textContent = 'Chaos (logistic map) generated';
+}
+
+function seqGenHuman() {
+  const base = [
+    [1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0], // Kick: 4-on-floor
+    [0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0], // Snare: 2 and 4
+    [1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0], // Hat: 8ths
+    [0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0], // Clap: off-beat
+    [1,0,0,1,0,0,1,0,0,0,1,0,0,0,1,0], // Bass: syncopated
+    [0,0,1,0,0,0,0,1,0,0,1,0,0,1,0,0], // Lead
+    [1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0], // Pad: sparse
+    [0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,1], // Perc: groove
+  ];
+  seqPattern = SEQ_TRACKS.map((_,row)=>{
+    const out = new Array(32).fill(false);
+    const src = base[row] || [];
+    for(let i=0;i<seqStepCount;i++){
+      const humanize = Math.random()<0.06;
+      out[i] = humanize ? !src[i%16] : (src[i%16]===1);
+    }
+    return out;
+  });
+  seqRenderGrid();
+  document.getElementById('seqStatus').textContent = 'Human groove pattern applied';
+}
+
+function seqSavePat() {
+  const slot = (seqCurrentPatSlot+1)%4;
+  seqCurrentPatSlot = slot;
+  LSSet('cf_seq_pat_'+slot, JSON.stringify(seqPattern));
+  const btn = document.getElementById('seqPat'+slot);
+  if(btn) btn.classList.add('saved');
+  document.getElementById('seqStatus').textContent = 'Saved to slot '+['A','B','C','D'][slot];
+}
+
+function seqLoadPat(slot) {
+  const data = LS('cf_seq_pat_'+slot);
+  if (!data) { document.getElementById('seqStatus').textContent = 'Slot '+['A','B','C','D'][slot]+' is empty'; return; }
+  seqPattern = JSON.parse(data);
+  seqRenderGrid();
+  document.getElementById('seqStatus').textContent = 'Loaded pattern '+['A','B','C','D'][slot];
+}
+
+// Init sequencer grid on load
+(function(){ seqRenderGrid(); })();
 
 /* ═══════════════════════════════════════════
    INIT

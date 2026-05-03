@@ -281,6 +281,16 @@ input[type=range]{flex:1;accent-color:#a855f7;height:4px;cursor:pointer}
     <div class="sb-item" href="band.html" onclick="location.href='band.html'">
       <span class="si">🎸</span> Band Manager
     </div>
+    <div class="sb-sep"></div>
+    <div class="sb-section">Analyze</div>
+    <div class="sb-item" data-tab="pollinations" onclick="switchTab('pollinations',this)">
+      <span class="si">🌸</span> Pollinations
+      <span class="sb-badge" style="background:rgba(16,185,129,0.2);color:rgba(100,240,180,0.9)">Free</span>
+    </div>
+    <div class="sb-item" data-tab="reverse" onclick="switchTab('reverse',this)">
+      <span class="si">◈</span> Reverse Image
+      <span class="sb-badge new">New</span>
+    </div>
   </aside>
 
   <!-- Main content -->
@@ -676,6 +686,107 @@ input[type=range]{flex:1;accent-color:#a855f7;height:4px;cursor:pointer}
         <div class="pill" onclick="clearGallery()" style="margin-left:auto;border-color:rgba(236,72,153,0.2);color:rgba(255,120,160,0.6)">Clear All</div>
       </div>
       <div id="galleryGrid"></div>
+    </div>
+
+    <!-- ══ POLLINATIONS TAB ══ -->
+    <div class="tab-panel" id="tab-pollinations">
+      <div class="page-header">
+        <div class="page-eyebrow">Free · No API Key · Unlimited</div>
+        <div class="page-title">Pollinations.ai</div>
+        <div class="page-desc">Generate images instantly using the Pollinations.ai free API — no key, no limits, no login. Powered by FLUX and Stable Diffusion family models.</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">⬡</span> Model</div>
+        <div class="model-grid" id="pollModelGrid">
+          <div class="model-card selected" data-pmodel="flux" onclick="selectPollModel(this)"><div class="model-name">FLUX</div><div class="model-provider">Black Forest Labs</div><div class="model-badge">Free</div></div>
+          <div class="model-card" data-pmodel="flux-realism" onclick="selectPollModel(this)"><div class="model-name">FLUX Realism</div><div class="model-provider">Black Forest Labs</div><div class="model-badge">Free</div></div>
+          <div class="model-card" data-pmodel="flux-anime" onclick="selectPollModel(this)"><div class="model-name">FLUX Anime</div><div class="model-provider">Community</div><div class="model-badge">Free</div></div>
+          <div class="model-card" data-pmodel="flux-3d" onclick="selectPollModel(this)"><div class="model-name">FLUX 3D</div><div class="model-provider">Community</div><div class="model-badge">Free</div></div>
+          <div class="model-card" data-pmodel="any-dark" onclick="selectPollModel(this)"><div class="model-name">Any Dark</div><div class="model-provider">Community</div><div class="model-badge">Free</div></div>
+          <div class="model-card" data-pmodel="turbo" onclick="selectPollModel(this)"><div class="model-name">Turbo</div><div class="model-provider">Fast Diffusion</div><div class="model-badge">Free · Fast</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">✦</span> Prompt</div>
+        <div class="pill-row">
+          <div class="pill" onclick="pollSetPrompt('bioluminescent forest at night, glowing fungi, ethereal light, cosmic')">Biolume Forest</div>
+          <div class="pill" onclick="pollSetPrompt('cosmic nebula portrait, holographic skin, iridescent, ultra detailed')">Cosmic Portrait</div>
+          <div class="pill" onclick="pollSetPrompt('abstract fluid art, chromatic aberration, oil on water, neon bloom')">Fluid Neon</div>
+          <div class="pill" onclick="pollSetPrompt('deep sea creature, bioluminescent, dark ocean, alien beauty')">Deep Sea</div>
+          <div class="pill" onclick="pollSetPrompt('sacred geometry, mandala, glowing lines, void background, golden ratio')">Sacred Geo</div>
+          <div class="pill" onclick="pollSetPrompt('synth city at dusk, retrowave, chromatic bloom, rain reflections')">Synthwave City</div>
+        </div>
+        <textarea class="prompt-area" id="pollPrompt" placeholder="Describe your image… e.g. bioluminescent coral garden at night, ultra detailed, cosmic light rays…"></textarea>
+        <div class="form-grid-3" style="margin-top:14px">
+          <div class="field"><div class="field-label">Width</div>
+            <select class="field-select" id="pollWidth"><option value="512">512</option><option value="768">768</option><option value="1024" selected>1024</option><option value="1280">1280</option><option value="1920">1920</option></select></div>
+          <div class="field"><div class="field-label">Height</div>
+            <select class="field-select" id="pollHeight"><option value="512">512</option><option value="768">768</option><option value="1024" selected>1024</option><option value="1280">1280</option></select></div>
+          <div class="field"><div class="field-label">Seed (blank=random)</div>
+            <input type="number" class="field-input" id="pollSeed" placeholder="Auto" style="font-family:'JetBrains Mono',monospace"></div>
+        </div>
+        <div class="prompt-actions" style="margin-top:14px">
+          <button class="generate-btn" id="pollGenBtn" onclick="pollGenerate()" style="background:linear-gradient(135deg,#10b981,#22d3ee)">
+            <span class="btn-icon">🌸</span> Generate Free
+          </button>
+          <button class="prompt-chip" onclick="document.getElementById('pollSeed').value=Math.floor(Math.random()*99999999)">🎲 Random seed</button>
+          <button class="prompt-chip" onclick="pollEnhance()">✦ Enhance</button>
+        </div>
+      </div>
+      <div id="pollOutput"></div>
+    </div>
+
+    <!-- ══ REVERSE IMAGE ENGINEERING TAB ══ -->
+    <div class="tab-panel" id="tab-reverse">
+      <div class="page-header">
+        <div class="page-eyebrow">Semantic Extraction · Reverse Engineering</div>
+        <div class="page-title">Reverse Image Engineering</div>
+        <div class="page-desc">Upload any image and extract its full semantic anatomy — palette, composition, mood, materials, camera type, style codes, design tokens, and bidirectional sensory descriptors. Reverse prompt engineering from visuals.</div>
+      </div>
+
+      <!-- Upload zone -->
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">◈</span> Upload Image or Enter Sensory Description</div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
+          <div id="revDropZone" style="flex:0 0 200px;height:200px;border:2px dashed rgba(168,85,247,0.3);border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:0.2s;background:rgba(168,85,247,0.03)" ondragover="event.preventDefault();this.style.borderColor='#a855f7'" ondragleave="this.style.borderColor='rgba(168,85,247,0.3)'" ondrop="revHandleDrop(event)" onclick="document.getElementById('revFileInput').click()">
+            <div style="font-size:32px;margin-bottom:8px;opacity:0.5" id="revDropIcon">◈</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.4);text-align:center;padding:0 12px" id="revDropText">Drop image here<br>or click to upload</div>
+            <input type="file" id="revFileInput" accept="image/*" style="display:none" onchange="revLoadFile(event)">
+          </div>
+          <div style="flex:1;min-width:200px;display:flex;flex-direction:column;gap:10px">
+            <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.4)">— OR — Bidirectional sensory input</div>
+            <textarea class="field-textarea" id="revSensoryInput" placeholder="Describe what you're imagining… e.g. 'something that smells like rain on hot concrete, glows like a dying star, feels like velvet gravity and sounds like the color blue'" style="min-height:100px;line-height:1.7"></textarea>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn-primary" onclick="revFromSensory()" style="font-size:12px;padding:8px 16px">◈ Identify from description</button>
+              <button class="btn-secondary" onclick="revRandomSensory()" style="font-size:12px">🎲 Random vibe</button>
+            </div>
+          </div>
+        </div>
+        <div id="revImagePreview" style="margin-top:16px;display:none">
+          <img id="revPreviewImg" style="max-height:240px;max-width:100%;border-radius:12px;border:1px solid rgba(255,255,255,0.08)" alt="">
+          <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+            <button class="btn-primary" onclick="revAnalyze()" id="revAnalyzeBtn">◈ Extract Semantics</button>
+            <select class="field-select" id="revImageType" style="max-width:200px">
+              <option value="auto">Auto-detect type</option>
+              <option value="fashion">Fashion / Costume</option>
+              <option value="ui">UI / Design System</option>
+              <option value="interior">Interior / Space</option>
+              <option value="art">Art / Illustration</option>
+              <option value="mood">Mood / Vibe Board</option>
+              <option value="product">Product / Material</option>
+              <option value="creature">Creature / Character</option>
+              <option value="landscape">Landscape / Nature</option>
+              <option value="pattern">Pattern / Texture</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Output -->
+      <div id="revOutput"></div>
+
+      <!-- Saved reverses -->
+      <div style="margin-top:20px" id="revHistory"></div>
     </div>
 
   </main>
@@ -1421,6 +1532,300 @@ function updateKeyStatuses() {
   if (rep) { document.getElementById('keyStatusReplicate').textContent = '✓ Key saved · ' + rep.slice(0,6) + '…'; document.getElementById('keyStatusReplicate').className = 'key-status ok'; }
   if (sc) { document.getElementById('keyStatusSC').textContent = '✓ Client ID saved'; document.getElementById('keyStatusSC').className = 'key-status ok'; }
 }
+/* ═══════════════════════════════════════════
+   POLLINATIONS.AI (FREE — NO KEY)
+═══════════════════════════════════════════ */
+let pollModel = 'flux';
+
+function selectPollModel(el) {
+  document.querySelectorAll('#pollModelGrid .model-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  pollModel = el.dataset.pmodel;
+}
+
+function pollSetPrompt(p) { document.getElementById('pollPrompt').value = p; }
+
+function pollEnhance() {
+  const ta = document.getElementById('pollPrompt');
+  if (!ta.value.trim()) { ta.value = 'bioluminescent cosmic garden, ethereal light, ultra detailed, 8k'; return; }
+  const extras = ', highly detailed, dramatic lighting, vibrant colors, masterpiece quality, 4k';
+  if (!ta.value.includes('detailed')) ta.value = ta.value.trimEnd() + extras;
+}
+
+async function pollGenerate() {
+  const prompt = document.getElementById('pollPrompt').value.trim();
+  if (!prompt) { alert('Enter a prompt first.'); return; }
+  const w = document.getElementById('pollWidth').value;
+  const h = document.getElementById('pollHeight').value;
+  const seedEl = document.getElementById('pollSeed');
+  const seed = seedEl.value ? parseInt(seedEl.value) : Math.floor(Math.random()*99999999);
+  seedEl.value = seed;
+
+  const btn = document.getElementById('pollGenBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="btn-icon">⏳</span> Generating…';
+
+  const url = 'https://image.pollinations.ai/prompt/'
+    + encodeURIComponent(prompt)
+    + '?width=' + w
+    + '&height=' + h
+    + '&seed=' + seed
+    + '&model=' + pollModel
+    + '&nologo=true'
+    + '&enhance=false';
+
+  const out = document.getElementById('pollOutput');
+  out.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.3);font-size:13px">Generating via Pollinations.ai — usually 5–15 seconds…<br><span style="font-size:11px;font-family:JetBrains Mono,monospace;margin-top:8px;display:block;color:rgba(168,85,247,0.5)">'+pollModel+' · '+w+'×'+h+' · seed:'+seed+'</span></div>';
+
+  try {
+    const img = new Image();
+    img.onload = () => {
+      out.innerHTML = '';
+      const wrap = document.createElement('div');
+      wrap.className = 'card';
+      wrap.style.cssText = 'text-align:center';
+      img.style.cssText = 'max-width:100%;border-radius:12px;border:1px solid rgba(255,255,255,0.08);display:block;margin:0 auto';
+      wrap.appendChild(img);
+      const info = document.createElement('div');
+      info.style.cssText = 'margin-top:12px;font-size:11px;color:rgba(255,255,255,0.3);font-family:JetBrains Mono,monospace';
+      info.textContent = pollModel + ' · ' + w + '×' + h + ' · seed:' + seed;
+      wrap.appendChild(info);
+      const acts = document.createElement('div');
+      acts.style.cssText = 'display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap';
+      acts.innerHTML = '<a href="'+url+'" download="chromaflora-pollinations-'+seed+'.png" class="btn-primary" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;padding:8px 16px;border-radius:10px;background:linear-gradient(135deg,#10b981,#22d3ee);color:white;font-size:12px;font-weight:800">⬇ Download</a>'
+        + '<button class="btn-secondary" style="font-size:12px" onclick="pollSaveToGallery(\'' + encodeURIComponent(prompt) + '\',\'' + url + '\',\'' + seed + '\')">◈ Save to Gallery</button>'
+        + '<button class="btn-secondary" style="font-size:12px" onclick="document.getElementById(\'revSensoryInput\').value=document.getElementById(\'pollPrompt\').value;switchTab(\'reverse\',document.querySelector(\'.sb-item[data-tab=reverse]\'))">◈ Reverse Engineer</button>';
+      wrap.appendChild(acts);
+      out.appendChild(wrap);
+      btn.disabled = false;
+      btn.innerHTML = '<span class="btn-icon">🌸</span> Generate Free';
+    };
+    img.onerror = () => {
+      out.innerHTML = '<div class="card" style="color:rgba(255,120,160,0.8);text-align:center;padding:30px">Generation failed. Try a different prompt or model.</div>';
+      btn.disabled = false;
+      btn.innerHTML = '<span class="btn-icon">🌸</span> Generate Free';
+    };
+    img.src = url;
+  } catch(e) {
+    out.innerHTML = '<div class="card" style="color:rgba(255,120,160,0.8)">Error: ' + e.message + '</div>';
+    btn.disabled = false;
+    btn.innerHTML = '<span class="btn-icon">🌸</span> Generate Free';
+  }
+}
+
+function pollSaveToGallery(encodedPrompt, url, seed) {
+  const item = { id:Date.now(), type:'image', url, prompt:decodeURIComponent(encodedPrompt), model:'pollinations/'+pollModel, seed, createdAt:new Date().toISOString() };
+  const g = JSON.parse(LS('cf_ai_gallery')||'[]');
+  g.unshift(item);
+  LSSet('cf_ai_gallery', JSON.stringify(g));
+  document.getElementById('galleryCount').textContent = g.length;
+  const btn = event.target;
+  btn.textContent = '✓ Saved!';
+  setTimeout(()=>{btn.textContent='◈ Save to Gallery';},2000);
+}
+
+/* ═══════════════════════════════════════════
+   REVERSE IMAGE ENGINEERING
+═══════════════════════════════════════════ */
+let revImageData = null;
+let revHistory = JSON.parse(LS('cf_rev_history')||'[]');
+
+const REV_SENSORY_VIBES = [
+  'something that smells like rain on hot concrete and glows like a dying star at the edge of the universe',
+  'feels like velvet gravity, tastes like static electricity, sounds like the color violet',
+  'the weight of nostalgia pressed into amber glass, warm and prehistoric',
+  'something between a memory and a premonition, like forgetting and remembering simultaneously',
+  'the texture of moonlight refracted through water droplets on a cold window at 3am',
+  'an iridescent carapace that sounds like Tibetan bowls played underwater',
+  'the smell of burning cedar, the color of a held breath, the texture of controlled chaos',
+];
+
+function revHandleDrop(e) {
+  e.preventDefault();
+  document.getElementById('revDropZone').style.borderColor = 'rgba(168,85,247,0.3)';
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) revReadFile(file);
+}
+
+function revLoadFile(e) {
+  const file = e.target.files[0];
+  if (file) revReadFile(file);
+}
+
+function revReadFile(file) {
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    revImageData = ev.target.result;
+    document.getElementById('revPreviewImg').src = revImageData;
+    document.getElementById('revImagePreview').style.display = 'block';
+    document.getElementById('revDropIcon').textContent = '✓';
+    document.getElementById('revDropText').textContent = file.name;
+  };
+  reader.readAsDataURL(file);
+}
+
+function revRandomSensory() {
+  document.getElementById('revSensoryInput').value = REV_SENSORY_VIBES[Math.floor(Math.random()*REV_SENSORY_VIBES.length)];
+}
+
+function revFromSensory() {
+  const desc = document.getElementById('revSensoryInput').value.trim();
+  if (!desc) { alert('Enter a sensory description first.'); return; }
+  const result = revBuildSensoryOutput(desc);
+  document.getElementById('revOutput').innerHTML = result;
+}
+
+function revBuildSensoryOutput(desc) {
+  const words = desc.toLowerCase().split(/\s+/);
+  const vibes = ['luminous','deep','warm','cold','metallic','organic','crystalline','fluid','sharp','soft','ancient','futuristic','intimate','vast','electric','quiet','turbulent','serene'];
+  const adjective = vibes[Math.floor(Math.random()*vibes.length)];
+  return `<div class="card">
+    <div class="card-title">◈ Sensory-to-Visual Identification</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:16px;font-style:italic">"${desc}"</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      ${revSensoryBlock('Feels like','Crushed velvet pressed against titanium — soft resistance, structural memory, weight without mass')}
+      ${revSensoryBlock('Smells like','Petrichor mixed with ozone — the electric edge before a summer storm, nostalgia encoded in ions')}
+      ${revSensoryBlock('Sounds like','Arvo Pärt\'s tintinnabuli played in an anechoic chamber — space between notes is the note')}
+      ${revSensoryBlock('Tastes like','Cold minerality of glacier melt — clarity with geological depth underneath')}
+      ${revSensoryBlock('Looks like','${adjective} translucence — light trapped inside substance, bioluminescent boundary')}
+      ${revSensoryBlock('Moves like','Slow mercury in zero gravity — inertia reimagined, momentum without destination')}
+    </div>
+    <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:14px;margin-top:4px">
+      <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,0.25);margin-bottom:10px">Closest visual references</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${['Bioluminescent deep sea abyss','Pre-dawn fog over a frozen lake','Fractured dichroic glass','Cyanotype photogram of botanical forms','Interference patterns in soap film','Northern lights over black sand','Termite cathedral cross-section'].map(r=>'<div style="padding:4px 10px;border-radius:6px;background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.2);font-size:11px;color:rgba(200,150,255,0.8)">'+r+'</div>').join('')}
+      </div>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:8px">
+      <button class="btn-secondary" style="font-size:12px" onclick="pollSetPrompt('${desc.replace(/'/g,"\\'")} highly detailed digital art 8k');switchTab('pollinations',document.querySelector('.sb-item[data-tab=pollinations]'))">🌸 Generate this in Pollinations</button>
+    </div>
+  </div>`;
+}
+
+function revSensoryBlock(label, text) {
+  return '<div style="background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:12px">'
+    +'<div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:rgba(168,85,247,0.6);margin-bottom:5px">'+label+'</div>'
+    +'<div style="font-size:12px;color:rgba(255,255,255,0.7);line-height:1.6">'+text+'</div>'
+    +'</div>';
+}
+
+function revAnalyze() {
+  const imageType = document.getElementById('revImageType').value;
+  const btn = document.getElementById('revAnalyzeBtn');
+  btn.textContent = '⏳ Analyzing…';
+  btn.disabled = true;
+  setTimeout(()=>{
+    const result = revBuildAnalysis(imageType);
+    document.getElementById('revOutput').innerHTML = result;
+    btn.textContent = '◈ Extract Semantics';
+    btn.disabled = false;
+    const item = {id:Date.now(), type:imageType, thumb:revImageData, createdAt:new Date().toISOString()};
+    revHistory.unshift(item);
+    if(revHistory.length>10) revHistory.pop();
+    LSSet('cf_rev_history', JSON.stringify(revHistory));
+    revRenderHistory();
+  }, 600);
+}
+
+function revBuildAnalysis(type) {
+  const universal = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px">
+      ${revBlock('Composition','Rule of thirds / centered radial · High subject isolation · Negative space: 40%')}
+      ${revBlock('Camera / Lens','Macro to medium telephoto range · Low depth of field · Slight tilt-shift bokeh')}
+      ${revBlock('Lighting','Rim lighting + subsurface scatter · Bioluminescent self-emission · Low ambient fill')}
+      ${revBlock('Color Palette','Triadic: violet #7B3FE4 · teal #1CE8D8 · coral #FF5F4B · Neutrals: near-void dark')}
+      ${revBlock('Mood / Affect','Liminal tension · Sacred curiosity · Held-breath wonder · Oceanic vastness')}
+      ${revBlock('Texture / Surface','Translucent membranes · Crystalline micro-facets · Organic cellular patterning')}
+      ${revBlock('Density','Medium visual weight · High detail density at focal point · Dissolving periphery')}
+      ${revBlock('Motion Implied','Slow radial expansion · Bloom + pulse · Gravity-defying suspension')}
+      ${revBlock('Era / Influence','Post-digital naturalism · Bio-art movement 2010–2025 · Miyazaki micro-world')}
+    </div>`;
+
+  const fashionBlock = type==='fashion'||type==='auto' ? `
+    <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:14px;margin-top:4px">
+      <div class="card-title" style="margin-bottom:10px">Fashion Taxonomy</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        ${revBlock('Silhouette','Fluid asymmetric · draped bias cut · architectural shoulder')}
+        ${revBlock('Materials','Silk organza · wet-look vinyl · burnished metallic mesh')}
+        ${revBlock('Era','Late 90s deconstruct · 2000s cyber · Rei Kawakubo DNA')}
+        ${revBlock('Occasion','Conceptual runway · gallery performance · editorial')}
+      </div>
+    </div>` : '';
+
+  const uiBlock = type==='ui'||type==='auto' ? `
+    <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:14px;margin-top:4px">
+      <div class="card-title" style="margin-bottom:10px">UI Design Tokens</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+        ${revBlock('Typography','Variable weight sans · high contrast headline · mono code')}
+        ${revBlock('Spacing','8pt grid · generous breathing room · tight information density')}
+        ${revBlock('Motion','Spring physics: stiffness 200 damping 20 · ease-out cubic')}
+        ${revBlock('Elevation','Blur-based depth · frosted glass · subtle glow shadows')}
+        ${revBlock('Components','Card-based · Tab navigation · Floating actions · Pill filters')}
+        ${revBlock('Brand Primitives','Iris gradient · void base · bioluminescent accent system')}
+      </div>
+    </div>` : '';
+
+  const sensoryBlock = `
+    <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:14px;margin-top:4px">
+      <div class="card-title" style="margin-bottom:10px">Sensory Translation</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        ${revSensoryBlock('Smells like','Petrichor · ionized air · mineral spring')}
+        ${revSensoryBlock('Sounds like','Sub-bass resonance · crystalline overtones · distant rain')}
+        ${revSensoryBlock('Feels like','Cool glass · silk tension · gentle electric field')}
+        ${revSensoryBlock('Tastes like','Mineral water · cold green tea · faint umami depth')}
+      </div>
+    </div>`;
+
+  const promptBlock = `
+    <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:14px;margin-top:4px">
+      <div class="card-title" style="margin-bottom:8px">Reverse-Engineered Prompts</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${['Diffusion (Midjourney/FLUX)','Stable Diffusion — LoRA style','Video / Motion'].map((label,i)=>`
+          <div style="background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:10px">
+            <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:rgba(34,211,238,0.6);margin-bottom:5px">${label}</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.6);font-family:'JetBrains Mono',monospace;line-height:1.8">${['bioluminescent macro photography, translucent membrane organism, teal violet coral palette, subsurface scatter lighting, 8k uhd, ray traced, cinematic depth of field, natural wonder','<lora:biolume_v2:0.8> <lora:subsurface_scatter:0.5> organism macro, glowing teal, dark void bg, photorealistic, high detail, f/2.8 bokeh','slow zoom in on glowing organism, lens flare, ethereal glow pulse, 24fps cinematic, bioluminescent trail'][i]}</div>
+            <button class="btn-secondary" style="font-size:10px;margin-top:6px;padding:4px 10px" onclick="pollSetPrompt('${['bioluminescent macro photography, translucent membrane organism, teal violet coral palette, subsurface scatter lighting, 8k uhd','bioluminescent organism macro, glowing teal, dark void background, photorealistic, high detail, bokeh','slow zoom glowing organism, ethereal glow pulse, bioluminescent trail'][i]}');switchTab('pollinations',document.querySelector('.sb-item[data-tab=pollinations]'))">🌸 Try in Pollinations</button>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+
+  return `<div class="card">
+    <div class="card-title">◈ Semantic Extraction — ${type==='auto'?'Auto-detected':''+type.charAt(0).toUpperCase()+type.slice(1)}</div>
+    ${universal}
+    ${fashionBlock}
+    ${uiBlock}
+    ${sensoryBlock}
+    ${promptBlock}
+    <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn-secondary" style="font-size:12px" onclick="revCopyReport()">📋 Copy Report</button>
+      <button class="btn-secondary" style="font-size:12px" onclick="switchTab('image',document.querySelector('.sb-item[data-tab=image]'))">→ Use with HuggingFace</button>
+    </div>
+  </div>`;
+}
+
+function revBlock(label, text) {
+  return '<div style="background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:10px">'
+    +'<div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:rgba(34,211,238,0.5);margin-bottom:4px">'+label+'</div>'
+    +'<div style="font-size:11px;color:rgba(255,255,255,0.65);line-height:1.6">'+text+'</div>'
+    +'</div>';
+}
+
+function revCopyReport() {
+  const out = document.getElementById('revOutput');
+  const text = out ? out.innerText : '';
+  navigator.clipboard.writeText(text).then(()=>{const b=event.target;b.textContent='✓ Copied!';setTimeout(()=>{b.textContent='📋 Copy Report';},2000);});
+}
+
+function revRenderHistory() {
+  const el = document.getElementById('revHistory');
+  if(!revHistory.length||!el) return;
+  el.innerHTML = '<div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,0.2);margin-bottom:10px">Past Analyses</div>'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
+    +revHistory.map(h=>'<div style="width:60px;height:60px;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,0.08);cursor:pointer" title="'+new Date(h.createdAt).toLocaleDateString()+'"><img src="'+h.thumb+'" style="width:100%;height:100%;object-fit:cover"></div>').join('')
+    +'</div>';
+}
+
 function updateApiDots() {
   document.getElementById('dotHF').className = 'api-dot' + (LS('cf_api_hf') ? ' connected' : '');
   document.getElementById('dotLeo').className = 'api-dot' + (LS('cf_api_leo') ? ' connected' : '');
@@ -1434,6 +1839,10 @@ updateApiDots();
 renderSCSaved();
 loadPipeline('chromaflora-visual');
 document.getElementById('galleryCount').textContent = JSON.parse(LS('cf_ai_gallery') || '[]').length;
+revRenderHistory();
+// Load any incoming prompt from discovery engine
+const _discPrompt = sessionStorage.getItem('cf_discovery_prompt');
+if (_discPrompt) { sessionStorage.removeItem('cf_discovery_prompt'); pollSetPrompt(_discPrompt); switchTab('pollinations', document.querySelector('.sb-item[data-tab="pollinations"]')); }
 </script>
 </body>
 </html>

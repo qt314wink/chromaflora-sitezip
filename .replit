@@ -29,3 +29,7 @@ args = "python3 -m http.server 8000 --directory public"
 [[ports]]
 localPort = 8000
 externalPort = 80
+
+[[ports]]
+localPort = 23636
+externalPort = 3000

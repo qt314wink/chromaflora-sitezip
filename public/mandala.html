@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mandala Studio — ChromaFlora</title>
+<meta name="description" content="Real-time interactive mandala and sacred geometry generator. Polar math, simplex noise, Lissajous, Rose Curves, Spirograph and Toroid — ChromaFlora.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --void:#04040f; --iris:#a855f7; --aqua:#22d3d8; --bloom:#ec4899;
+  --ember:#f97316; --viridian:#10b981;
+  --surface:rgba(255,255,255,0.04); --border:rgba(255,255,255,0.08);
+  --t-snap:0.12s cubic-bezier(0.4,0,0.2,1);
+  --t-spring:0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Inter',sans-serif;background:var(--void);color:#fff;display:flex;flex-direction:column}
+
+/* Header */
+.cf-header{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:50px;flex-shrink:0;background:rgba(4,4,15,0.97);border-bottom:1px solid var(--border);z-index:100}
+.cf-logo{font-size:15px;font-weight:800;text-decoration:none;background:linear-gradient(135deg,var(--bloom),var(--iris),var(--aqua));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.cf-nav{display:flex;gap:3px}
+.cf-nav a{padding:5px 12px;border-radius:8px;font-size:12px;font-weight:500;color:rgba(255,255,255,0.55);text-decoration:none;transition:var(--t-snap)}
+.cf-nav a:hover{color:#fff;background:rgba(255,255,255,0.07)}
+.cf-nav a.active{color:#fff;background:rgba(168,85,247,0.18)}
+
+/* Layout */
+.studio{flex:1;display:grid;grid-template-columns:220px 1fr 248px;min-height:0}
+
+/* Sidebars */
+.sidebar,.panel{background:rgba(5,3,18,0.98);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden}
+.sidebar{border-right:1px solid var(--border)}
+.panel{border-left:1px solid var(--border)}
+.sidebar-section,.panel-section{padding:12px 14px;border-bottom:1px solid var(--border)}
+.section-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:rgba(255,255,255,0.28);margin-bottom:10px}
+
+/* Sliders */
+.cf-slider-row{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.cf-slider-label{display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.5)}
+.cf-slider-label .val{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--iris)}
+input[type=range].cf-range{width:100%;height:3px;-webkit-appearance:none;appearance:none;background:linear-gradient(to right,var(--iris) var(--pct,50%),rgba(255,255,255,0.1) var(--pct,50%));border-radius:3px;cursor:pointer;outline:none}
+input[type=range].cf-range::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:#fff;box-shadow:0 0 6px rgba(168,85,247,0.5)}
+
+/* Toggles */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:8px}
+.cf-toggle{position:relative;width:32px;height:18px;background:rgba(255,255,255,0.1);border-radius:9px;cursor:pointer;transition:background var(--t-snap);flex-shrink:0}
+.cf-toggle.on{background:var(--iris)}
+.cf-toggle::after{content:'';position:absolute;width:13px;height:13px;border-radius:50%;background:#fff;top:2.5px;left:2.5px;transition:transform var(--t-snap)}
+.cf-toggle.on::after{transform:translateX(14px)}
+
+/* Segmented */
+.cf-seg{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:10px}
+.cf-seg-btn{padding:4px 9px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:rgba(255,255,255,0.5);font-size:10px;font-weight:600;cursor:pointer;transition:var(--t-snap)}
+.cf-seg-btn.active{background:rgba(168,85,247,0.2);border-color:rgba(168,85,247,0.4);color:#fff}
+
+/* Preset chips */
+.preset-chip-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:4px}
+.preset-chip{padding:7px 6px;border-radius:8px;border:1px solid var(--border);background:var(--surface);font-size:10px;font-weight:600;cursor:pointer;text-align:center;transition:var(--t-snap);color:rgba(255,255,255,0.65)}
+.preset-chip:hover{border-color:rgba(168,85,247,0.4);color:#fff;background:rgba(168,85,247,0.08)}
+.preset-chip.active{border-color:rgba(168,85,247,0.6);background:rgba(168,85,247,0.15);color:#fff}
+
+/* Swatches */
+.cf-swatches{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.cf-swatch{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:var(--t-snap);flex-shrink:0}
+.cf-swatch.active,.cf-swatch:hover{border-color:#fff;transform:scale(1.2)}
+
+/* Canvas wrap */
+.canvas-wrap{position:relative;overflow:hidden;background:#020208}
+canvas{position:absolute;top:0;left:0;display:block;touch-action:none}
+#glowCanvas{pointer-events:none;opacity:0.45;mix-blend-mode:screen}
+
+/* HUD */
+.canvas-hud{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:8px;pointer-events:none;z-index:10}
+.hud-tag{padding:4px 12px;border-radius:20px;font-size:10px;font-weight:600;background:rgba(4,4,15,0.85);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.5);letter-spacing:0.05em}
+
+/* Buttons */
+.cf-btn{width:100%;padding:9px;border-radius:9px;border:none;cursor:pointer;font-size:12px;font-weight:700;margin-top:6px;transition:var(--t-spring);display:flex;align-items:center;justify-content:center;gap:6px}
+.cf-btn-primary{background:linear-gradient(135deg,var(--iris),var(--bloom));color:#fff;box-shadow:0 4px 18px rgba(168,85,247,0.3)}
+.cf-btn-primary:hover{transform:translateY(-1px) scale(1.02);box-shadow:0 8px 24px rgba(168,85,247,0.45)}
+.cf-btn-ghost{background:var(--surface);border:1px solid var(--border);color:rgba(255,255,255,0.7)}
+.cf-btn-ghost:hover{background:rgba(255,255,255,0.08);color:#fff}
+
+/* Math readout */
+.math-readout{font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(100,200,180,0.75);line-height:1.9;background:rgba(0,0,0,0.35);border-radius:7px;padding:9px 10px;border:1px solid rgba(100,200,180,0.1);white-space:pre-wrap;word-break:break-all}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(168,85,247,0.3);border-radius:2px}
+</style>
+</head>
+<body>
+
+<header class="cf-header">
+  <a href="index.html" class="cf-logo">ChromaFlora</a>
+  <nav class="cf-nav">
+    <a href="studio.html">Studio</a>
+    <a href="mandala.html" class="active">Mandala</a>
+    <a href="sonic-waves.html">Waves</a>
+    <a href="plotter.html">Plotter</a>
+    <a href="gallery.html">Gallery</a>
+    <a href="tokens.html">Tokens</a>
+  </nav>
+  <div style="display:flex;gap:6px">
+    <button class="cf-btn cf-btn-ghost" id="btnSaveGallery" style="width:auto;padding:5px 14px;margin:0">+ Gallery</button>
+    <button class="cf-btn cf-btn-primary" id="btnExportHdr" style="width:auto;padding:5px 14px;margin:0">⬇ PNG</button>
+  </div>
+</header>
+
+<div class="studio">
+  <!-- LEFT sidebar: math controls -->
+  <aside class="sidebar">
+
+    <div class="sidebar-section">
+      <div class="section-title">Pattern Type</div>
+      <div class="preset-chip-grid">
+        <div class="preset-chip active" data-preset="mandala">☯ Mandala</div>
+        <div class="preset-chip" data-preset="rose">🌹 Rose Curve</div>
+        <div class="preset-chip" data-preset="spirograph">⊕ Spirograph</div>
+        <div class="preset-chip" data-preset="lissajous">∞ Lissajous</div>
+        <div class="preset-chip" data-preset="sacred">✡ Sacred Geo</div>
+        <div class="preset-chip" data-preset="toroid">◎ Toroid</div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-title">Symmetry &amp; Structure</div>
+      <div class="cf-slider-row">
+        <div class="cf-slider-label"><span>Fold Symmetry</span><span class="val" id="vSymmetry">8</span></div>
+        <input type="range" class="cf-range" id="sSymmetry" min="2" max="24" step="1" value="8">
+      </div>
+      <div class="cf-slider-row">
+        <div class="cf-slider-label"><span>Layers</span><span class="val" id="vLayers">4</span></div>
+        <input type="range" class="cf-range" id="sLayers" min="1" max="12" step="1" value="4">
+      </div>
+      <div class="cf-slider-row">
+        <div class="cf-slider-label"><span>Ring Radius</span><span class="val" id="vRadius">85</span>%</div>
+        <input type="range" class="cf-range" id="sRadius" min="20" max="100" value="85">
+      </div>
+      <div class="toggle-row"><span>Mirror (reflect)</span><div class="cf-toggle on" id="tMirror"></div></div>
+      <div class="toggle-row"><span>Golden Ratio spacing</span><div class="cf-toggle" id="tGolden"></div></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-title">Wave Mathematics</div>
+      <div class="cf-slider-row">
+        <div class="cf-slider-label"><span>Frequency (k)</span><span class="val" id="vFreq">3.0</span></div>
+        <input type="range" class="cf-range" id="sFreq" min="0.5" max="20" step="0.5" value="3">
+      </div>
+      <div class="cf-slider-row">
+        <div class="cf-slider-label"><span>Amplitude</span><span class="val" id="vAmp">40</span></div>
+        <input type="range" class="cf-range" id="sAmp" min="0" max="160" value="40">
+      </div>
+      <div class="cf-slider-row">
+        <div class="cf-slider-label"><span>Phase (φ)</span><span class="val" id="vPhase">0.00</span></div>
+        <input type="range" class="cf-range" id="sPhase" min="0" max="6.28" step="0.01" value="0">
+      </div>
+      <div class="cf-slider-row">
+        <div class="cf-slider-label"><span>2nd Harmonic</span><span class="val" id="vHarm">0.00</span></div>
+        <input type="range" class="cf-range" id="sHarm" min="0" max="1" step="0.05" value="0">
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-title">Turbulence &amp; Noise</div>
+      <div class="cf-slider-row">
+        <div class="cf-slider-label"><span>Turbulence</span><span class="val" id="vTurb">0.0</span></div>
+        <input type="range" class="cf-range" id="sTurb" min="0" max="80" step="0.5" value="0">
+      </div>
+      <div class="cf-slider-row">
+        <div class="cf-slider-label"><span>Noise Scale</span><span class="val" id="vNScale">0.020</span></div>
+        <input type="range" class="cf-range" id="sNScale" min="0.002" max="0.2" step="0.002" value="0.02">
+      </div>
+      <div class="cf-slider-row">
+        <div class="cf-slider-label"><span>Octaves</span><span class="val" id="vNOct">3</span></div>
+        <input type="range" class="cf-range" id="sNOct" min="1" max="8" step="1" value="3">
+      </div>
+      <div class="toggle-row"><span>Animate Noise</span><div class="cf-toggle" id="tNoiseAnim"></div></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-title">Line &amp; Density</div>
+      <div class="cf-slider-row">
+        <div class="cf-slider-label"><span>Line Weight</span><span class="val" id="vWeight">1.2</span></div>
+        <input type="range" class="cf-range" id="sWeight" min="0.2" max="6" step="0.1" value="1.2">
+      </div>
+      <div class="cf-slider-row">
+        <div class="cf-slider-label"><span>Density</span><span class="val" id="vDensity">360</span></div>
+        <input type="range" class="cf-range" id="sDensity" min="60" max="1800" step="60" value="360">
+      </div>
+      <div class="cf-slider-row">
+        <div class="cf-slider-label"><span>Opacity</span><span class="val" id="vOpacity">0.80</span></div>
+        <input type="range" class="cf-range" id="sOpacity" min="0.05" max="1" step="0.05" value="0.8">
+      </div>
+    </div>
+
+    <!-- Spirograph params -->
+    <div class="sidebar-section" id="spiroSection" style="display:none">
+      <div class="section-title">Spirograph R / r / d</div>
+      <div class="cf-slider-row">
+        <div class="cf-slider-label"><span>Outer R</span><span class="val" id="vSpiroR">200</span></div>
+        <input type="range" class="cf-range" id="sSpiroR" min="50" max="300" value="200">
+      </div>
+      <div class="cf-slider-row">
+        <div class="cf-slider-label"><span>Inner r</span><span class="val" id="vSpirоr">76</span></div>
+        <input type="range" class="cf-range" id="sSpirоr" min="5" max="199" value="76">
+      </div>
+      <div class="cf-slider-row">
+        <div class="cf-slider-label"><span>Pen d</span><span class="val" id="vSpiroD">120</span></div>
+        <input type="range" class="cf-range" id="sSpiroD" min="0" max="300" value="120">
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- CENTER: Canvas -->
+  <div class="canvas-wrap" id="canvasWrap">
+    <canvas id="mandalaCanvas"></canvas>
+    <canvas id="glowCanvas"></canvas>
+    <div class="canvas-hud">
+      <div class="hud-tag" id="hudTag">MANDALA · 8-FOLD</div>
+      <div class="hud-tag" id="hudFps">— FPS</div>
+      <div class="hud-tag" id="hudPoints">0 PTS</div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Color, Anim, Export -->
+  <aside class="panel">
+
+    <div class="panel-section">
+      <div class="section-title">Rotation &amp; Animation</div>
+      <div class="cf-slider-row">
+        <div class="cf-slider-label"><span>Heading (°)</span><span class="val" id="vAngle">0</span></div>
+        <input type="range" class="cf-range" id="sAngle" min="0" max="360" value="0">
+      </div>
+      <div class="cf-slider-row">
+        <div class="cf-slider-label"><span>Spin Speed</span><span class="val" id="vSpin">0.000</span></div>
+        <input type="range" class="cf-range" id="sSpin" min="-0.03" max="0.03" step="0.001" value="0">
+      </div>
+      <div class="cf-slider-row">
+        <div class="cf-slider-label"><span>Pulse Rate</span><span class="val" id="vPulse">0.00</span></div>
+        <input type="range" class="cf-range" id="sPulse" min="0" max="3" step="0.05" value="0">
+      </div>
+      <div class="toggle-row"><span>Auto-Animate</span><div class="cf-toggle" id="tAnim"></div></div>
+      <div class="toggle-row"><span>Trail / Persistence</span><div class="cf-toggle" id="tTrail"></div></div>
+    </div>
+
+    <div class="panel-section">
+      <div class="section-title">Color Mode</div>
+      <div class="cf-seg" id="colorMode">
+        <div class="cf-seg-btn active" data-cm="palette">Palette</div>
+        <div class="cf-seg-btn" data-cm="rainbow">Rainbow</div>
+        <div class="cf-seg-btn" data-cm="gradient">Gradient</div>
+        <div class="cf-seg-btn" data-cm="mono">Mono</div>
+      </div>
+      <div class="cf-swatches" id="swatchRow">
+        <div class="cf-swatch active" data-c="#a855f7" style="background:#a855f7"></div>
+        <div class="cf-swatch" data-c="#22d3d8" style="background:#22d3d8"></div>
+        <div class="cf-swatch" data-c="#ec4899" style="background:#ec4899"></div>
+        <div class="cf-swatch" data-c="#f97316" style="background:#f97316"></div>
+        <div class="cf-swatch" data-c="#10b981" style="background:#10b981"></div>
+        <div class="cf-swatch" data-c="#fbbf24" style="background:#fbbf24"></div>
+        <div class="cf-swatch" data-c="#60a5fa" style="background:#60a5fa"></div>
+        <div class="cf-swatch" data-c="#fff" style="background:rgba(255,255,255,0.9)"></div>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="section-title">Background</div>
+      <div class="cf-seg" id="bgMode">
+        <div class="cf-seg-btn active" data-bg="void">Void</div>
+        <div class="cf-seg-btn" data-bg="radial">Radial</div>
+        <div class="cf-seg-btn" data-bg="dark">Dark</div>
+        <div class="cf-seg-btn" data-bg="white">White</div>
+      </div>
+      <div style="margin-top:8px">
+        <div class="toggle-row"><span>Glow / Bloom</span><div class="cf-toggle on" id="tGlow"></div></div>
+        <div class="cf-slider-row">
+          <div class="cf-slider-label"><span>Glow Intensity</span><span class="val" id="vGlow">0.50</span></div>
+          <input type="range" class="cf-range" id="sGlow" min="0" max="1" step="0.05" value="0.5">
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="section-title">Live Math Formula</div>
+      <div class="math-readout" id="mathReadout">Loading...</div>
+    </div>
+
+    <div class="panel-section">
+      <div class="section-title">Quick Presets</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
+        <button class="cf-btn cf-btn-ghost" style="margin:0;font-size:10px" data-qp="lotus">Lotus</button>
+        <button class="cf-btn cf-btn-ghost" style="margin:0;font-size:10px" data-qp="flower">Flower</button>
+        <button class="cf-btn cf-btn-ghost" style="margin:0;font-size:10px" data-qp="atomic">Atomic</button>
+        <button class="cf-btn cf-btn-ghost" style="margin:0;font-size:10px" data-qp="chaos">Chaos</button>
+        <button class="cf-btn cf-btn-ghost" style="margin:0;font-size:10px" data-qp="metatron">Metatron</button>
+        <button class="cf-btn cf-btn-ghost" style="margin:0;font-size:10px" data-qp="galaxy">Galaxy</button>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="section-title">Export</div>
+      <button class="cf-btn cf-btn-primary" id="btnExportPNG">⬇ Download PNG (2×)</button>
+      <button class="cf-btn cf-btn-ghost" id="btnReset">↺ Reset All</button>
+    </div>
+
+  </aside>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════
+   ChromaFlora Mandala Studio
+   Real-time algorithmic / sacred-geometry canvas engine
+   Patterns: Mandala · Rose Curve · Spirograph · Lissajous
+             Sacred Geometry · Toroid
+   Math: polar coords, simplex noise FBM, perspective proj
+════════════════════════════════════════════════════════ */
+
+/* ── Simplex noise 2D (Ashima Arts, public domain) ── */
+const noise2D = (() => {
+  const G3=[{x:1,y:1,z:0},{x:-1,y:1,z:0},{x:1,y:-1,z:0},{x:-1,y:-1,z:0},{x:1,y:0,z:1},{x:-1,y:0,z:1},{x:1,y:0,z:-1},{x:-1,y:0,z:-1},{x:0,y:1,z:1},{x:0,y:-1,z:1},{x:0,y:1,z:-1},{x:0,y:-1,z:-1}];
+  const p=[];for(let i=0;i<256;i++)p[i]=i;
+  for(let i=255;i>0;i--){const j=Math.floor(Math.random()*(i+1));[p[i],p[j]]=[p[j],p[i]];}
+  const perm=new Uint8Array(512),pm12=new Uint8Array(512);
+  for(let i=0;i<512;i++){perm[i]=p[i&255];pm12[i]=perm[i]%12;}
+  const F2=0.5*(Math.sqrt(3)-1),G2=(3-Math.sqrt(3))/6;
+  return function(x,y){
+    const s=(x+y)*F2,i=Math.floor(x+s),j=Math.floor(y+s);
+    const t=(i+j)*G2,X0=i-t,Y0=j-t,x0=x-X0,y0=y-Y0;
+    const i1=x0>y0?1:0,j1=x0>y0?0:1;
+    const x1=x0-i1+G2,y1=y0-j1+G2,x2=x0-1+2*G2,y2=y0-1+2*G2;
+    const ii=i&255,jj=j&255;
+    const gi0=pm12[ii+perm[jj]],gi1=pm12[ii+i1+perm[jj+j1]],gi2=pm12[ii+1+perm[jj+1]];
+    let n0=0,n1=0,n2=0;
+    let t0=0.5-x0*x0-y0*y0;if(t0>=0){t0*=t0;n0=t0*t0*(G3[gi0].x*x0+G3[gi0].y*y0);}
+    let t1=0.5-x1*x1-y1*y1;if(t1>=0){t1*=t1;n1=t1*t1*(G3[gi1].x*x1+G3[gi1].y*y1);}
+    let t2=0.5-x2*x2-y2*y2;if(t2>=0){t2*=t2;n2=t2*t2*(G3[gi2].x*x2+G3[gi2].y*y2);}
+    return 70*(n0+n1+n2);
+  };
+})();
+
+function fbm(x,y,oct){let v=0,a=0.5,f=1;for(let i=0;i<oct;i++){v+=a*noise2D(x*f,y*f);a*=0.5;f*=2;}return v;}
+
+/* ── State ── */
+const P={
+  preset:'mandala',
+  symmetry:8,layers:4,radius:85,mirror:true,golden:false,
+  freq:3,amp:40,phase:0,harm:0,
+  turb:0,nScale:0.02,nOct:3,noiseAnim:false,
+  weight:1.2,density:360,opacity:0.8,
+  angle:0,spin:0,pulse:0,anim:false,trail:false,
+  colorMode:'palette',color:'#a855f7',
+  bg:'void',glow:true,glowAmt:0.5,
+  spiroR:200,spiroRr:76,spiroD:120,
+};
+
+const CF_PALETTE=['#a855f7','#22d3d8','#ec4899','#f97316','#10b981','#fbbf24','#60a5fa','#fff'];
+
+/* ── Canvas ── */
+const wrap=document.getElementById('canvasWrap');
+const mc=document.getElementById('mandalaCanvas');
+const gc=document.getElementById('glowCanvas');
+const ctx=mc.getContext('2d');
+const gCtx=gc.getContext('2d');
+let W,H;
+
+function sizeCanvas(){
+  W=wrap.clientWidth; H=wrap.clientHeight;
+  mc.width=W; mc.height=H;
+  gc.width=W; gc.height=H;
+}
+sizeCanvas();
+new ResizeObserver(()=>{sizeCanvas();scheduleRender();}).observe(wrap);
+
+/* ── Color ── */
+function hexA(hex,a){
+  hex=hex.replace('#','');
+  if(hex.length===3)hex=hex.split('').map(c=>c+c).join('');
+  const r=parseInt(hex.slice(0,2),16),g=parseInt(hex.slice(2,4),16),b=parseInt(hex.slice(4,6),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+function layerColor(s,total,lf){
+  switch(P.colorMode){
+    case'rainbow':return `hsla(${((s/total*360)+animT*30)%360},90%,65%,${P.opacity})`;
+    case'gradient':return lf<0.5?hexA(P.color,P.opacity):hexA('#22d3d8',P.opacity);
+    case'mono':return `rgba(255,255,255,${P.opacity*0.85})`;
+    default:return hexA(CF_PALETTE[Math.floor(lf*CF_PALETTE.length)%CF_PALETTE.length],P.opacity);
+  }
+}
+
+/* ── Timing ── */
+let animT=0,noiseT=0,rafId=null;
+let _fps=60,_fframes=0,_ftime=0;
+
+/* ── Background ── */
+function drawBg(){
+  switch(P.bg){
+    case'white':ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);return;
+    case'dark':ctx.fillStyle='#0d0d1a';ctx.fillRect(0,0,W,H);return;
+    case'radial':{
+      const g=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,Math.max(W,H)/2);
+      g.addColorStop(0,'#1a0a2e');g.addColorStop(1,'#04040f');
+      ctx.fillStyle=g;ctx.fillRect(0,0,W,H);return;
+    }
+    default:{
+      const g=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,Math.max(W,H)*0.6);
+      g.addColorStop(0,'#0a0818');g.addColorStop(1,'#04040f');
+      ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    }
+  }
+}
+
+/* ── Noise displacement ── */
+function nDisp(theta,r,sign){
+  if(P.turb<=0)return 0;
+  const nx=Math.cos(theta*sign)*P.nScale+noiseT;
+  const ny=Math.sin(theta*sign)*P.nScale+noiseT;
+  return P.turb*fbm(nx,ny,P.nOct);
+}
+
+/* ── MANDALA ── */
+function drawMandala(){
+  const cx=W/2,cy=H/2;
+  const maxR=Math.min(W,H)*0.5*(P.radius/100);
+  const rot=(P.angle/180)*Math.PI+animT*P.spin;
+  const steps=P.density;
+  let pts=0;
+  for(let l=0;l<P.layers;l++){
+    const lf=(l+1)/P.layers;
+    const R=P.golden
+      ? maxR*(Math.pow(1.618,l-P.layers/2)/Math.pow(1.618,P.layers/2))
+      : maxR*lf;
+    const cR=Math.min(R,maxR);
+    for(let s=0;s<P.symmetry;s++){
+      const ba=(s/P.symmetry)*Math.PI*2+rot;
+      ctx.beginPath();
+      ctx.strokeStyle=layerColor(s,P.symmetry,lf);
+      ctx.lineWidth=P.weight;
+      ctx.globalAlpha=1;
+      for(let i=0;i<=steps;i++){
+        const theta=(i/steps)*Math.PI*2;
+        const lt=theta+ba;
+        const rw=Math.sin(P.freq*theta+P.phase+animT*P.pulse*2)*P.amp
+          +Math.sin(P.freq*2*theta+P.phase)*P.amp*P.harm;
+        let r=Math.max(0,cR+rw+nDisp(lt,cR,1));
+        i===0?ctx.moveTo(cx+r*Math.cos(lt),cy+r*Math.sin(lt))
+             :ctx.lineTo(cx+r*Math.cos(lt),cy+r*Math.sin(lt));
+        pts++;
+      }
+      ctx.closePath();ctx.stroke();
+      if(P.mirror){
+        ctx.beginPath();
+        ctx.strokeStyle=layerColor(s,P.symmetry,lf);
+        for(let i=0;i<=steps;i++){
+          const theta=(i/steps)*Math.PI*2;
+          const lt=theta+ba;
+          const rw=Math.sin(P.freq*theta+P.phase+animT*P.pulse*2)*P.amp
+            +Math.sin(P.freq*2*theta+P.phase)*P.amp*P.harm;
+          let r=Math.max(0,cR+rw+nDisp(-lt,cR,-1));
+          const mx=cx+r*Math.cos(-lt+rot*2),my=cy+r*Math.sin(-lt+rot*2);
+          i===0?ctx.moveTo(mx,my):ctx.lineTo(mx,my);
+          pts++;
+        }
+        ctx.closePath();ctx.stroke();
+      }
+    }
+  }
+  return pts;
+}
+
+/* ── ROSE CURVE  r = cos(k·θ) ── */
+function drawRose(){
+  const cx=W/2,cy=H/2;
+  const maxR=Math.min(W,H)*0.46*(P.radius/100);
+  const rot=(P.angle/180)*Math.PI+animT*P.spin;
+  const k=P.freq;
+  const revs=k%2===0?2:1;
+  const steps=P.density*Math.max(1,revs);
+  let pts=steps;
+  for(let l=0;l<P.layers;l++){
+    const lf=(l+1)/P.layers;
+    const sc=1-l*0.12;
+    ctx.beginPath();
+    ctx.strokeStyle=layerColor(l,P.layers,lf);
+    ctx.lineWidth=P.weight;
+    ctx.globalAlpha=P.opacity;
+    for(let i=0;i<=steps;i++){
+      const theta=(i/steps)*Math.PI*2*revs;
+      let r=maxR*sc*Math.cos(k*theta+P.phase+l*0.4)
+        +P.amp*Math.sin(P.harm*5*theta+animT*P.pulse);
+      r+=nDisp(theta,r,1);
+      const lt=theta+rot+l*0.2;
+      i===0?ctx.moveTo(cx+r*Math.cos(lt),cy+r*Math.sin(lt))
+           :ctx.lineTo(cx+r*Math.cos(lt),cy+r*Math.sin(lt));
+    }
+    ctx.stroke();
+  }
+  ctx.globalAlpha=1;
+  return pts*P.layers;
+}
+
+/* ── SPIROGRAPH  hypotrochoid ── */
+function drawSpirograph(){
+  const cx=W/2,cy=H/2;
+  const rot=(P.angle/180)*Math.PI+animT*P.spin;
+  const bigR=P.spiroR*(P.radius/100);
+  const litR=Math.max(1,P.spiroRr);
+  const d=P.spiroD;
+  function gcd(a,b){return b?gcd(b,a%b):a;}
+  const g=gcd(Math.round(bigR),Math.round(litR));
+  const revs=Math.min(bigR/g,80);
+  const steps=Math.floor(P.density*revs*0.5);
+  ctx.beginPath();
+  for(let i=0;i<=steps;i++){
+    const t=(i/steps)*Math.PI*2*revs+rot;
+    const dr=bigR-litR;
+    let x=cx+dr*Math.cos(t)+d*Math.cos((dr/litR)*t);
+    let y=cy+dr*Math.sin(t)-d*Math.sin((dr/litR)*t);
+    if(P.turb>0){
+      x+=P.turb*fbm(x*P.nScale+noiseT,y*P.nScale+noiseT,P.nOct);
+      y+=P.turb*fbm(y*P.nScale+noiseT+7,x*P.nScale+noiseT,P.nOct);
+    }
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  const g2=ctx.createLinearGradient(cx-bigR,cy,cx+bigR,cy);
+  g2.addColorStop(0,hexA(P.color,P.opacity));
+  g2.addColorStop(0.5,hexA('#22d3d8',P.opacity));
+  g2.addColorStop(1,hexA('#ec4899',P.opacity));
+  ctx.strokeStyle=P.colorMode==='mono'?`rgba(255,255,255,${P.opacity})`:g2;
+  ctx.lineWidth=P.weight;
+  ctx.stroke();
+  return steps;
+}
+
+/* ── LISSAJOUS  x=sin(at+δ), y=sin(bt) ── */
+function drawLissajous(){
+  const cx=W/2,cy=H/2;
+  const maxR=Math.min(W,H)*0.44*(P.radius/100);
+  const a=P.freq,b=Math.max(0.5,P.freq+P.harm*8);
+  const delta=P.phase+animT*P.pulse;
+  const steps=P.density*4;
+  let pts=0;
+  for(let l=0;l<P.layers;l++){
+    const lf=(l+1)/P.layers;
+    const sc=1-l*0.13,po=l*0.25;
+    ctx.beginPath();
+    ctx.strokeStyle=layerColor(l,P.layers,lf);
+    ctx.lineWidth=P.weight;
+    ctx.globalAlpha=P.opacity*(1-l*0.08);
+    for(let i=0;i<=steps;i++){
+      const t=(i/steps)*Math.PI*2;
+      let x=cx+maxR*sc*Math.sin(a*t+delta+po);
+      let y=cy+maxR*sc*Math.sin(b*t+po);
+      if(P.turb>0){
+        x+=P.turb*fbm(x*P.nScale+noiseT,y*P.nScale+noiseT,P.nOct);
+        y+=P.turb*fbm(y*P.nScale+noiseT+5,x*P.nScale+noiseT,P.nOct);
+      }
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      pts++;
+    }
+    ctx.stroke();
+  }
+  ctx.globalAlpha=1;
+  return pts;
+}
+
+/* ── SACRED GEOMETRY  Flower of Life / Metatron ── */
+function drawSacred(){
+  const cx=W/2,cy=H/2;
+  const maxR=Math.min(W,H)*0.44*(P.radius/100);
+  const rot=(P.angle/180)*Math.PI+animT*P.spin;
+  let pts=0;
+  ctx.strokeStyle=layerColor(0,1,0.5);
+  ctx.lineWidth=P.weight;
+  ctx.globalAlpha=P.opacity;
+  for(let ring=0;ring<P.layers;ring++){
+    const R=maxR*(ring+1)/P.layers;
+    const n=P.symmetry;
+    for(let i=0;i<n;i++){
+      const angle=(i/n)*Math.PI*2+rot;
+      const x=cx+R*Math.cos(angle),y=cy+R*Math.sin(angle);
+      const cr=R*Math.PI/n*(P.freq/3)*0.6;
+      ctx.beginPath();ctx.arc(x,y,Math.max(1,cr),0,Math.PI*2);ctx.stroke();pts+=100;
+      for(let j=i+1;j<n;j++){
+        const a2=(j/n)*Math.PI*2+rot;
+        ctx.beginPath();
+        ctx.moveTo(x,y);
+        ctx.lineTo(cx+R*Math.cos(a2),cy+R*Math.sin(a2));
+        ctx.stroke();pts++;
+      }
+    }
+  }
+  ctx.beginPath();ctx.arc(cx,cy,maxR*0.07,0,Math.PI*2);ctx.stroke();
+  ctx.globalAlpha=1;
+  return pts;
+}
+
+/* ── TOROID  wireframe projection ── */
+function drawToroid(){
+  const cx=W/2,cy=H/2;
+  const maxR=Math.min(W,H)*0.38*(P.radius/100);
+  const rot=(P.angle/180)*Math.PI+animT*P.spin;
+  const bigR=maxR,litR=maxR*0.35;
+  const stU=P.density,stV=Math.max(20,Math.floor(P.density*0.35));
+  const skip=Math.max(1,Math.floor(stU/(P.symmetry*5)));
+  let pts=0;
+  for(let ui=0;ui<stU;ui+=skip){
+    const u=(ui/stU)*Math.PI*2;
+    ctx.beginPath();
+    ctx.strokeStyle=layerColor(ui,stU,ui/stU);
+    ctx.lineWidth=P.weight*0.7;
+    ctx.globalAlpha=P.opacity;
+    for(let vi=0;vi<=stV;vi++){
+      const v=(vi/stV)*Math.PI*2;
+      const x3=(bigR+litR*Math.cos(v))*Math.cos(u);
+      const y3=(bigR+litR*Math.cos(v))*Math.sin(u);
+      const z3=litR*Math.sin(v);
+      const p=900/(900+z3*0.4);
+      const x2=cx+(x3*Math.cos(rot)-y3*Math.sin(rot))*p;
+      const y2=cy+(x3*Math.sin(rot)+y3*Math.cos(rot))*0.55*p+z3*0.45;
+      vi===0?ctx.moveTo(x2,y2):ctx.lineTo(x2,y2);
+      pts++;
+    }
+    ctx.stroke();
+  }
+  ctx.globalAlpha=1;
+  return pts;
+}
+
+/* ── Glow pass ── */
+function drawGlow(){
+  if(!P.glow){gCtx.clearRect(0,0,gc.width,gc.height);return;}
+  gCtx.clearRect(0,0,gc.width,gc.height);
+  gCtx.filter=`blur(${14+P.glowAmt*22}px)`;
+  gCtx.drawImage(mc,0,0);
+  gCtx.filter='none';
+}
+
+/* ── Render loop ── */
+function render(){
+  const now=performance.now();
+  _fframes++;
+  if(now-_ftime>600){
+    _fps=Math.round(_fframes/((now-_ftime)/1000));
+    _fframes=0;_ftime=now;
+    document.getElementById('hudFps').textContent=_fps+' FPS';
+  }
+  if(P.trail&&(P.anim||P.spin!==0)){
+    ctx.fillStyle='rgba(4,4,15,0.18)';ctx.fillRect(0,0,W,H);
+  } else {
+    drawBg();
+  }
+  let pts=0;
+  switch(P.preset){
+    case'mandala':    pts=drawMandala();break;
+    case'rose':       pts=drawRose();break;
+    case'spirograph': pts=drawSpirograph();break;
+    case'lissajous':  pts=drawLissajous();break;
+    case'sacred':     pts=drawSacred();break;
+    case'toroid':     pts=drawToroid();break;
+  }
+  drawGlow();
+  document.getElementById('hudPoints').textContent=pts.toLocaleString()+' PTS';
+  updateMath(pts);
+  if(P.anim||Math.abs(P.spin)>0||P.pulse>0||P.noiseAnim){
+    animT+=0.016;
+    if(P.noiseAnim)noiseT+=0.007;
+    rafId=requestAnimationFrame(render);
+  }
+}
+
+function scheduleRender(){
+  if(rafId)cancelAnimationFrame(rafId);
+  render();
+}
+
+function updateMath(pts){
+  const rot=((P.angle/180)*Math.PI+animT*P.spin).toFixed(3);
+  const formulas={
+    mandala:`r(θ) = R·layer + A·sin(${P.freq.toFixed(1)}θ + φ)\nx = r·cos(θ + rot)   y = r·sin(θ + rot)\nFold: ${P.symmetry}-fold   Mirror: ${P.mirror?'on':'off'}\nLayers: ${P.layers}   φ=${P.phase.toFixed(2)}   A=${Math.round(P.amp)}`,
+    rose:`r(θ) = R·cos(${P.freq.toFixed(1)}θ)\nPetals: ${P.freq%2===0?P.freq*2:P.freq}\nθ ∈ [0, ${P.freq%2===1?'π':'2π'}]`,
+    spirograph:`x = (R−r)cos(t) + d·cos(R−r/r · t)\ny = (R−r)sin(t) − d·sin(R−r/r · t)\nR=${P.spiroR}  r=${P.spiroRr}  d=${P.spiroD}`,
+    lissajous:`x(t) = A·sin(${P.freq.toFixed(1)}t + δ)\ny(t) = B·sin(${Math.max(0.5,P.freq+P.harm*8).toFixed(1)}t)\nδ = ${P.phase.toFixed(2)} + ${P.pulse.toFixed(2)}t`,
+    sacred:`Flower of Life / Metatron\nn = ${P.symmetry} vertices per ring\nRings: ${P.layers}\nVertex circles: r = R·π/n·k`,
+    toroid:`x = (R+r·cos(v))cos(u)\ny = (R+r·cos(v))sin(u)\nz = r·sin(v)\nPerspective: p = 900/(900+z·0.4)`,
+  };
+  document.getElementById('mathReadout').textContent=
+    (formulas[P.preset]||'')+`\n\npts: ${pts.toLocaleString()}  t=${animT.toFixed(2)}`;
+}
+
+function updateHUD(){
+  const lbl={mandala:'MANDALA',rose:'ROSE CURVE',spirograph:'SPIROGRAPH',lissajous:'LISSAJOUS',sacred:'SACRED GEO',toroid:'TOROID'};
+  document.getElementById('hudTag').textContent=(lbl[P.preset]||P.preset.toUpperCase())+' · '+P.symmetry+'-FOLD';
+}
+
+/* ── Slider binding ── */
+function updateBg(el){
+  const min=parseFloat(el.min),max=parseFloat(el.max),v=parseFloat(el.value);
+  el.style.setProperty('--pct',((v-min)/(max-min)*100).toFixed(1)+'%');
+}
+function bindSlider(id,valId,key,fmt){
+  const el=document.getElementById(id),vEl=document.getElementById(valId);
+  if(!el)return;
+  function upd(){
+    const v=parseFloat(el.value);P[key]=v;
+    if(vEl)vEl.textContent=fmt?fmt(v):v;
+    updateBg(el);scheduleRender();
+  }
+  el.addEventListener('input',upd);
+  updateBg(el);
+}
+bindSlider('sSymmetry','vSymmetry','symmetry',v=>Math.round(v));
+bindSlider('sLayers','vLayers','layers',v=>Math.round(v));
+bindSlider('sRadius','vRadius','radius',v=>Math.round(v));
+bindSlider('sFreq','vFreq','freq',v=>v.toFixed(1));
+bindSlider('sAmp','vAmp','amp',v=>Math.round(v));
+bindSlider('sPhase','vPhase','phase',v=>v.toFixed(2));
+bindSlider('sHarm','vHarm','harm',v=>v.toFixed(2));
+bindSlider('sTurb','vTurb','turb',v=>v.toFixed(1));
+bindSlider('sNScale','vNScale','nScale',v=>v.toFixed(3));
+bindSlider('sNOct','vNOct','nOct',v=>Math.round(v));
+bindSlider('sWeight','vWeight','weight',v=>v.toFixed(1));
+bindSlider('sDensity','vDensity','density',v=>Math.round(v));
+bindSlider('sOpacity','vOpacity','opacity',v=>v.toFixed(2));
+bindSlider('sAngle','vAngle','angle',v=>Math.round(v));
+bindSlider('sSpin','vSpin','spin',v=>v.toFixed(3));
+bindSlider('sPulse','vPulse','pulse',v=>v.toFixed(2));
+bindSlider('sGlow','vGlow','glowAmt',v=>v.toFixed(2));
+bindSlider('sSpiroR','vSpiroR','spiroR',v=>Math.round(v));
+bindSlider('sSpirоr','vSpirоr','spiroRr',v=>Math.round(v));
+bindSlider('sSpiroD','vSpiroD','spiroD',v=>Math.round(v));
+
+/* ── Toggle binding ── */
+function bindToggle(id,key,cb){
+  const el=document.getElementById(id);if(!el)return;
+  el.addEventListener('click',()=>{
+    el.classList.toggle('on');P[key]=el.classList.contains('on');
+    if(cb)cb();else scheduleRender();
+  });
+}
+bindToggle('tMirror','mirror');
+bindToggle('tGolden','golden');
+bindToggle('tNoiseAnim','noiseAnim',()=>{if(P.noiseAnim)scheduleRender();});
+bindToggle('tAnim','anim',()=>{if(P.anim)scheduleRender();});
+bindToggle('tTrail','trail');
+bindToggle('tGlow','glow');
+
+/* ── Preset chips ── */
+document.querySelectorAll('.preset-chip').forEach(el=>{
+  el.addEventListener('click',()=>{
+    document.querySelectorAll('.preset-chip').forEach(c=>c.classList.remove('active'));
+    el.classList.add('active');
+    P.preset=el.dataset.preset;
+    document.getElementById('spiroSection').style.display=P.preset==='spirograph'?'':'none';
+    updateHUD();scheduleRender();
+  });
+});
+
+/* ── Color mode ── */
+document.querySelectorAll('[data-cm]').forEach(el=>{
+  el.addEventListener('click',()=>{
+    document.querySelectorAll('[data-cm]').forEach(e=>e.classList.remove('active'));
+    el.classList.add('active');P.colorMode=el.dataset.cm;scheduleRender();
+  });
+});
+
+/* ── BG mode ── */
+document.querySelectorAll('[data-bg]').forEach(el=>{
+  el.addEventListener('click',()=>{
+    document.querySelectorAll('[data-bg]').forEach(e=>e.classList.remove('active'));
+    el.classList.add('active');P.bg=el.dataset.bg;scheduleRender();
+  });
+});
+
+/* ── Swatches ── */
+document.querySelectorAll('.cf-swatch').forEach(el=>{
+  el.addEventListener('click',()=>{
+    document.querySelectorAll('.cf-swatch').forEach(e=>e.classList.remove('active'));
+    el.classList.add('active');P.color=el.dataset.c;scheduleRender();
+  });
+});
+
+/* ── Quick presets ── */
+const QUICK_PRESETS={
+  lotus:{preset:'mandala',symmetry:12,layers:6,freq:4,amp:30,phase:0,harm:0.3,turb:0,weight:0.8,density:720,colorMode:'palette',color:'#ec4899'},
+  flower:{preset:'rose',freq:5,amp:20,layers:4,radius:90,colorMode:'rainbow',weight:1,density:900},
+  atomic:{preset:'spirograph',spiroR:200,spiroRr:76,spiroD:150,colorMode:'gradient',color:'#22d3d8',weight:0.8},
+  chaos:{preset:'mandala',symmetry:7,layers:8,freq:7,amp:55,harm:0.6,turb:35,nScale:0.03,nOct:5,colorMode:'rainbow',weight:0.6},
+  metatron:{preset:'sacred',symmetry:6,layers:3,freq:3,weight:0.7,colorMode:'palette',color:'#fbbf24'},
+  galaxy:{preset:'toroid',symmetry:12,layers:5,radius:80,spin:0.005,anim:true,colorMode:'rainbow',weight:0.5},
+};
+document.querySelectorAll('[data-qp]').forEach(el=>{
+  el.addEventListener('click',()=>{
+    const qp=QUICK_PRESETS[el.dataset.qp];if(!qp)return;
+    Object.assign(P,qp);
+    // Sync all sliders
+    const syncMap={symmetry:'sSymmetry',layers:'sLayers',radius:'sRadius',freq:'sFreq',amp:'sAmp',phase:'sPhase',harm:'sHarm',turb:'sTurb',nScale:'sNScale',nOct:'sNOct',weight:'sWeight',density:'sDensity',opacity:'sOpacity',angle:'sAngle',spin:'sSpin',pulse:'sPulse',glowAmt:'sGlow',spiroR:'sSpiroR',spiroRr:'sSpirоr',spiroD:'sSpiroD'};
+    for(const[k,sid]of Object.entries(syncMap)){
+      const el2=document.getElementById(sid);
+      if(el2&&P[k]!==undefined){el2.value=P[k];updateBg(el2);}
+    }
+    document.querySelectorAll('.preset-chip').forEach(c=>{c.classList.toggle('active',c.dataset.preset===P.preset);});
+    document.getElementById('spiroSection').style.display=P.preset==='spirograph'?'':'none';
+    if(P.anim)scheduleRender();else{animT=0;scheduleRender();}
+    updateHUD();
+  });
+});
+
+/* ── Export ── */
+function exportPNG(scale){
+  scale=scale||2;
+  const eC=document.createElement('canvas');
+  eC.width=W*scale;eC.height=H*scale;
+  const eCtx=eC.getContext('2d');
+  eCtx.scale(scale,scale);
+  // Redraw at scale
+  const origW=W,origH=H;
+  W=eC.width/scale;H=eC.height/scale;
+  // Draw bg
+  const tempCtx=ctx;
+  // Simple: just composite what's visible
+  eCtx.drawImage(mc,0,0);
+  if(P.glow){eCtx.globalAlpha=0.45;eCtx.globalCompositeOperation='screen';eCtx.drawImage(gc,0,0);eCtx.globalCompositeOperation='source-over';eCtx.globalAlpha=1;}
+  W=origW;H=origH;
+  const a=document.createElement('a');
+  a.href=eC.toDataURL('image/png');
+  a.download='chromaflora-mandala-'+Date.now()+'.png';
+  a.click();
+}
+document.getElementById('btnExportPNG').addEventListener('click',()=>exportPNG(2));
+document.getElementById('btnExportHdr').addEventListener('click',()=>exportPNG(2));
+document.getElementById('btnReset').addEventListener('click',()=>location.reload());
+document.getElementById('btnSaveGallery').addEventListener('click',()=>{
+  const data=mc.toDataURL('image/png');
+  try{const saved=JSON.parse(localStorage.getItem('cf_gallery')||'[]');saved.unshift({url:data,type:'mandala',ts:Date.now()});localStorage.setItem('cf_gallery',JSON.stringify(saved.slice(0,50)));}catch(e){}
+  document.getElementById('btnSaveGallery').textContent='✓ Saved!';
+  setTimeout(()=>{document.getElementById('btnSaveGallery').textContent='+ Gallery';},2000);
+});
+
+/* ── Init ── */
+document.querySelectorAll('input[type=range]').forEach(updateBg);
+updateHUD();
+scheduleRender();
+</script>
+</body>
+</html>

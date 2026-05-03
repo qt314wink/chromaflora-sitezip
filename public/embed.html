@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChromaFlora Embed</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#04040f">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'">
+  <style>
+    :root {
+      --void: #04040f; --iris: #a855f7; --aqua: #22d3d8;
+      --bloom: #ec4899; --ember: #f97316; --viridian: #10b981;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { background: var(--void); color: #e2e8f0; font-family: 'Inter', sans-serif; height: 100%; overflow: hidden; }
+
+    #embedCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
+
+    .embed-ui {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      padding: 10px 16px; display: flex; align-items: center; justify-content: space-between;
+      background: rgba(4,4,15,0.75); backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(168,85,247,0.15);
+      font-size: 11px; color: rgba(226,232,240,0.5);
+      z-index: 10; transition: opacity 0.5s;
+    }
+    .embed-ui.hidden { opacity: 0; pointer-events: none; }
+    .embed-brand { display: flex; align-items: center; gap: 8px; }
+    .embed-brand a { color: var(--iris); text-decoration: none; font-weight: 600; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+    .embed-brand a:hover { color: var(--aqua); }
+    .embed-controls { display: flex; gap: 8px; }
+    .embed-ctrl {
+      background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.2);
+      border-radius: 8px; color: rgba(226,232,240,0.7); cursor: pointer;
+      font-size: 11px; font-family: 'Inter', sans-serif; padding: 4px 10px;
+      transition: all 0.2s;
+    }
+    .embed-ctrl:hover { background: rgba(168,85,247,0.2); color: var(--iris); }
+    .embed-type-label {
+      font-family: 'JetBrains Mono', monospace; font-size: 10px;
+      color: var(--aqua); letter-spacing: 0.05em;
+    }
+
+    /* GENERATOR PAGE (when no type param) */
+    .generator-page {
+      position: fixed; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; padding: 32px;
+      z-index: 20;
+    }
+    .generator-page h1 {
+      font-size: clamp(1.4rem, 4vw, 2rem); font-weight: 700; color: var(--iris);
+      text-shadow: 0 0 30px rgba(168,85,247,0.5); margin-bottom: 8px;
+    }
+    .generator-page p { color: rgba(226,232,240,0.5); font-size: 13px; margin-bottom: 28px; text-align: center; max-width: 480px; line-height: 1.6; }
+
+    .embed-builder {
+      background: rgba(168,85,247,0.05); border: 1px solid rgba(168,85,247,0.15);
+      border-radius: 16px; padding: 24px; width: 100%; max-width: 600px;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .builder-row { display: flex; flex-direction: column; gap: 8px; }
+    .builder-label { font-size: 11px; color: var(--iris); font-family: 'JetBrains Mono', monospace; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; }
+    .opt-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .opt-btn {
+      padding: 6px 14px; border-radius: 8px; border: 1px solid rgba(168,85,247,0.2);
+      background: transparent; color: rgba(226,232,240,0.6); cursor: pointer;
+      font-size: 12px; font-family: 'Inter', sans-serif; transition: all 0.2s;
+    }
+    .opt-btn:hover { border-color: var(--iris); color: var(--iris); }
+    .opt-btn.active { background: rgba(168,85,247,0.12); border-color: var(--iris); color: var(--iris); }
+
+    .snippet-box {
+      background: rgba(4,4,15,0.7); border: 1px solid rgba(168,85,247,0.2);
+      border-radius: 10px; padding: 14px; font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; color: rgba(34,211,216,0.9); line-height: 1.6;
+      overflow-x: auto; white-space: pre; word-break: break-all; white-space: pre-wrap;
+    }
+    .copy-btn {
+      align-self: flex-end; padding: 8px 20px; border-radius: 10px;
+      border: 1px solid rgba(34,211,216,0.4); background: rgba(34,211,216,0.08);
+      color: var(--aqua); cursor: pointer; font-size: 12px; font-family: 'Inter', sans-serif;
+      font-weight: 500; transition: all 0.2s;
+    }
+    .copy-btn:hover { background: rgba(34,211,216,0.15); }
+    .copy-btn.copied { border-color: var(--viridian); color: var(--viridian); background: rgba(16,185,129,0.1); }
+
+    .preview-frame {
+      width: 100%; border: 1px solid rgba(168,85,247,0.2); border-radius: 12px;
+      overflow: hidden; background: var(--void);
+      aspect-ratio: 16/9; max-height: 200px;
+    }
+    .preview-frame iframe { width: 100%; height: 100%; border: none; }
+
+    /* PARTICLE FIELD (background for generator page) */
+  </style>
+</head>
+<body>
+
+<canvas id="embedCanvas"></canvas>
+
+<script>
+  // ─── URL PARAMS ────────────────────────────────────────────────
+  const params = new URLSearchParams(location.search);
+  const embedType = params.get('type') || '';
+  const embedSeed = parseInt(params.get('seed')) || Math.floor(Math.random() * 99999);
+  const embedColor = params.get('color') || 'iris';
+  const embedFolds = parseInt(params.get('folds')) || 8;
+  const embedSpeed = parseFloat(params.get('speed')) || 0.4;
+  const embedHide = params.has('hide');
+
+  // ─── BACKGROUND CANVAS ────────────────────────────────────────
+  const canvas = document.getElementById('embedCanvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, time = 0, phase = 0, breathe = 0;
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const TOKEN_COLORS = {
+    iris: '168,85,247', aqua: '34,211,216', bloom: '236,72,153',
+    ember: '249,115,22', viridian: '16,185,129'
+  };
+  const col = TOKEN_COLORS[embedColor] || TOKEN_COLORS.iris;
+
+  function drawMandala() {
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#04040f';
+    ctx.fillRect(0, 0, W, H);
+
+    const cx = W/2, cy = H/2;
+    const maxR = Math.min(W, H) * 0.44;
+    const folds = embedFolds;
+    const t = time * embedSpeed;
+    const br = 0.7 + Math.sin(breathe) * 0.3;
+
+    for (let layer = 0; layer < 6; layer++) {
+      const r = maxR * (0.18 + layer * 0.16);
+      for (let i = 0; i < folds * 2; i++) {
+        const angle = (i / (folds * 2)) * Math.PI * 2 + phase + layer * 0.2;
+        const petalLen = r * (0.3 + 0.12 * Math.sin(t * 1.3 + i * 0.7 + layer));
+        const qx = cx + Math.cos(angle) * r * 0.5;
+        const qy = cy + Math.sin(angle) * r * 0.5;
+        const ex = cx + Math.cos(angle) * (r + petalLen * 0.55);
+        const ey = cy + Math.sin(angle) * (r + petalLen * 0.55);
+        const alpha = (0.06 + 0.04 * Math.sin(t + layer)) * br;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.quadraticCurveTo(qx, qy, ex, ey);
+        ctx.strokeStyle = `rgba(${col},${alpha})`;
+        ctx.lineWidth = 0.9;
+        ctx.stroke();
+      }
+    }
+
+    // Center glow
+    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, maxR * 0.22);
+    g.addColorStop(0, `rgba(${col},${0.08 * br + Math.sin(breathe) * 0.03})`);
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(cx, cy, maxR * 0.22, 0, Math.PI*2); ctx.fill();
+
+    // Outer rings
+    for (let ring = 1; ring <= 3; ring++) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, maxR * (0.32 + ring * 0.22), 0, Math.PI*2);
+      ctx.strokeStyle = `rgba(${col},${0.04 * br})`;
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+    }
+
+    phase += 0.0004 * embedSpeed;
+    breathe += 0.007;
+    time += 0.016;
+    requestAnimationFrame(drawMandala);
+  }
+
+  function drawWaves() {
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#04040f';
+    ctx.fillRect(0, 0, W, H);
+
+    const midY = H / 2;
+    const waves = [
+      { c: col, amp: H * 0.18, freq: 1.8, phOff: 0 },
+      { c: col, amp: H * 0.1, freq: 2.6, phOff: Math.PI/3 },
+      { c: '34,211,216', amp: H * 0.08, freq: 3.4, phOff: Math.PI/2 },
+    ];
+
+    waves.forEach(({ c, amp, freq, phOff }) => {
+      ctx.beginPath();
+      for (let x = 0; x <= W; x++) {
+        const y = midY + Math.sin((x / W) * Math.PI * 2 * freq + phase + phOff) * amp;
+        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = `rgba(${c},0.5)`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Glow pass
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = `rgba(${c},0.08)`;
+      ctx.stroke();
+    });
+
+    // Horizontal centerline
+    ctx.beginPath(); ctx.moveTo(0, midY); ctx.lineTo(W, midY);
+    ctx.strokeStyle = `rgba(${col},0.06)`; ctx.lineWidth = 1; ctx.stroke();
+
+    phase += 0.022 * embedSpeed;
+    requestAnimationFrame(drawWaves);
+  }
+
+  function drawSequencer() {
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#04040f';
+    ctx.fillRect(0, 0, W, H);
+
+    const steps = 16, tracks = 8;
+    const pad = 20;
+    const cellW = (W - pad*2) / steps;
+    const cellH = Math.min((H - pad*2) / tracks, 40);
+    const startY = (H - cellH * tracks) / 2;
+
+    // Seed-based pattern
+    const rng = (seed, i) => (Math.sin(seed * 9301 + i * 49297 + 233) * 0.5 + 0.5) > 0.62;
+    const trackColors = [col, '34,211,216', '236,72,153', '249,115,22', '16,185,129', col, '34,211,216', '236,72,153'];
+    const playhead = Math.floor((time * 4 * embedSpeed) % steps);
+
+    for (let t = 0; t < tracks; t++) {
+      for (let s = 0; s < steps; s++) {
+        const active = rng(embedSeed + t * 100, s);
+        const x = pad + s * cellW;
+        const y = startY + t * cellH;
+        const isPlay = s === playhead;
+        const c = trackColors[t];
+
+        ctx.fillStyle = active
+          ? `rgba(${c},${isPlay ? 0.9 : 0.35})`
+          : `rgba(255,255,255,${isPlay ? 0.05 : 0.03})`;
+        ctx.beginPath();
+        ctx.roundRect(x + 2, y + 3, cellW - 4, cellH - 6, 4);
+        ctx.fill();
+
+        if (active && isPlay) {
+          ctx.shadowColor = `rgba(${c},0.8)`;
+          ctx.shadowBlur = 10;
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        }
+      }
+    }
+
+    // Playhead line
+    const px = pad + playhead * cellW + cellW/2;
+    ctx.beginPath(); ctx.moveTo(px, startY - 6); ctx.lineTo(px, startY + tracks*cellH + 6);
+    ctx.strokeStyle = `rgba(${col},0.5)`; ctx.lineWidth = 1.5; ctx.stroke();
+
+    time += 0.016;
+    requestAnimationFrame(drawSequencer);
+  }
+
+  function drawParticles() {
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#04040f';
+    ctx.fillRect(0, 0, W, H);
+
+    const count = Math.min(120, Math.floor(W * H / 6000));
+    const t = time * embedSpeed;
+
+    for (let i = 0; i < count; i++) {
+      const seed = (embedSeed + i * 137.5) * 0.001;
+      const ox = (Math.sin(seed * 11.3) * 0.5 + 0.5) * W;
+      const oy = (Math.cos(seed * 7.1) * 0.5 + 0.5) * H;
+      const x = ox + Math.sin(t * 0.7 + seed * 13) * 40;
+      const y = oy + Math.cos(t * 0.5 + seed * 9) * 30;
+      const r = 1 + Math.abs(Math.sin(seed * 5 + t)) * 2.5;
+      const alpha = 0.3 + Math.abs(Math.sin(seed * 3 + t * 0.8)) * 0.5;
+      const colors = ['168,85,247', '34,211,216', '236,72,153', '16,185,129'];
+      const c = colors[Math.floor((seed * 4)) % 4];
+      ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(${c},${alpha})`; ctx.fill();
+    }
+
+    time += 0.016;
+    requestAnimationFrame(drawParticles);
+  }
+
+  // ─── ROUTE ────────────────────────────────────────────────────
+  if (embedType === 'mandala') {
+    drawMandala();
+  } else if (embedType === 'waves') {
+    drawWaves();
+  } else if (embedType === 'sequencer') {
+    drawSequencer();
+  } else if (embedType === 'particles') {
+    drawParticles();
+  } else {
+    // Generator page
+    drawMandala();
+    showGenerator();
+  }
+
+  // ─── UI BAR ───────────────────────────────────────────────────
+  if (embedType && !embedHide) {
+    document.body.insertAdjacentHTML('beforeend', `
+      <div class="embed-ui" id="embedUi">
+        <div class="embed-brand">
+          <span class="embed-type-label">${embedType.toUpperCase()} · CHROMAFLORA</span>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <a href="https://chromaflora.replit.app" target="_blank" style="color:rgba(168,85,247,0.7); font-size:11px; text-decoration:none; font-family:'JetBrains Mono',monospace;">chromaflora.replit.app ↗</a>
+        </div>
+      </div>
+    `);
+    setTimeout(() => {
+      const ui = document.getElementById('embedUi');
+      if (ui) ui.classList.add('hidden');
+    }, 4000);
+    canvas.addEventListener('click', () => {
+      const ui = document.getElementById('embedUi');
+      if (ui) { ui.classList.toggle('hidden'); }
+    });
+  }
+
+  // ─── GENERATOR UI ─────────────────────────────────────────────
+  function showGenerator() {
+    const origin = location.origin + location.pathname;
+    let selType = 'mandala', selColor = 'iris', selFolds = 8, selSpeed = 0.5;
+
+    function getUrl() {
+      return `${origin}?type=${selType}&color=${selColor}&folds=${selFolds}&speed=${selSpeed}&seed=${Math.floor(Math.random()*99999)}`;
+    }
+    function getSnippet() {
+      const url = getUrl();
+      const w = 560, h = selType === 'sequencer' ? 315 : 400;
+      return `<iframe\n  src="${url}"\n  width="${w}" height="${h}"\n  style="border:none; border-radius:12px; background:#04040f"\n  allow="autoplay"\n  title="ChromaFlora ${selType} embed"\n></iframe>`;
+    }
+    function refresh() {
+      document.getElementById('snippetBox').textContent = getSnippet();
+      document.getElementById('previewIframe').src = getUrl();
+      document.querySelectorAll('.opt-btn').forEach(b => {
+        const v = b.dataset.value;
+        const g = b.dataset.group;
+        b.classList.toggle('active',
+          (g==='type' && v===selType) ||
+          (g==='color' && v===selColor) ||
+          (g==='folds' && v==selFolds) ||
+          (g==='speed' && v==selSpeed)
+        );
+      });
+    }
+
+    document.body.insertAdjacentHTML('beforeend', `
+      <div class="generator-page">
+        <h1>ChromaFlora Embed Generator</h1>
+        <p>Create embeddable living art for your website, portfolio, or social bio. Choose a module and copy the iframe snippet.</p>
+        <div class="embed-builder">
+          <div class="builder-row">
+            <div class="builder-label">Module</div>
+            <div class="opt-row">
+              ${['mandala','waves','sequencer','particles'].map(t =>
+                `<button class="opt-btn${t===selType?' active':''}" data-group="type" data-value="${t}" onclick="selType='${t}';refresh()">${t.charAt(0).toUpperCase()+t.slice(1)}</button>`
+              ).join('')}
+            </div>
+          </div>
+          <div class="builder-row">
+            <div class="builder-label">Color</div>
+            <div class="opt-row">
+              ${['iris','aqua','bloom','ember','viridian'].map(c =>
+                `<button class="opt-btn${c===selColor?' active':''}" data-group="color" data-value="${c}" onclick="selColor='${c}';refresh()">${c}</button>`
+              ).join('')}
+            </div>
+          </div>
+          <div class="builder-row">
+            <div class="builder-label">Fold Count (Mandala)</div>
+            <div class="opt-row">
+              ${[4,6,8,10,12].map(f =>
+                `<button class="opt-btn${f===selFolds?' active':''}" data-group="folds" data-value="${f}" onclick="selFolds=${f};refresh()">${f}</button>`
+              ).join('')}
+            </div>
+          </div>
+          <div class="builder-row">
+            <div class="builder-label">Speed</div>
+            <div class="opt-row">
+              ${[[0.2,'Slow'],[0.5,'Medium'],[1,'Fast'],[2,'Electric']].map(([v,l]) =>
+                `<button class="opt-btn${v===selSpeed?' active':''}" data-group="speed" data-value="${v}" onclick="selSpeed=${v};refresh()">${l}</button>`
+              ).join('')}
+            </div>
+          </div>
+          <div class="builder-row">
+            <div class="builder-label">Live Preview</div>
+            <div class="preview-frame"><iframe id="previewIframe" src="" loading="lazy"></iframe></div>
+          </div>
+          <div class="builder-row">
+            <div class="builder-label">Embed Code</div>
+            <div class="snippet-box" id="snippetBox"></div>
+            <button class="copy-btn" id="copyBtn" onclick="copySnippet()">Copy Embed Code</button>
+          </div>
+        </div>
+      </div>
+    `);
+    refresh();
+  }
+
+  function copySnippet() {
+    const text = document.getElementById('snippetBox').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = '✓ Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy Embed Code'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  function refresh() {} // overridden by showGenerator
+</script>
+</body>
+</html>

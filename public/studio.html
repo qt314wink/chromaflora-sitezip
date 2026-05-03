@@ -10,6 +10,19 @@
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:creator" content="@halcyonminx">
+<link rel="canonical" href="https://chromaflora.replit.app/studio.html">
+<meta property="og:title" content="Free Generative Art Studio Browser | ChromaFlora">
+<meta property="og:description" content="Create generative art in your browser with paint pour physics, sacred geometry overlays, spirograph, and AI prompt building. Free. No sign-up. ChromaFlora Art Studio.">
+<meta property="og:url" content="https://chromaflora.replit.app/studio.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ChromaFlora">
+<meta name="twitter:site" content="@halcyonminx">
+<meta name="twitter:title" content="Free Generative Art Studio | ChromaFlora">
+<meta name="twitter:description" content="Paint pour physics, sacred geometry, spirograph & AI prompt building. Free browser-native creative studio.">
+<meta name="theme-color" content="#04040f">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"ChromaFlora Art Studio","url":"https://chromaflora.replit.app/studio.html","applicationCategory":"DesignApplication","operatingSystem":"Browser","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Free browser-based generative art studio with paint pour physics, sacred geometry overlays, and AI prompt building.","author":{"@type":"Person","name":"Jennipher Troup","alternateName":"@halcyonminx"}}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -266,19 +279,20 @@
 <header class="header">
   <div class="logo"><a href="index.html">ChromaFlora</a> <span style="opacity:.3;font-weight:400;font-size:12px">/ Studio</span></div>
   <nav class="nav">
-    <a href="index.html" class="nav-link">System</a>
-    <a href="gallery.html"     class="nav-link">Gallery</a>
-    <a href="player.html"      class="nav-link">Player</a>
     <a href="studio.html"      class="nav-link active">Studio</a>
     <a href="mandala.html"     class="nav-link">Mandala</a>
     <a href="sonic-waves.html" class="nav-link">Waves</a>
-    <a href="plotter.html"     class="nav-link">Plotter</a>
+    <a href="band.html"        class="nav-link">Band</a>
+    <a href="ai-studio.html"   class="nav-link">AI Studio</a>
     <a href="discovery.html"   class="nav-link">Discover</a>
+    <a href="asmr.html"        class="nav-link">ASMR</a>
+    <a href="playlist.html"    class="nav-link">Playlist</a>
   </nav>
   <div style="display:flex;gap:8px">
-    <button class="layer-btn" onclick="studio.export()" style="padding:5px 14px">Export PNG</button>
-    <button class="layer-btn" id="shareArtBtn" style="padding:5px 14px;background:linear-gradient(135deg,#a855f7,#ec4899);border-color:transparent;color:white" onclick="shareArtwork()">✦ Share to Gallery</button>
-    <button class="layer-btn" onclick="studio.clear()" style="padding:5px 14px">Clear All</button>
+    <button class="layer-btn" onclick="studio.export()" style="padding:5px 14px">⬇ PNG</button>
+    <button class="layer-btn" id="shareArtBtn" style="padding:5px 14px;background:linear-gradient(135deg,#a855f7,#ec4899);border-color:transparent;color:white" onclick="shareArtwork()">✦ Share</button>
+    <button class="layer-btn" onclick="copyStudioEmbed()" style="padding:5px 14px;background:rgba(34,211,216,0.08);border-color:rgba(34,211,216,0.3);color:rgba(34,211,216,0.9)" title="Copy embeddable iframe code">‹/› Embed</button>
+    <button class="layer-btn" onclick="studio.clear()" style="padding:5px 14px">Clear</button>
   </div>
 </header>
 
@@ -1899,6 +1913,16 @@ function showProModal(e) {
 window.showProModal = showProModal;
 
 /* ── Creator / Share system ── */
+function copyStudioEmbed(btn) {
+  const seed = Math.floor(Math.random() * 99999);
+  const url = `${location.origin}/embed.html?type=mandala&color=iris&folds=8&speed=0.5&seed=${seed}`;
+  const snippet = `<iframe\n  src="${url}"\n  width="560" height="400"\n  style="border:none; border-radius:12px; background:#04040f"\n  allow="autoplay"\n  title="ChromaFlora generative art embed"\n></iframe>`;
+  navigator.clipboard.writeText(snippet).then(() => {
+    const b = btn || document.querySelector('[onclick*="copyStudioEmbed"]');
+    if (b) { b.textContent = '✓ Copied!'; setTimeout(() => { b.textContent = '‹/› Embed'; }, 2000); }
+  });
+}
+
 function shareArtwork() {
   const username = (prompt('Your creator username (shown in the gallery):') || 'anonymous').replace(/[<>"']/g,'').trim().slice(0,40);
   const prompt_text = (prompt('Describe your artwork (shown as caption):') || 'Untitled creation').replace(/[<>"']/g,'').trim().slice(0,200);

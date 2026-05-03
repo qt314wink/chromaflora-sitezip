@@ -4,7 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mandala Studio — ChromaFlora</title>
-<meta name="description" content="Real-time interactive mandala and sacred geometry generator. Polar math, simplex noise, Lissajous, Rose Curves, Spirograph and Toroid — ChromaFlora.">
+<meta name="description" content="Free mandala generator browser — real-time polar math, simplex noise, Rose Curves, Spirograph, Lissajous, Sacred Geometry, Toroid. Export PNG. ChromaFlora Mandala Studio.">
+<link rel="canonical" href="https://chromaflora.replit.app/mandala.html">
+<meta property="og:title" content="Free Mandala Generator Browser — Real-Time Math | ChromaFlora">
+<meta property="og:description" content="Generate mathematically perfect mandalas in real-time. Polar coordinates, simplex noise, Rose Curves, Spirograph, Sacred Geometry. Export PNG. Free, no account.">
+<meta property="og:url" content="https://chromaflora.replit.app/mandala.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ChromaFlora">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@halcyonminx">
+<meta name="twitter:title" content="Free Mandala Generator — Real-Time Math | ChromaFlora">
+<meta name="twitter:description" content="Real-time polar math mandala generator. Rose curves, spirograph, sacred geometry, Lissajous. Export as PNG.">
+<meta name="theme-color" content="#04040f">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"ChromaFlora Mandala Studio","url":"https://chromaflora.replit.app/mandala.html","applicationCategory":"DesignApplication","operatingSystem":"Browser","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Free browser-based mandala generator using real-time polar mathematics, simplex noise turbulence, Rose Curves, Spirograph, Lissajous figures, and sacred geometry.","author":{"@type":"Person","name":"Jennipher Troup","alternateName":"@halcyonminx"}}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -120,14 +134,16 @@ canvas{position:absolute;top:0;left:0;display:block;touch-action:none}
     <a href="studio.html">Studio</a>
     <a href="mandala.html" class="active">Mandala</a>
     <a href="sonic-waves.html">Waves</a>
-    <a href="plotter.html">Plotter</a>
-    <a href="gallery.html">Gallery</a>
-    <a href="tokens.html">Tokens</a>
+    <a href="band.html">Band</a>
+    <a href="ai-studio.html">AI Studio</a>
     <a href="discovery.html">Discover</a>
+    <a href="asmr.html">ASMR</a>
+    <a href="playlist.html">Playlist</a>
   </nav>
   <div style="display:flex;gap:6px">
     <button class="cf-btn cf-btn-ghost" id="btnSaveGallery" style="width:auto;padding:5px 14px;margin:0">+ Gallery</button>
     <button class="cf-btn cf-btn-primary" id="btnExportHdr" style="width:auto;padding:5px 14px;margin:0">⬇ PNG</button>
+    <button class="cf-btn cf-btn-ghost" id="btnEmbed" onclick="copyMandalaEmbed()" style="width:auto;padding:5px 14px;margin:0;border-color:rgba(34,211,216,0.35);color:rgba(34,211,216,0.85)" title="Copy embeddable iframe code">‹/› Embed</button>
   </div>
 </header>
 
@@ -866,6 +882,17 @@ document.getElementById('btnSaveGallery').addEventListener('click',()=>{
   document.getElementById('btnSaveGallery').textContent='✓ Saved!';
   setTimeout(()=>{document.getElementById('btnSaveGallery').textContent='+ Gallery';},2000);
 });
+
+/* ── Embed copy ── */
+function copyMandalaEmbed(btn) {
+  const seed = Math.floor(Math.random()*99999);
+  const url = `${location.origin}/embed.html?type=mandala&color=iris&folds=8&speed=0.4&seed=${seed}`;
+  const snippet = `<iframe\n  src="${url}"\n  width="560" height="400"\n  style="border:none; border-radius:12px; background:#04040f"\n  allow="autoplay"\n  title="ChromaFlora Mandala embed"\n></iframe>`;
+  navigator.clipboard.writeText(snippet).then(() => {
+    const b = btn || document.getElementById('btnEmbed');
+    if (b) { b.textContent = '✓ Copied!'; setTimeout(() => { b.textContent = '‹/› Embed'; }, 2000); }
+  });
+}
 
 /* ── Aurora save feedback ── */
 function triggerAurora(){

@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Free Binaural Beats Meditation Browser | ChromaFlora ASMR</title>
+  <meta name="description" content="Generate binaural tones (delta 4Hz to gamma 40Hz) with mandala visual meditation. Solfeggio frequencies 432Hz–852Hz. Sleep timer. Web Audio API. Free browser tool, no download.">
+  <link rel="canonical" href="https://chromaflora.replit.app/asmr.html">
+  <meta property="og:title" content="ChromaFlora ASMR — Binaural Beats + Mandala Meditation">
+  <meta property="og:description" content="Free binaural tone generator with mandala visual meditation. Solfeggio frequencies, delta through gamma beats, sleep timer. No account required.">
+  <meta property="og:url" content="https://chromaflora.replit.app/asmr.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ChromaFlora">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@halcyonminx">
+  <meta name="twitter:title" content="ChromaFlora ASMR — Binaural Beats">
+  <meta name="twitter:description" content="Free binaural beat generator with mandala meditation visualization.">
+  <meta name="theme-color" content="#04040f">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"></noscript>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "name": "ChromaFlora ASMR",
+        "url": "https://chromaflora.replit.app/asmr.html",
+        "applicationCategory": "HealthApplication",
+        "operatingSystem": "Browser",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "description": "Free browser-based binaural beat generator with Solfeggio frequencies and mandala visual meditation. Web Audio API, no download required.",
+        "author": { "@type": "Person", "name": "Jennipher Troup", "alternateName": "@halcyonminx" }
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What are binaural beats?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Binaural beats occur when two slightly different frequencies are played in each ear. The brain perceives a third tone at the difference frequency. For example, 432Hz in the left ear and 436Hz in the right ear produces a 4Hz binaural beat — associated with delta waves and deep relaxation."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What are Solfeggio frequencies?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Solfeggio frequencies are a set of specific tones used in ancient Gregorian chants: 396Hz (liberation from fear), 417Hz (change), 528Hz (transformation), 639Hz (connection), 741Hz (expression), 852Hz (intuition). ChromaFlora uses 432Hz as the base tuning — an alternative to standard 440Hz that many listeners find more resonant."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+  <style>
+    :root {
+      --void: #04040f;
+      --iris: #a855f7;
+      --aqua: #22d3d8;
+      --bloom: #ec4899;
+      --ember: #f97316;
+      --viridian: #10b981;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      background: var(--void);
+      color: #e2e8f0;
+      font-family: 'Inter', sans-serif;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      display: flex; gap: 0; justify-content: center; align-items: center;
+      padding: 12px 20px; z-index: 100;
+      background: rgba(4,4,15,0.85);
+      border-bottom: 1px solid rgba(168,85,247,0.15);
+      backdrop-filter: blur(12px); flex-wrap: wrap; gap: 4px;
+    }
+    .nav-link {
+      color: rgba(226,232,240,0.6); text-decoration: none;
+      font-size: 12px; font-weight: 500; letter-spacing: 0.05em;
+      padding: 6px 14px; border-radius: 20px;
+      transition: all 0.25s;
+      border: 1px solid transparent;
+    }
+    .nav-link:hover { color: var(--iris); border-color: rgba(168,85,247,0.3); }
+    .nav-link.active {
+      color: var(--aqua);
+      border-color: rgba(34,211,216,0.4);
+      background: rgba(34,211,216,0.08);
+    }
+
+    /* CANVAS BACKGROUND */
+    #bgCanvas {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+    }
+
+    /* MAIN LAYOUT */
+    main {
+      position: relative; z-index: 10;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: flex-start;
+      height: 100vh; padding-top: 64px;
+      overflow-y: auto;
+    }
+
+    .asmr-container {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 24px; padding: 32px 20px 60px;
+      max-width: 760px; width: 100%;
+    }
+
+    /* HEADER */
+    .asmr-header {
+      text-align: center;
+    }
+    .asmr-header h1 {
+      font-size: clamp(1.4rem, 4vw, 2rem);
+      font-weight: 700; color: var(--iris);
+      text-shadow: 0 0 30px rgba(168,85,247,0.5);
+      letter-spacing: 0.02em;
+    }
+    .asmr-header p {
+      font-size: 13px; color: rgba(226,232,240,0.5);
+      margin-top: 8px; max-width: 480px; line-height: 1.6;
+    }
+
+    /* HEADPHONES WARNING */
+    .headphones-notice {
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(168,85,247,0.08);
+      border: 1px solid rgba(168,85,247,0.25);
+      border-radius: 12px; padding: 12px 18px;
+      font-size: 13px; color: rgba(226,232,240,0.7);
+      width: 100%;
+    }
+    .headphones-notice .icon { font-size: 20px; }
+
+    /* CONTROL PANEL */
+    .panel {
+      background: rgba(168,85,247,0.05);
+      border: 1px solid rgba(168,85,247,0.15);
+      border-radius: 16px; padding: 24px;
+      width: 100%;
+    }
+    .panel-title {
+      font-size: 11px; letter-spacing: 0.1em;
+      color: var(--iris); font-family: 'JetBrains Mono', monospace;
+      text-transform: uppercase; margin-bottom: 18px;
+      font-weight: 600;
+    }
+
+    /* SOLFEGGIO PRESETS */
+    .solfeggio-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      gap: 10px; margin-bottom: 18px;
+    }
+    .sol-btn {
+      background: rgba(4,4,15,0.6);
+      border: 1px solid rgba(168,85,247,0.2);
+      border-radius: 10px; padding: 12px 8px;
+      color: rgba(226,232,240,0.7); cursor: pointer;
+      transition: all 0.25s; font-family: 'Inter', sans-serif;
+      text-align: center;
+    }
+    .sol-btn:hover { border-color: var(--iris); color: var(--iris); }
+    .sol-btn.active {
+      background: rgba(168,85,247,0.12);
+      border-color: var(--iris);
+      color: var(--iris);
+      box-shadow: 0 0 16px rgba(168,85,247,0.2);
+    }
+    .sol-hz { font-size: 16px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+    .sol-name { font-size: 10px; opacity: 0.7; margin-top: 3px; }
+
+    /* SLIDERS */
+    .ctrl-row {
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 16px;
+    }
+    .ctrl-label {
+      font-size: 12px; color: rgba(226,232,240,0.6);
+      min-width: 140px; font-family: 'JetBrains Mono', monospace;
+    }
+    .ctrl-value {
+      font-size: 12px; color: var(--aqua);
+      min-width: 56px; text-align: right;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    input[type=range] {
+      flex: 1; height: 4px; -webkit-appearance: none;
+      background: rgba(168,85,247,0.2); border-radius: 2px; cursor: pointer;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 16px; height: 16px;
+      border-radius: 50%; background: var(--iris);
+      box-shadow: 0 0 10px rgba(168,85,247,0.5);
+    }
+    input[type=range]::-moz-range-thumb {
+      width: 16px; height: 16px; border-radius: 50%;
+      background: var(--iris); border: none;
+      box-shadow: 0 0 10px rgba(168,85,247,0.5);
+    }
+
+    /* BEAT FREQUENCY SELECTOR */
+    .beat-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+    }
+    .beat-btn {
+      background: rgba(4,4,15,0.6);
+      border: 1px solid rgba(34,211,216,0.2);
+      border-radius: 10px; padding: 10px 4px;
+      color: rgba(226,232,240,0.6); cursor: pointer;
+      transition: all 0.25s; font-family: 'Inter', sans-serif;
+      text-align: center;
+    }
+    .beat-btn:hover { border-color: var(--aqua); color: var(--aqua); }
+    .beat-btn.active {
+      background: rgba(34,211,216,0.1);
+      border-color: var(--aqua); color: var(--aqua);
+      box-shadow: 0 0 16px rgba(34,211,216,0.2);
+    }
+    .beat-hz { font-size: 14px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+    .beat-name { font-size: 9px; opacity: 0.6; margin-top: 2px; }
+    .beat-effect { font-size: 9px; color: rgba(226,232,240,0.4); margin-top: 2px; }
+
+    /* PLAY BUTTON */
+    .play-area {
+      display: flex; flex-direction: column; align-items: center; gap: 16px;
+    }
+    #playBtn {
+      width: 96px; height: 96px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(168,85,247,0.2) 0%, rgba(4,4,15,0.8) 70%);
+      border: 2px solid rgba(168,85,247,0.5);
+      color: var(--iris); cursor: pointer;
+      font-size: 32px; display: flex; align-items: center; justify-content: center;
+      transition: all 0.4s; position: relative;
+    }
+    #playBtn:hover {
+      border-color: var(--iris);
+      box-shadow: 0 0 40px rgba(168,85,247,0.35);
+    }
+    #playBtn.playing {
+      border-color: var(--aqua); color: var(--aqua);
+      box-shadow: 0 0 50px rgba(34,211,216,0.3);
+      animation: pulsePlay 2s ease-in-out infinite;
+    }
+    @keyframes pulsePlay {
+      0%, 100% { box-shadow: 0 0 30px rgba(34,211,216,0.2); }
+      50% { box-shadow: 0 0 60px rgba(34,211,216,0.4); }
+    }
+    .play-status {
+      font-size: 12px; color: rgba(226,232,240,0.5);
+      font-family: 'JetBrains Mono', monospace; letter-spacing: 0.05em;
+    }
+
+    /* TIMER */
+    .timer-grid {
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;
+    }
+    .timer-btn {
+      background: rgba(4,4,15,0.6);
+      border: 1px solid rgba(236,72,153,0.2);
+      border-radius: 10px; padding: 10px 4px;
+      color: rgba(226,232,240,0.6); cursor: pointer;
+      transition: all 0.25s; font-size: 12px;
+      font-family: 'JetBrains Mono', monospace; text-align: center;
+    }
+    .timer-btn:hover { border-color: var(--bloom); color: var(--bloom); }
+    .timer-btn.active {
+      background: rgba(236,72,153,0.1);
+      border-color: var(--bloom); color: var(--bloom);
+      box-shadow: 0 0 12px rgba(236,72,153,0.2);
+    }
+    .timer-display {
+      font-family: 'JetBrains Mono', monospace; font-size: 24px;
+      color: var(--bloom); text-align: center; letter-spacing: 0.05em;
+      min-height: 34px;
+    }
+    .timer-bar {
+      height: 3px; background: rgba(236,72,153,0.15);
+      border-radius: 2px; overflow: hidden; margin-top: 8px;
+    }
+    .timer-bar-fill {
+      height: 100%; background: var(--bloom); border-radius: 2px;
+      width: 100%; transition: width 1s linear;
+      box-shadow: 0 0 8px rgba(236,72,153,0.5);
+    }
+
+    /* STATS */
+    .stats-row {
+      display: flex; gap: 20px; justify-content: center;
+      flex-wrap: wrap;
+    }
+    .stat-item {
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .stat-val { font-size: 18px; font-weight: 700; color: var(--viridian); }
+    .stat-lbl { font-size: 10px; color: rgba(226,232,240,0.4); margin-top: 3px; }
+
+    /* WAVE VISUALIZER */
+    #waveCanvas {
+      width: 100%; height: 60px; border-radius: 8px;
+      border: 1px solid rgba(168,85,247,0.1);
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 500px) {
+      .beat-grid { grid-template-columns: repeat(3, 1fr); }
+      .solfeggio-grid { grid-template-columns: repeat(3, 1fr); }
+      .ctrl-row { flex-wrap: wrap; }
+      .ctrl-label { min-width: unset; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="studio.html" class="nav-link">Studio</a>
+    <a href="mandala.html" class="nav-link">Mandala</a>
+    <a href="sonic-waves.html" class="nav-link">Sonic Waves</a>
+    <a href="band.html" class="nav-link">Band</a>
+    <a href="ai-studio.html" class="nav-link">AI Studio</a>
+    <a href="discovery.html" class="nav-link">Discover</a>
+    <a href="asmr.html" class="nav-link active">ASMR</a>
+    <a href="playlist.html" class="nav-link">Playlist</a>
+  </nav>
+
+  <canvas id="bgCanvas"></canvas>
+
+  <main>
+    <div class="asmr-container">
+
+      <div class="asmr-header">
+        <h1>ASMR · Binaural Meditation</h1>
+        <p>
+          Binaural beats are generated when two slightly different frequencies enter each ear.
+          The brain perceives a third tone equal to their difference — tuning your brainwaves to specific states.
+        </p>
+      </div>
+
+      <div class="headphones-notice">
+        <span class="icon">🎧</span>
+        <span>Headphones required for binaural effect. Speakers produce the tones but not the stereo separation needed for brainwave entrainment.</span>
+      </div>
+
+      <!-- SOLFEGGIO BASE FREQUENCIES -->
+      <div class="panel">
+        <div class="panel-title">Base Frequency · Solfeggio Scale</div>
+        <div class="solfeggio-grid" id="solfeggioGrid">
+          <button class="sol-btn active" data-hz="432" onclick="setSolfeggio(432, this)">
+            <div class="sol-hz">432</div>
+            <div class="sol-name">Cosmic Harmony</div>
+          </button>
+          <button class="sol-btn" data-hz="396" onclick="setSolfeggio(396, this)">
+            <div class="sol-hz">396</div>
+            <div class="sol-name">Liberation</div>
+          </button>
+          <button class="sol-btn" data-hz="417" onclick="setSolfeggio(417, this)">
+            <div class="sol-hz">417</div>
+            <div class="sol-name">Change</div>
+          </button>
+          <button class="sol-btn" data-hz="528" onclick="setSolfeggio(528, this)">
+            <div class="sol-hz">528</div>
+            <div class="sol-name">DNA Repair</div>
+          </button>
+          <button class="sol-btn" data-hz="639" onclick="setSolfeggio(639, this)">
+            <div class="sol-hz">639</div>
+            <div class="sol-name">Connection</div>
+          </button>
+          <button class="sol-btn" data-hz="741" onclick="setSolfeggio(741, this)">
+            <div class="sol-hz">741</div>
+            <div class="sol-name">Expression</div>
+          </button>
+          <button class="sol-btn" data-hz="852" onclick="setSolfeggio(852, this)">
+            <div class="sol-hz">852</div>
+            <div class="sol-name">Intuition</div>
+          </button>
+          <button class="sol-btn" data-hz="963" onclick="setSolfeggio(963, this)">
+            <div class="sol-hz">963</div>
+            <div class="sol-name">Divine</div>
+          </button>
+        </div>
+
+        <!-- Custom frequency -->
+        <div class="ctrl-row">
+          <span class="ctrl-label">Custom Base (Hz)</span>
+          <input type="range" id="customFreqSlider" min="80" max="1200" value="432" step="1"
+            oninput="setCustomFreq(this.value)">
+          <span class="ctrl-value" id="customFreqVal">432 Hz</span>
+        </div>
+      </div>
+
+      <!-- BINAURAL BEAT OFFSET -->
+      <div class="panel">
+        <div class="panel-title">Binaural Beat · Brainwave State</div>
+        <div class="beat-grid" id="beatGrid">
+          <button class="beat-btn" data-hz="1.5" onclick="setBeat(1.5, this)">
+            <div class="beat-hz">1.5</div>
+            <div class="beat-name">Epsilon</div>
+            <div class="beat-effect">Deepest sleep</div>
+          </button>
+          <button class="beat-btn active" data-hz="4" onclick="setBeat(4, this)">
+            <div class="beat-hz">4</div>
+            <div class="beat-name">Delta</div>
+            <div class="beat-effect">Deep sleep</div>
+          </button>
+          <button class="beat-btn" data-hz="7" onclick="setBeat(7, this)">
+            <div class="beat-hz">7</div>
+            <div class="beat-name">Theta</div>
+            <div class="beat-effect">Dreaming</div>
+          </button>
+          <button class="beat-btn" data-hz="10" onclick="setBeat(10, this)">
+            <div class="beat-hz">10</div>
+            <div class="beat-name">Alpha</div>
+            <div class="beat-effect">Deep relax</div>
+          </button>
+          <button class="beat-btn" data-hz="14" onclick="setBeat(14, this)">
+            <div class="beat-hz">14</div>
+            <div class="beat-name">Low Beta</div>
+            <div class="beat-effect">Calm focus</div>
+          </button>
+          <button class="beat-btn" data-hz="20" onclick="setBeat(20, this)">
+            <div class="beat-hz">20</div>
+            <div class="beat-name">Beta</div>
+            <div class="beat-effect">Active focus</div>
+          </button>
+          <button class="beat-btn" data-hz="40" onclick="setBeat(40, this)">
+            <div class="beat-hz">40</div>
+            <div class="beat-name">Gamma</div>
+            <div class="beat-effect">Peak insight</div>
+          </button>
+        </div>
+
+        <div class="ctrl-row" style="margin-top:16px;">
+          <span class="ctrl-label">Custom Beat (Hz)</span>
+          <input type="range" id="beatSlider" min="0.5" max="60" value="4" step="0.5"
+            oninput="setCustomBeat(this.value)">
+          <span class="ctrl-value" id="beatVal">4.0 Hz</span>
+        </div>
+      </div>
+
+      <!-- VOLUME + FADE -->
+      <div class="panel">
+        <div class="panel-title">Volume & Character</div>
+        <div class="ctrl-row">
+          <span class="ctrl-label">Volume</span>
+          <input type="range" id="volumeSlider" min="0" max="1" value="0.5" step="0.01"
+            oninput="setVolume(this.value)">
+          <span class="ctrl-value" id="volumeVal">50%</span>
+        </div>
+        <div class="ctrl-row">
+          <span class="ctrl-label">Fade In (sec)</span>
+          <input type="range" id="fadeInSlider" min="1" max="30" value="8" step="1"
+            oninput="document.getElementById('fadeInVal').textContent = this.value + 's'">
+          <span class="ctrl-value" id="fadeInVal">8s</span>
+        </div>
+        <div class="ctrl-row">
+          <span class="ctrl-label">Visual Intensity</span>
+          <input type="range" id="visualSlider" min="0.1" max="1" value="0.4" step="0.01"
+            oninput="setVisualIntensity(this.value)">
+          <span class="ctrl-value" id="visualVal">40%</span>
+        </div>
+      </div>
+
+      <!-- PLAY CONTROL -->
+      <div class="panel">
+        <div class="panel-title">Session Control</div>
+        <div class="play-area">
+          <canvas id="waveCanvas" width="600" height="60"></canvas>
+          <button id="playBtn" onclick="togglePlay()" aria-label="Play binaural tones">▶</button>
+          <div class="play-status" id="playStatus">Ready · Use headphones</div>
+        </div>
+      </div>
+
+      <!-- SLEEP TIMER -->
+      <div class="panel">
+        <div class="panel-title">Sleep Timer</div>
+        <div class="timer-grid">
+          <button class="timer-btn active" data-min="0" onclick="setTimer(0, this)">Off</button>
+          <button class="timer-btn" data-min="5" onclick="setTimer(5, this)">5 min</button>
+          <button class="timer-btn" data-min="15" onclick="setTimer(15, this)">15 min</button>
+          <button class="timer-btn" data-min="30" onclick="setTimer(30, this)">30 min</button>
+          <button class="timer-btn" data-min="60" onclick="setTimer(60, this)">60 min</button>
+        </div>
+        <div class="timer-display" id="timerDisplay"></div>
+        <div class="timer-bar"><div class="timer-bar-fill" id="timerFill"></div></div>
+      </div>
+
+      <!-- SESSION STATS -->
+      <div class="panel">
+        <div class="panel-title">Lifetime Sessions</div>
+        <div class="stats-row">
+          <div class="stat-item">
+            <div class="stat-val" id="statSessions">0</div>
+            <div class="stat-lbl">Sessions</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-val" id="statMinutes">0</div>
+            <div class="stat-lbl">Minutes</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-val" id="statFavorite">—</div>
+            <div class="stat-lbl">Fav. Frequency</div>
+          </div>
+        </div>
+        <button id="shareSessionBtn" onclick="shareSession(this)" style="width:100%;margin-top:14px;padding:9px;border-radius:10px;border:1px solid rgba(34,211,216,0.3);background:rgba(34,211,216,0.06);color:rgba(34,211,216,0.85);cursor:pointer;font-size:12px;font-family:'Inter',sans-serif;font-weight:600;transition:all 0.2s">
+          ⬡ Share Session Link
+        </button>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    // ─── STATE ───────────────────────────────────────────────────
+    let audioCtx = null;
+    let leftOsc = null, rightOsc = null;
+    let gainNode = null;
+    let isPlaying = false;
+    let baseFreq = 432;
+    let beatFreq = 4;
+    let targetVolume = 0.5;
+    let timerMinutes = 0;
+    let timerRemaining = 0;
+    let timerInterval = null;
+    let timerTotal = 0;
+    let sessionStart = null;
+    let analyserNode = null;
+    let waveAnimFrame = null;
+    let visualIntensity = 0.4;
+
+    // ─── BACKGROUND MANDALA ──────────────────────────────────────
+    const bgCanvas = document.getElementById('bgCanvas');
+    const bgCtx = bgCanvas.getContext('2d');
+    let bgTime = 0;
+    let bgPhase = 0;
+    let breathePhase = 0;
+
+    function resizeBg() {
+      bgCanvas.width = window.innerWidth;
+      bgCanvas.height = window.innerHeight;
+    }
+    resizeBg();
+    window.addEventListener('resize', resizeBg);
+
+    function drawBgMandala() {
+      bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+      bgCtx.fillStyle = '#04040f';
+      bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
+
+      const cx = bgCanvas.width / 2;
+      const cy = bgCanvas.height / 2;
+      const maxR = Math.min(cx, cy) * 0.72;
+      const folds = 8;
+      const baseOpacity = 0.08 + Math.sin(breathePhase) * 0.035;
+
+      for (let layer = 0; layer < 5; layer++) {
+        const r = maxR * (0.25 + layer * 0.17);
+        const opacity = baseOpacity * (1 - layer * 0.12) * visualIntensity;
+        for (let i = 0; i < folds * 2; i++) {
+          const angle = (i / (folds * 2)) * Math.PI * 2 + bgPhase + layer * 0.3;
+          const petalLen = r * (0.28 + 0.08 * Math.sin(bgTime * 0.3 + i + layer));
+          const cx2 = cx + Math.cos(angle) * r * 0.55;
+          const cy2 = cy + Math.sin(angle) * r * 0.55;
+          const ex = cx + Math.cos(angle) * (r + petalLen * 0.5);
+          const ey = cy + Math.sin(angle) * (r + petalLen * 0.5);
+
+          const colors = ['168,85,247', '34,211,216', '236,72,153', '16,185,129', '249,115,22'];
+          const col = colors[layer % colors.length];
+
+          bgCtx.beginPath();
+          bgCtx.moveTo(cx, cy);
+          bgCtx.quadraticCurveTo(cx2, cy2, ex, ey);
+          bgCtx.strokeStyle = `rgba(${col},${opacity})`;
+          bgCtx.lineWidth = 0.8;
+          bgCtx.stroke();
+        }
+      }
+
+      // Breathing center glow
+      const grad = bgCtx.createRadialGradient(cx, cy, 0, cx, cy, maxR * 0.25);
+      grad.addColorStop(0, `rgba(168,85,247,${0.06 * visualIntensity + Math.sin(breathePhase) * 0.03 * visualIntensity})`);
+      grad.addColorStop(1, 'rgba(168,85,247,0)');
+      bgCtx.fillStyle = grad;
+      bgCtx.beginPath();
+      bgCtx.arc(cx, cy, maxR * 0.25, 0, Math.PI * 2);
+      bgCtx.fill();
+
+      bgPhase += 0.00035;
+      breathePhase += 0.008;
+      bgTime += 0.01;
+      requestAnimationFrame(drawBgMandala);
+    }
+    drawBgMandala();
+
+    // ─── WAVE CANVAS ─────────────────────────────────────────────
+    const waveCanvas = document.getElementById('waveCanvas');
+    const waveCtx = waveCanvas.getContext('2d');
+    let wavePhase = 0;
+
+    function drawWaveIdle() {
+      const W = waveCanvas.width, H = waveCanvas.height;
+      waveCtx.clearRect(0, 0, W, H);
+      waveCtx.fillStyle = 'rgba(4,4,15,0.4)';
+      waveCtx.fillRect(0, 0, W, H);
+
+      // Draw two gentle sine waves (left = iris, right = aqua)
+      const amp = isPlaying ? 18 : 6;
+      const midY = H / 2;
+
+      [[`rgba(168,85,247,0.5)`, 0], [`rgba(34,211,216,0.4)`, beatFreq * 0.1]].forEach(([col, phaseOff]) => {
+        waveCtx.beginPath();
+        for (let x = 0; x < W; x++) {
+          const t = (x / W) * Math.PI * 2 * 3 + wavePhase + phaseOff;
+          const y = midY + Math.sin(t) * amp;
+          x === 0 ? waveCtx.moveTo(x, y) : waveCtx.lineTo(x, y);
+        }
+        waveCtx.strokeStyle = col;
+        waveCtx.lineWidth = 1.5;
+        waveCtx.stroke();
+      });
+
+      wavePhase += isPlaying ? 0.04 : 0.008;
+    }
+
+    function animateWave() {
+      drawWaveIdle();
+      waveAnimFrame = requestAnimationFrame(animateWave);
+    }
+    animateWave();
+
+    // ─── AUDIO ENGINE ────────────────────────────────────────────
+    function initAudio() {
+      if (audioCtx) return;
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      gainNode = audioCtx.createGain();
+      gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+      gainNode.connect(audioCtx.destination);
+    }
+
+    function startBinaural() {
+      initAudio();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+
+      // Left oscillator = base frequency
+      leftOsc = audioCtx.createOscillator();
+      leftOsc.type = 'sine';
+      leftOsc.frequency.setValueAtTime(baseFreq, audioCtx.currentTime);
+
+      // Right oscillator = base + beat offset
+      rightOsc = audioCtx.createOscillator();
+      rightOsc.type = 'sine';
+      rightOsc.frequency.setValueAtTime(baseFreq + beatFreq, audioCtx.currentTime);
+
+      // Stereo panning
+      const merger = audioCtx.createChannelMerger(2);
+      const leftGain = audioCtx.createGain();
+      const rightGain = audioCtx.createGain();
+      leftGain.gain.setValueAtTime(1, audioCtx.currentTime);
+      rightGain.gain.setValueAtTime(1, audioCtx.currentTime);
+
+      leftOsc.connect(leftGain);
+      rightOsc.connect(rightGain);
+      leftGain.connect(merger, 0, 0);
+      rightGain.connect(merger, 0, 1);
+      merger.connect(gainNode);
+
+      leftOsc.start();
+      rightOsc.start();
+
+      // Fade in
+      const fadeTime = parseInt(document.getElementById('fadeInSlider').value);
+      gainNode.gain.linearRampToValueAtTime(targetVolume, audioCtx.currentTime + fadeTime);
+    }
+
+    function stopBinaural(immediate = false) {
+      if (!audioCtx || !gainNode) return;
+      const fadeOut = immediate ? 0.5 : 3;
+      gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + fadeOut);
+      setTimeout(() => {
+        if (leftOsc) { try { leftOsc.stop(); } catch(e){} leftOsc = null; }
+        if (rightOsc) { try { rightOsc.stop(); } catch(e){} rightOsc = null; }
+      }, (fadeOut + 0.1) * 1000);
+    }
+
+    function togglePlay() {
+      const btn = document.getElementById('playBtn');
+      const status = document.getElementById('playStatus');
+
+      if (!isPlaying) {
+        isPlaying = true;
+        btn.textContent = '⏹';
+        btn.classList.add('playing');
+        status.textContent = `${baseFreq} Hz base · ${beatFreq} Hz beat · Playing`;
+        startBinaural();
+        sessionStart = Date.now();
+        startTimerIfSet();
+        updateStats();
+      } else {
+        isPlaying = false;
+        btn.textContent = '▶';
+        btn.classList.remove('playing');
+        status.textContent = 'Fading out…';
+        stopBinaural(false);
+        if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+        saveSession();
+        setTimeout(() => { status.textContent = 'Ready · Use headphones'; }, 3500);
+      }
+    }
+
+    // ─── CONTROLS ────────────────────────────────────────────────
+    function setSolfeggio(hz, btn) {
+      baseFreq = hz;
+      document.querySelectorAll('.sol-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('customFreqSlider').value = hz;
+      document.getElementById('customFreqVal').textContent = hz + ' Hz';
+      if (isPlaying && leftOsc) {
+        leftOsc.frequency.linearRampToValueAtTime(hz, audioCtx.currentTime + 1);
+        rightOsc.frequency.linearRampToValueAtTime(hz + beatFreq, audioCtx.currentTime + 1);
+      }
+      updateStatus();
+    }
+
+    function setCustomFreq(val) {
+      baseFreq = parseFloat(val);
+      document.getElementById('customFreqVal').textContent = Math.round(val) + ' Hz';
+      document.querySelectorAll('.sol-btn').forEach(b => b.classList.remove('active'));
+      if (isPlaying && leftOsc) {
+        leftOsc.frequency.linearRampToValueAtTime(baseFreq, audioCtx.currentTime + 1);
+        rightOsc.frequency.linearRampToValueAtTime(baseFreq + beatFreq, audioCtx.currentTime + 1);
+      }
+    }
+
+    function setBeat(hz, btn) {
+      beatFreq = hz;
+      document.querySelectorAll('.beat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('beatSlider').value = hz;
+      document.getElementById('beatVal').textContent = hz + ' Hz';
+      if (isPlaying && rightOsc) {
+        rightOsc.frequency.linearRampToValueAtTime(baseFreq + beatFreq, audioCtx.currentTime + 1);
+      }
+      updateStatus();
+    }
+
+    function setCustomBeat(val) {
+      beatFreq = parseFloat(val);
+      document.getElementById('beatVal').textContent = parseFloat(val).toFixed(1) + ' Hz';
+      document.querySelectorAll('.beat-btn').forEach(b => b.classList.remove('active'));
+      if (isPlaying && rightOsc) {
+        rightOsc.frequency.linearRampToValueAtTime(baseFreq + beatFreq, audioCtx.currentTime + 1);
+      }
+    }
+
+    function setVolume(val) {
+      targetVolume = parseFloat(val);
+      document.getElementById('volumeVal').textContent = Math.round(val * 100) + '%';
+      if (isPlaying && gainNode) {
+        gainNode.gain.linearRampToValueAtTime(targetVolume, audioCtx.currentTime + 0.3);
+      }
+    }
+
+    function setVisualIntensity(val) {
+      visualIntensity = parseFloat(val);
+      document.getElementById('visualVal').textContent = Math.round(val * 100) + '%';
+    }
+
+    function updateStatus() {
+      if (isPlaying) {
+        document.getElementById('playStatus').textContent =
+          `${baseFreq} Hz base · ${beatFreq} Hz beat · Playing`;
+      }
+    }
+
+    // ─── SLEEP TIMER ─────────────────────────────────────────────
+    function setTimer(min, btn) {
+      timerMinutes = min;
+      document.querySelectorAll('.timer-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('timerDisplay').textContent = min > 0 ? formatTime(min * 60) : '';
+      document.getElementById('timerFill').style.width = '100%';
+      timerRemaining = min * 60;
+      timerTotal = min * 60;
+    }
+
+    function startTimerIfSet() {
+      if (timerMinutes === 0) return;
+      timerRemaining = timerMinutes * 60;
+      timerTotal = timerRemaining;
+      timerInterval = setInterval(() => {
+        timerRemaining--;
+        const pct = (timerRemaining / timerTotal) * 100;
+        document.getElementById('timerFill').style.width = pct + '%';
+        document.getElementById('timerDisplay').textContent = formatTime(timerRemaining);
+
+        // Start fade-out in last 60 seconds
+        if (timerRemaining === 60 && gainNode && isPlaying) {
+          gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 60);
+        }
+        if (timerRemaining <= 0) {
+          clearInterval(timerInterval);
+          timerInterval = null;
+          setTimeout(() => {
+            if (isPlaying) togglePlay();
+          }, 61000);
+        }
+      }, 1000);
+    }
+
+    function formatTime(seconds) {
+      const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+      const s = (seconds % 60).toString().padStart(2, '0');
+      return `${m}:${s}`;
+    }
+
+    // ─── SESSION STATS ────────────────────────────────────────────
+    function cfLoad(key, fallback) {
+      try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; }
+    }
+    function cfSave(key, data) {
+      try { localStorage.setItem(key, JSON.stringify(data)); } catch {}
+    }
+
+    function saveSession() {
+      if (!sessionStart) return;
+      const mins = Math.round((Date.now() - sessionStart) / 60000);
+      sessionStart = null;
+      if (mins < 1) return;
+      const stats = cfLoad('cf_asmr_stats', { sessions: 0, minutes: 0, freqs: {} });
+      stats.sessions++;
+      stats.minutes += mins;
+      stats.freqs[baseFreq] = (stats.freqs[baseFreq] || 0) + 1;
+      cfSave('cf_asmr_stats', stats);
+      renderStats(stats);
+
+      // Update living preference model
+      const model = cfLoad('cf_preference_model', {});
+      model.asmr_base_freq = baseFreq;
+      model.asmr_beat_freq = beatFreq;
+      model.asmr_sessions = (model.asmr_sessions || 0) + 1;
+      cfSave('cf_preference_model', model);
+    }
+
+    function renderStats(stats) {
+      document.getElementById('statSessions').textContent = stats.sessions || 0;
+      document.getElementById('statMinutes').textContent = stats.minutes || 0;
+      const freqs = stats.freqs || {};
+      const fav = Object.keys(freqs).sort((a,b) => freqs[b] - freqs[a])[0];
+      document.getElementById('statFavorite').textContent = fav ? fav + 'Hz' : '—';
+    }
+
+    function shareSession(btn) {
+      const url = `${location.origin}/asmr.html?freq=${baseFreq}&beat=${beatFreq}`;
+      navigator.clipboard.writeText(url).then(() => {
+        if (btn) { btn.textContent = '✓ Link Copied!'; setTimeout(() => { btn.textContent = '⬡ Share Session Link'; }, 2500); }
+      });
+    }
+
+    function updateStats() {
+      renderStats(cfLoad('cf_asmr_stats', { sessions: 0, minutes: 0, freqs: {} }));
+    }
+
+    // ─── INIT ────────────────────────────────────────────────────
+    updateStats();
+  </script>
+</body>
+</html>

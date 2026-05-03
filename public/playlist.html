@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Playlist & Circle of Fifths | ChromaFlora Music Hub</title>
+  <meta name="description" content="Manage playlists with circle of fifths visualization, harmonic scale browser, and audio synesthesia. Add generated or linked tracks, explore harmonic relationships, see music as color.">
+  <link rel="canonical" href="https://chromaflora.replit.app/playlist.html">
+  <meta property="og:title" content="ChromaFlora Playlist — Circle of Fifths & Harmonic Explorer">
+  <meta property="og:description" content="Playlist manager with circle of fifths visualization, harmonic scale browser, and visual audio synesthesia.">
+  <meta property="og:url" content="https://chromaflora.replit.app/playlist.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ChromaFlora">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@halcyonminx">
+  <meta name="theme-color" content="#04040f">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"></noscript>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "ChromaFlora Playlist",
+    "url": "https://chromaflora.replit.app/playlist.html",
+    "applicationCategory": "MusicApplication",
+    "operatingSystem": "Browser",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "description": "Browser-based playlist manager with circle of fifths visualization, harmonic scale browser, and audio-visual synesthesia.",
+    "author": { "@type": "Person", "name": "Jennipher Troup", "alternateName": "@halcyonminx" }
+  }
+  </script>
+  <style>
+    :root {
+      --void: #04040f;
+      --iris: #a855f7;
+      --aqua: #22d3d8;
+      --bloom: #ec4899;
+      --ember: #f97316;
+      --viridian: #10b981;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { background: var(--void); color: #e2e8f0; font-family: 'Inter', sans-serif; min-height: 100vh; }
+
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      display: flex; gap: 4px; justify-content: center; align-items: center;
+      padding: 12px 20px; z-index: 100;
+      background: rgba(4,4,15,0.85);
+      border-bottom: 1px solid rgba(168,85,247,0.15);
+      backdrop-filter: blur(12px); flex-wrap: wrap;
+    }
+    .nav-link {
+      color: rgba(226,232,240,0.6); text-decoration: none;
+      font-size: 12px; font-weight: 500; letter-spacing: 0.05em;
+      padding: 6px 14px; border-radius: 20px;
+      transition: all 0.25s; border: 1px solid transparent;
+    }
+    .nav-link:hover { color: var(--iris); border-color: rgba(168,85,247,0.3); }
+    .nav-link.active { color: var(--aqua); border-color: rgba(34,211,216,0.4); background: rgba(34,211,216,0.08); }
+
+    main { padding: 80px 20px 60px; max-width: 1200px; margin: 0 auto; }
+
+    h1 { font-size: clamp(1.4rem,4vw,2rem); font-weight: 700; color: var(--iris); text-shadow: 0 0 30px rgba(168,85,247,0.5); margin-bottom: 8px; }
+    .subtitle { font-size: 13px; color: rgba(226,232,240,0.5); margin-bottom: 32px; }
+
+    /* TABS */
+    .tabs { display: flex; gap: 4px; margin-bottom: 28px; flex-wrap: wrap; }
+    .tab-btn {
+      padding: 8px 20px; border-radius: 20px; border: 1px solid rgba(168,85,247,0.2);
+      background: transparent; color: rgba(226,232,240,0.5); cursor: pointer;
+      font-size: 12px; font-family: 'Inter', sans-serif; font-weight: 500;
+      transition: all 0.25s; letter-spacing: 0.04em;
+    }
+    .tab-btn:hover { color: var(--iris); border-color: rgba(168,85,247,0.4); }
+    .tab-btn.active { background: rgba(168,85,247,0.12); border-color: var(--iris); color: var(--iris); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* GRID LAYOUT */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    @media(max-width: 800px) { .two-col { grid-template-columns: 1fr; } }
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    @media(max-width: 700px) { .three-col { grid-template-columns: 1fr; } }
+
+    /* PANEL */
+    .panel {
+      background: rgba(168,85,247,0.05); border: 1px solid rgba(168,85,247,0.15);
+      border-radius: 16px; padding: 24px;
+    }
+    .panel-title {
+      font-size: 11px; letter-spacing: 0.1em; color: var(--iris);
+      font-family: 'JetBrains Mono', monospace; text-transform: uppercase;
+      margin-bottom: 18px; font-weight: 600;
+    }
+
+    /* CIRCLE OF FIFTHS */
+    #circleCanvas { display: block; margin: 0 auto; }
+
+    /* KEY LEGEND */
+    .key-pill {
+      display: inline-block; padding: 4px 12px; border-radius: 20px;
+      font-size: 11px; font-family: 'JetBrains Mono', monospace;
+      cursor: pointer; margin: 3px; border: 1px solid transparent;
+      transition: all 0.2s;
+    }
+    .key-pill:hover { transform: scale(1.05); }
+
+    /* PLAYLIST */
+    .track-list { display: flex; flex-direction: column; gap: 8px; }
+    .track-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px; border-radius: 12px;
+      background: rgba(4,4,15,0.5); border: 1px solid rgba(168,85,247,0.1);
+      transition: all 0.2s; cursor: pointer;
+    }
+    .track-item:hover { border-color: rgba(168,85,247,0.3); background: rgba(168,85,247,0.06); }
+    .track-item.playing { border-color: var(--aqua); background: rgba(34,211,216,0.06); }
+    .track-num { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: rgba(226,232,240,0.3); min-width: 24px; }
+    .track-key-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .track-info { flex: 1; min-width: 0; }
+    .track-title { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .track-meta { font-size: 11px; color: rgba(226,232,240,0.4); font-family: 'JetBrains Mono', monospace; margin-top: 2px; }
+    .track-actions { display: flex; gap: 8px; }
+    .track-act-btn {
+      background: none; border: none; color: rgba(226,232,240,0.3);
+      cursor: pointer; font-size: 14px; padding: 4px; border-radius: 6px;
+      transition: all 0.2s;
+    }
+    .track-act-btn:hover { color: var(--iris); background: rgba(168,85,247,0.1); }
+
+    /* PLAYER CONTROLS */
+    .player-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: rgba(4,4,15,0.92); backdrop-filter: blur(16px);
+      border-top: 1px solid rgba(168,85,247,0.15);
+      padding: 14px 24px; display: flex; align-items: center; gap: 20px;
+      z-index: 90;
+    }
+    .now-playing { flex: 1; min-width: 0; }
+    .np-title { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .np-meta { font-size: 11px; color: rgba(226,232,240,0.4); font-family: 'JetBrains Mono', monospace; }
+    .player-controls { display: flex; align-items: center; gap: 12px; }
+    .ctrl-btn {
+      background: none; border: none; color: rgba(226,232,240,0.5);
+      cursor: pointer; font-size: 18px; padding: 8px; border-radius: 50%;
+      transition: all 0.2s;
+    }
+    .ctrl-btn:hover { color: var(--iris); }
+    .ctrl-btn.main-btn {
+      background: rgba(168,85,247,0.15); border: 1px solid rgba(168,85,247,0.3);
+      color: var(--iris); font-size: 20px; padding: 10px;
+    }
+    .ctrl-btn.main-btn:hover { background: rgba(168,85,247,0.25); }
+    .ctrl-btn.active-btn { color: var(--aqua); }
+    .progress-wrap { flex: 1; max-width: 300px; }
+    .progress-bar { height: 3px; background: rgba(168,85,247,0.2); border-radius: 2px; cursor: pointer; }
+    .progress-fill { height: 100%; background: var(--iris); border-radius: 2px; width: 0%; transition: width 0.5s linear; }
+    .player-vol { display: flex; align-items: center; gap: 8px; }
+    .player-vol input[type=range] {
+      width: 80px; height: 4px; -webkit-appearance: none; appearance: none;
+      background: rgba(168,85,247,0.2); border-radius: 2px; cursor: pointer;
+    }
+    .player-vol input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: var(--iris);
+    }
+
+    /* ADD TRACK FORM */
+    .add-form { display: flex; flex-direction: column; gap: 12px; }
+    .form-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .cf-input {
+      flex: 1; background: rgba(4,4,15,0.7); border: 1px solid rgba(168,85,247,0.2);
+      border-radius: 10px; padding: 10px 14px; color: #e2e8f0; font-size: 13px;
+      font-family: 'Inter', sans-serif; outline: none; min-width: 140px;
+    }
+    .cf-input:focus { border-color: var(--iris); }
+    .cf-input::placeholder { color: rgba(226,232,240,0.3); }
+    .cf-select {
+      background: rgba(4,4,15,0.7); border: 1px solid rgba(168,85,247,0.2);
+      border-radius: 10px; padding: 10px 14px; color: #e2e8f0; font-size: 13px;
+      font-family: 'Inter', sans-serif; cursor: pointer; outline: none;
+    }
+    .cf-btn {
+      padding: 10px 20px; border-radius: 10px;
+      border: 1px solid rgba(168,85,247,0.4);
+      background: rgba(168,85,247,0.1); color: var(--iris); cursor: pointer;
+      font-size: 13px; font-family: 'Inter', sans-serif; font-weight: 500;
+      transition: all 0.25s;
+    }
+    .cf-btn:hover { background: rgba(168,85,247,0.2); }
+    .cf-btn-aqua { border-color: rgba(34,211,216,0.4); background: rgba(34,211,216,0.08); color: var(--aqua); }
+    .cf-btn-aqua:hover { background: rgba(34,211,216,0.15); }
+    .cf-btn-sm { padding: 6px 14px; font-size: 11px; }
+
+    /* HARMONIC SCALE BROWSER */
+    .scale-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+    .scale-card {
+      background: rgba(4,4,15,0.6); border: 1px solid rgba(168,85,247,0.15);
+      border-radius: 10px; padding: 12px; cursor: pointer; transition: all 0.25s;
+    }
+    .scale-card:hover { border-color: var(--iris); background: rgba(168,85,247,0.08); }
+    .scale-card.active { border-color: var(--aqua); background: rgba(34,211,216,0.08); }
+    .scale-name { font-size: 12px; font-weight: 600; color: var(--iris); }
+    .scale-notes { font-size: 10px; color: rgba(226,232,240,0.4); margin-top: 4px; font-family: 'JetBrains Mono', monospace; }
+
+    .note-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 16px; }
+    .note-pill {
+      padding: 6px 14px; border-radius: 20px; font-family: 'JetBrains Mono', monospace;
+      font-size: 12px; font-weight: 600; border: 1px solid;
+    }
+
+    /* SYNESTHESIA CANVAS */
+    #syneCanvas { width: 100%; height: 80px; border-radius: 10px; }
+
+    /* IMPORT / EXPORT */
+    .import-export { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    .empty-state { text-align: center; padding: 40px; color: rgba(226,232,240,0.3); }
+    .empty-state .empty-icon { font-size: 36px; margin-bottom: 12px; }
+    .empty-state p { font-size: 13px; line-height: 1.6; }
+
+    /* MATH PANEL */
+    .interval-table { width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+    .interval-table th { color: var(--iris); padding: 6px 10px; text-align: left; border-bottom: 1px solid rgba(168,85,247,0.15); }
+    .interval-table td { padding: 6px 10px; color: rgba(226,232,240,0.7); border-bottom: 1px solid rgba(168,85,247,0.06); }
+    .interval-table tr:hover td { background: rgba(168,85,247,0.04); }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="studio.html" class="nav-link">Studio</a>
+    <a href="mandala.html" class="nav-link">Mandala</a>
+    <a href="sonic-waves.html" class="nav-link">Sonic Waves</a>
+    <a href="band.html" class="nav-link">Band</a>
+    <a href="ai-studio.html" class="nav-link">AI Studio</a>
+    <a href="discovery.html" class="nav-link">Discover</a>
+    <a href="asmr.html" class="nav-link">ASMR</a>
+    <a href="playlist.html" class="nav-link active">Playlist</a>
+  </nav>
+
+  <main>
+    <h1>Playlist · Harmonic Explorer</h1>
+    <p class="subtitle">Circles of fourths &amp; fifths · Harmonic scale browser · Visual music synesthesia · Shared playlists</p>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="playlist" onclick="switchTab('playlist', this)">Playlist</button>
+      <button class="tab-btn" data-tab="circle" onclick="switchTab('circle', this)">Circle of Fifths</button>
+      <button class="tab-btn" data-tab="scales" onclick="switchTab('scales', this)">Harmonic Scales</button>
+      <button class="tab-btn" data-tab="math" onclick="switchTab('math', this)">Interval Math</button>
+    </div>
+
+    <!-- ─── TAB: PLAYLIST ──────────────────────────────────────── -->
+    <div id="playlist" class="tab-panel active">
+      <div class="two-col">
+        <div>
+          <div class="panel" style="margin-bottom:20px;">
+            <div class="panel-title">Add Track</div>
+            <div class="add-form">
+              <div class="form-row">
+                <input class="cf-input" id="trackTitle" placeholder="Track title…" style="flex:2">
+                <input class="cf-input" id="trackArtist" placeholder="Artist…" style="flex:1">
+              </div>
+              <div class="form-row">
+                <input class="cf-input" id="trackUrl" placeholder="Audio URL or YouTube link…" style="flex:3">
+                <select class="cf-select" id="trackKey">
+                  <option value="">Key…</option>
+                  <option>C</option><option>G</option><option>D</option><option>A</option>
+                  <option>E</option><option>B</option><option>F#</option><option>Db</option>
+                  <option>Ab</option><option>Eb</option><option>Bb</option><option>F</option>
+                </select>
+                <select class="cf-select" id="trackMode">
+                  <option value="">Mode…</option>
+                  <option>Major</option><option>Minor</option><option>Dorian</option>
+                  <option>Phrygian</option><option>Lydian</option><option>Mixolydian</option>
+                  <option>Aeolian</option><option>Locrian</option><option>Pentatonic</option>
+                </select>
+              </div>
+              <div class="form-row">
+                <input class="cf-input" id="trackBpm" placeholder="BPM…" type="number" min="40" max="300" style="flex:1; max-width:120px;">
+                <input class="cf-input" id="trackNotes" placeholder="Notes or tags…" style="flex:2">
+                <button class="cf-btn" onclick="addTrack()">Add Track</button>
+              </div>
+              <div class="form-row">
+                <button class="cf-btn cf-btn-sm" onclick="importJson()">Import JSON</button>
+                <button class="cf-btn cf-btn-sm cf-btn-aqua" onclick="exportJson()">Export JSON</button>
+                <button class="cf-btn cf-btn-sm cf-btn-aqua" onclick="sharePlaylist()">Share Link</button>
+                <input id="importFile" type="file" accept=".json" style="display:none" onchange="handleImport(this)">
+              </div>
+            </div>
+          </div>
+
+          <!-- SYNESTHESIA VIZ -->
+          <div class="panel">
+            <div class="panel-title">Audio Synesthesia · Color Pulse</div>
+            <canvas id="syneCanvas" width="600" height="80"></canvas>
+            <p style="font-size:11px; color:rgba(226,232,240,0.3); margin-top:8px; text-align:center;">
+              Colors pulse with estimated beat. Track key maps to ChromaFlora token color.
+            </p>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Playlist <span id="trackCount" style="color:rgba(226,232,240,0.4);">(0 tracks)</span></div>
+          <div id="trackList" class="track-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── TAB: CIRCLE OF FIFTHS ─────────────────────────────── -->
+    <div id="circle" class="tab-panel">
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-title">Circle of Fifths &amp; Fourths</div>
+          <canvas id="circleCanvas" width="380" height="380"></canvas>
+          <div style="margin-top:16px; font-size:12px; color:rgba(226,232,240,0.5); line-height:1.7;">
+            <strong style="color:var(--iris)">Circle of Fifths:</strong> Moving clockwise adds one sharp per key.<br>
+            <strong style="color:var(--aqua)">Circle of Fourths:</strong> Counter-clockwise — adds one flat per key.<br>
+            <strong style="color:var(--bloom)">Adjacent keys</strong> share 6 of 7 notes — they're harmonically compatible.<br>
+            Inner ring shows relative minor keys.
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Key Information</div>
+          <div id="keyInfo" style="color:rgba(226,232,240,0.5); font-size:13px; line-height:1.8;">
+            Click a key on the circle to see details.
+          </div>
+          <div id="keyNotes" class="note-row"></div>
+          <div id="relatedKeys" style="margin-top:16px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── TAB: HARMONIC SCALES ──────────────────────────────── -->
+    <div id="scales" class="tab-panel">
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-title">Scale Browser</div>
+          <div style="margin-bottom:14px; display:flex; gap:8px; flex-wrap:wrap;">
+            <select class="cf-select" id="scaleRoot" onchange="renderScaleNotes()">
+              <option>C</option><option>G</option><option>D</option><option>A</option>
+              <option>E</option><option>B</option><option>F#</option><option>Gb</option>
+              <option>Db</option><option>Ab</option><option>Eb</option><option>Bb</option><option>F</option>
+            </select>
+            <button class="cf-btn cf-btn-sm" onclick="playScaleAudio()">Play Scale ▶</button>
+          </div>
+          <div class="scale-grid" id="scaleGrid"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Scale Notes &amp; Intervals</div>
+          <div id="scaleNotesDisplay"></div>
+          <div id="scaleFreqDisplay" style="margin-top:16px;"></div>
+          <canvas id="scaleCanvas" width="380" height="100" style="margin-top:16px; border-radius:8px; width:100%;"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── TAB: INTERVAL MATH ────────────────────────────────── -->
+    <div id="math" class="tab-panel">
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-title">Interval Mathematics</div>
+          <table class="interval-table">
+            <thead>
+              <tr><th>Interval</th><th>Semitones</th><th>Ratio</th><th>Name</th><th>Character</th></tr>
+            </thead>
+            <tbody id="intervalBody"></tbody>
+          </table>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Frequency Relationships</div>
+          <div style="margin-bottom:14px;">
+            <div class="form-row">
+              <input class="cf-input" id="baseHzInput" placeholder="Base freq (Hz)…" type="number" value="261.63">
+              <button class="cf-btn cf-btn-sm" onclick="calcIntervals()">Calculate</button>
+            </div>
+          </div>
+          <div id="freqCalcResult"></div>
+          <div style="margin-top:24px; font-size:12px; color:rgba(226,232,240,0.4); line-height:1.8;">
+            <p><strong style="color:var(--iris)">Why ratios matter:</strong> The perfect fifth (3:2) is the most consonant interval after the octave. The Bjorklund algorithm used in ChromaFlora's Band sequencer distributes beats the way this ratio distributes frequencies — optimally and evenly.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- PLAYER BAR -->
+  <div class="player-bar" id="playerBar">
+    <div class="now-playing">
+      <div class="np-title" id="npTitle">No track playing</div>
+      <div class="np-meta" id="npMeta">Add tracks to begin</div>
+    </div>
+    <div class="player-controls">
+      <button class="ctrl-btn" onclick="skipPrev()" title="Previous">⏮</button>
+      <button class="ctrl-btn main-btn" id="playerPlayBtn" onclick="togglePlayerPlay()">▶</button>
+      <button class="ctrl-btn" onclick="skipNext()" title="Next">⏭</button>
+      <button class="ctrl-btn" id="shuffleBtn" onclick="toggleShuffle()" title="Shuffle">⇄</button>
+      <button class="ctrl-btn" id="loopBtn" onclick="toggleLoop()" title="Loop">↺</button>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-bar" onclick="seekProgress(event)">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </div>
+    <div class="player-vol">
+      <span style="font-size:14px;">🔊</span>
+      <input type="range" id="playerVol" min="0" max="1" step="0.01" value="0.8" oninput="setPlayerVol(this.value)">
+    </div>
+  </div>
+
+  <script>
+    // ─── CONSTANTS ────────────────────────────────────────────────
+    const NOTES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+    const FIFTHS_ORDER = ['C','G','D','A','E','B','F#','Db','Ab','Eb','Bb','F'];
+    const KEY_COLORS = {
+      C:'168,85,247', G:'34,211,216', D:'236,72,153', A:'249,115,22',
+      E:'16,185,129', B:'168,85,247', 'F#':'34,211,216', 'Db':'236,72,153',
+      Ab:'249,115,22', Eb:'16,185,129', Bb:'168,85,247', F:'34,211,216'
+    };
+    const SCALES = {
+      'Major':        [0,2,4,5,7,9,11],
+      'Natural Minor':[0,2,3,5,7,8,10],
+      'Dorian':       [0,2,3,5,7,9,10],
+      'Phrygian':     [0,1,3,5,7,8,10],
+      'Lydian':       [0,2,4,6,7,9,11],
+      'Mixolydian':   [0,2,4,5,7,9,10],
+      'Aeolian':      [0,2,3,5,7,8,10],
+      'Locrian':      [0,1,3,5,6,8,10],
+      'Pentatonic Maj':[0,2,4,7,9],
+      'Pentatonic Min':[0,3,5,7,10],
+      'Blues':        [0,3,5,6,7,10],
+      'Harmonic Min': [0,2,3,5,7,8,11],
+      'Melodic Min':  [0,2,3,5,7,9,11],
+      'Whole Tone':   [0,2,4,6,8,10],
+      'Diminished':   [0,2,3,5,6,8,9,11],
+      'Augmented':    [0,3,4,7,8,11],
+    };
+    const INTERVALS = [
+      {n:'Unison',      semi:0,  ratio:'1:1',    char:'Perfect rest'},
+      {n:'Min 2nd',     semi:1,  ratio:'16:15',  char:'Very dissonant'},
+      {n:'Maj 2nd',     semi:2,  ratio:'9:8',    char:'Whole step, mild tension'},
+      {n:'Min 3rd',     semi:3,  ratio:'6:5',    char:'Minor quality, melancholy'},
+      {n:'Maj 3rd',     semi:4,  ratio:'5:4',    char:'Major quality, bright'},
+      {n:'Perfect 4th', semi:5,  ratio:'4:3',    char:'Open, somewhat stable'},
+      {n:'Tritone',     semi:6,  ratio:'45:32',  char:'Maximum dissonance, the devil\'s interval'},
+      {n:'Perfect 5th', semi:7,  ratio:'3:2',    char:'Most consonant, power chord'},
+      {n:'Min 6th',     semi:8,  ratio:'8:5',    char:'Darker, longing'},
+      {n:'Maj 6th',     semi:9,  ratio:'5:3',    char:'Bright, nostalgic'},
+      {n:'Min 7th',     semi:10, ratio:'16:9',   char:'Unresolved, bluesy'},
+      {n:'Maj 7th',     semi:11, ratio:'15:8',   char:'Tense, leading tone'},
+      {n:'Octave',      semi:12, ratio:'2:1',    char:'Perfect resonance'},
+    ];
+
+    // ─── STATE ────────────────────────────────────────────────────
+    let playlist = [];
+    let currentTrack = -1;
+    let isPlaying = false;
+    let shuffle = false;
+    let loop = false;
+    let audioEl = null;
+    let selectedScale = 'Major';
+    let selectedKey = 'C';
+    let syneAnimFrame = null;
+    let syneBeat = 0;
+
+    // ─── STORAGE ─────────────────────────────────────────────────
+    function cfLoad(key, fb) { try { return JSON.parse(localStorage.getItem(key)) ?? fb; } catch { return fb; } }
+    function cfSave(key, d) { try { localStorage.setItem(key, JSON.stringify(d)); } catch {} }
+
+    // ─── PLAYLIST CRUD ────────────────────────────────────────────
+    function addTrack() {
+      const title = document.getElementById('trackTitle').value.trim();
+      const artist = document.getElementById('trackArtist').value.trim();
+      const url = document.getElementById('trackUrl').value.trim();
+      const key = document.getElementById('trackKey').value;
+      const mode = document.getElementById('trackMode').value;
+      const bpm = document.getElementById('trackBpm').value;
+      const notes = document.getElementById('trackNotes').value.trim();
+
+      if (!title) { alert('Add a title at minimum.'); return; }
+      const track = { id: Date.now(), title, artist, url, key, mode, bpm: parseInt(bpm)||120, notes };
+      playlist.push(track);
+      savePlaylist();
+      renderTrackList();
+      document.getElementById('trackTitle').value = '';
+      document.getElementById('trackUrl').value = '';
+      document.getElementById('trackBpm').value = '';
+    }
+
+    function removeTrack(id) {
+      playlist = playlist.filter(t => t.id !== id);
+      savePlaylist();
+      renderTrackList();
+    }
+
+    function savePlaylist() {
+      cfSave('cf_playlist', playlist);
+      document.getElementById('trackCount').textContent = `(${playlist.length} track${playlist.length !== 1 ? 's' : ''})`;
+    }
+
+    function renderTrackList() {
+      const el = document.getElementById('trackList');
+      document.getElementById('trackCount').textContent = `(${playlist.length} track${playlist.length !== 1 ? 's' : ''})`;
+      if (!playlist.length) {
+        el.innerHTML = `<div class="empty-state"><div class="empty-icon">🎵</div><p>Your playlist is empty.<br>Add tracks using the form above, or import a JSON playlist.</p></div>`;
+        return;
+      }
+      el.innerHTML = playlist.map((t, i) => {
+        const col = KEY_COLORS[t.key] || '168,85,247';
+        const isActive = i === currentTrack;
+        return `<div class="track-item${isActive ? ' playing' : ''}" onclick="playTrackAt(${i})">
+          <span class="track-num">${i+1}</span>
+          <span class="track-key-dot" style="background:rgba(${col},0.8); box-shadow:0 0 6px rgba(${col},0.5)"></span>
+          <div class="track-info">
+            <div class="track-title">${t.title}</div>
+            <div class="track-meta">${t.artist || '—'} · ${t.key||'?'} ${t.mode||''} · ${t.bpm} BPM</div>
+          </div>
+          <div class="track-actions">
+            <button class="track-act-btn" onclick="event.stopPropagation(); copyTrackInfo(${i})" title="Copy info">📋</button>
+            <button class="track-act-btn" onclick="event.stopPropagation(); removeTrack(${t.id})" title="Remove">✕</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function copyTrackInfo(i) {
+      const t = playlist[i];
+      navigator.clipboard.writeText(`${t.title} — ${t.artist || 'Unknown'} | Key: ${t.key||'?'} ${t.mode||''} | BPM: ${t.bpm}`);
+    }
+
+    // ─── PLAYER ───────────────────────────────────────────────────
+    function playTrackAt(i) {
+      if (i < 0 || i >= playlist.length) return;
+      currentTrack = i;
+      const t = playlist[i];
+
+      if (audioEl) { audioEl.pause(); audioEl = null; }
+      if (t.url) {
+        audioEl = new Audio(t.url);
+        audioEl.volume = parseFloat(document.getElementById('playerVol').value);
+        audioEl.play().catch(() => {});
+        audioEl.addEventListener('ended', () => skipNext());
+      }
+
+      document.getElementById('npTitle').textContent = t.title;
+      document.getElementById('npMeta').textContent = `${t.artist||'Unknown'} · ${t.key||'?'} ${t.mode||''} · ${t.bpm} BPM`;
+      document.getElementById('playerPlayBtn').textContent = '⏸';
+      isPlaying = true;
+      renderTrackList();
+      updateSynesthesia(t);
+    }
+
+    function togglePlayerPlay() {
+      if (currentTrack === -1 && playlist.length > 0) { playTrackAt(0); return; }
+      if (!audioEl) return;
+      if (isPlaying) {
+        audioEl.pause(); isPlaying = false;
+        document.getElementById('playerPlayBtn').textContent = '▶';
+      } else {
+        audioEl.play(); isPlaying = true;
+        document.getElementById('playerPlayBtn').textContent = '⏸';
+      }
+    }
+
+    function skipNext() {
+      if (!playlist.length) return;
+      let next = shuffle
+        ? Math.floor(Math.random() * playlist.length)
+        : (currentTrack + 1) % playlist.length;
+      if (!loop && currentTrack === playlist.length - 1 && !shuffle) return;
+      playTrackAt(next);
+    }
+
+    function skipPrev() {
+      if (!playlist.length) return;
+      const prev = (currentTrack - 1 + playlist.length) % playlist.length;
+      playTrackAt(prev);
+    }
+
+    function toggleShuffle() {
+      shuffle = !shuffle;
+      document.getElementById('shuffleBtn').classList.toggle('active-btn', shuffle);
+    }
+
+    function toggleLoop() {
+      loop = !loop;
+      document.getElementById('loopBtn').classList.toggle('active-btn', loop);
+    }
+
+    function setPlayerVol(v) {
+      if (audioEl) audioEl.volume = parseFloat(v);
+    }
+
+    function seekProgress(e) {
+      if (!audioEl || !audioEl.duration) return;
+      const rect = e.currentTarget.getBoundingClientRect();
+      const pct = (e.clientX - rect.left) / rect.width;
+      audioEl.currentTime = pct * audioEl.duration;
+    }
+
+    // ─── SYNESTHESIA ──────────────────────────────────────────────
+    function updateSynesthesia(track) {
+      const col = KEY_COLORS[track.key] || '168,85,247';
+      document.body.style.setProperty('--active-col', `rgba(${col},1)`);
+    }
+
+    function animateSyne() {
+      const c = document.getElementById('syneCanvas');
+      const ctx = c.getContext('2d');
+      const W = c.width, H = c.height;
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = 'rgba(4,4,15,0.6)';
+      ctx.fillRect(0, 0, W, H);
+
+      const bpm = (playlist[currentTrack]?.bpm || 120);
+      const beatHz = bpm / 60;
+      syneBeat += beatHz * 0.016;
+
+      const key = playlist[currentTrack]?.key || 'C';
+      const col = KEY_COLORS[key] || '168,85,247';
+      const pulse = Math.abs(Math.sin(syneBeat * Math.PI));
+
+      // Frequency bars
+      const bars = 32;
+      for (let i = 0; i < bars; i++) {
+        const x = (i / bars) * W;
+        const h = (Math.sin(syneBeat * 2 + i * 0.5) * 0.5 + 0.5) * H * 0.7 * (isPlaying ? 1 : 0.15);
+        const alpha = 0.3 + pulse * 0.5;
+        ctx.fillStyle = `rgba(${col},${alpha})`;
+        ctx.fillRect(x, H - h, (W / bars) - 2, h);
+      }
+
+      // Beat flash
+      const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W/2);
+      grad.addColorStop(0, `rgba(${col},${pulse * 0.12 * (isPlaying ? 1 : 0)})`);
+      grad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
+
+      requestAnimationFrame(animateSyne);
+    }
+    animateSyne();
+
+    // ─── CIRCLE OF FIFTHS ────────────────────────────────────────
+    function drawCircle(highlightKey = null) {
+      const canvas = document.getElementById('circleCanvas');
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width, H = canvas.height;
+      const cx = W/2, cy = H/2;
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = '#04040f';
+      ctx.fillRect(0, 0, W, H);
+
+      const outerR = 158, innerR = 110, minorR = 76;
+      const keys = FIFTHS_ORDER;
+      const minorRels = ['Am','Em','Bm','F#m','C#m','G#m','Ebm','Bbm','Fm','Cm','Gm','Dm'];
+
+      // Draw outer ring (major keys)
+      keys.forEach((key, i) => {
+        const angle = (i / 12) * Math.PI * 2 - Math.PI / 2;
+        const col = KEY_COLORS[key] || '168,85,247';
+        const isHighlight = key === highlightKey;
+        const isPlayingKey = playlist[currentTrack]?.key === key;
+
+        // Slice
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, outerR, angle - Math.PI/12, angle + Math.PI/12);
+        ctx.closePath();
+        ctx.fillStyle = isHighlight || isPlayingKey
+          ? `rgba(${col},0.25)` : `rgba(${col},0.07)`;
+        ctx.fill();
+        ctx.strokeStyle = `rgba(${col},${isHighlight || isPlayingKey ? 0.7 : 0.2})`;
+        ctx.lineWidth = isHighlight ? 2 : 1;
+        ctx.stroke();
+
+        // Key label
+        const lx = cx + Math.cos(angle) * (outerR - 26);
+        const ly = cy + Math.sin(angle) * (outerR - 26);
+        ctx.fillStyle = isHighlight || isPlayingKey ? `rgba(${col},1)` : 'rgba(226,232,240,0.7)';
+        ctx.font = `${isHighlight ? 'bold ' : ''}14px Inter`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(key, lx, ly);
+      });
+
+      // Inner ring (relative minor keys)
+      minorRels.forEach((key, i) => {
+        const angle = (i / 12) * Math.PI * 2 - Math.PI / 2;
+        const col = KEY_COLORS[FIFTHS_ORDER[i]] || '168,85,247';
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, innerR, angle - Math.PI/12, angle + Math.PI/12);
+        ctx.closePath();
+        ctx.fillStyle = `rgba(${col},0.04)`;
+        ctx.fill();
+        ctx.strokeStyle = `rgba(${col},0.12)`;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+        const lx = cx + Math.cos(angle) * (innerR - 20);
+        const ly = cy + Math.sin(angle) * (innerR - 20);
+        ctx.fillStyle = 'rgba(226,232,240,0.4)';
+        ctx.font = '10px Inter'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(key, lx, ly);
+      });
+
+      // Center
+      ctx.beginPath();
+      ctx.arc(cx, cy, minorR - 8, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(168,85,247,0.05)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(168,85,247,0.15)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(226,232,240,0.3)';
+      ctx.font = '10px JetBrains Mono'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('◉', cx, cy);
+    }
+
+    document.getElementById('circleCanvas').addEventListener('click', (e) => {
+      const canvas = document.getElementById('circleCanvas');
+      const rect = canvas.getBoundingClientRect();
+      const mx = (e.clientX - rect.left) * (canvas.width / rect.width);
+      const my = (e.clientY - rect.top) * (canvas.height / rect.height);
+      const cx = canvas.width/2, cy = canvas.height/2;
+      const dx = mx - cx, dy = my - cy;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist > 90 && dist < 165) {
+        let angle = Math.atan2(dy, dx) + Math.PI/2;
+        if (angle < 0) angle += Math.PI * 2;
+        const i = Math.floor(angle / (Math.PI * 2 / 12)) % 12;
+        const key = FIFTHS_ORDER[i];
+        showKeyInfo(key);
+        drawCircle(key);
+      }
+    });
+
+    function showKeyInfo(key) {
+      const col = KEY_COLORS[key] || '168,85,247';
+      const idx = NOTES.indexOf(key.replace('b','').replace('#',''));
+      const rootMidi = NOTES.indexOf(key) !== -1 ? NOTES.indexOf(key) : 0;
+      const majScale = SCALES['Major'].map(s => NOTES[(rootMidi + s) % 12]);
+      const minScale = SCALES['Natural Minor'].map(s => NOTES[(rootMidi + s) % 12]);
+
+      document.getElementById('keyInfo').innerHTML = `
+        <div style="color:rgba(${col},1); font-size:20px; font-weight:700; margin-bottom:12px;">${key} Major</div>
+        <div style="margin-bottom:8px;"><strong style="color:rgba(${col},0.8)">Major Scale:</strong> ${majScale.join(' · ')}</div>
+        <div style="margin-bottom:8px;"><strong style="color:rgba(${col},0.8)">Natural Minor:</strong> ${minScale.join(' · ')}</div>
+        <div style="margin-bottom:8px;"><strong style="color:rgba(${col},0.8)">Adjacent keys (compatible):</strong><br>
+          ${FIFTHS_ORDER[(FIFTHS_ORDER.indexOf(key) + 1) % 12]} (5th up) · ${FIFTHS_ORDER[(FIFTHS_ORDER.indexOf(key) + 11) % 12]} (4th up)
+        </div>
+      `;
+
+      const noteRow = document.getElementById('keyNotes');
+      noteRow.innerHTML = majScale.map(n =>
+        `<span class="note-pill" style="background:rgba(${col},0.1); border-color:rgba(${col},0.3); color:rgba(${col},1)">${n}</span>`
+      ).join('');
+    }
+
+    // ─── HARMONIC SCALES ─────────────────────────────────────────
+    function renderScaleGrid() {
+      const grid = document.getElementById('scaleGrid');
+      grid.innerHTML = Object.keys(SCALES).map(name =>
+        `<div class="scale-card${name===selectedScale?' active':''}" onclick="selectScale('${name}')">
+          <div class="scale-name">${name}</div>
+          <div class="scale-notes">${SCALES[name].join('-')}</div>
+        </div>`
+      ).join('');
+    }
+
+    function selectScale(name) {
+      selectedScale = name;
+      renderScaleGrid();
+      renderScaleNotes();
+    }
+
+    function renderScaleNotes() {
+      const root = document.getElementById('scaleRoot').value;
+      const rootIdx = NOTES.indexOf(root.replace('b','').replace('#',''));
+      const intervals = SCALES[selectedScale];
+      const notes = intervals.map(s => NOTES[(rootIdx + s) % 12]);
+      const freqBase = 261.63 * Math.pow(2, (rootIdx - NOTES.indexOf('C')) / 12);
+      const freqs = intervals.map(s => (freqBase * Math.pow(2, s/12)).toFixed(2));
+
+      document.getElementById('scaleNotesDisplay').innerHTML = `
+        <div class="note-row">
+          ${notes.map((n,i) => {
+            const col = KEY_COLORS[n] || '168,85,247';
+            return `<span class="note-pill" style="background:rgba(${col},0.1); border-color:rgba(${col},0.35); color:rgba(${col},1)">${n}</span>`;
+          }).join('')}
+        </div>
+        <div style="margin-top:12px; font-size:11px; color:rgba(226,232,240,0.4); font-family:'JetBrains Mono',monospace;">
+          Intervals: ${intervals.map((s,i) => i>0?s-intervals[i-1]:0).filter((_,i)=>i>0).join(' · ')} semitones
+        </div>
+      `;
+
+      document.getElementById('scaleFreqDisplay').innerHTML = `
+        <div class="panel-title">Frequencies in ${root} ${selectedScale}</div>
+        ${notes.map((n,i) => {
+          const col = KEY_COLORS[n] || '168,85,247';
+          return `<div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid rgba(168,85,247,0.06);">
+            <span style="color:rgba(${col},0.9); font-size:12px;">${n}</span>
+            <span style="color:rgba(226,232,240,0.4); font-size:11px; font-family:'JetBrains Mono',monospace;">${freqs[i]} Hz</span>
+          </div>`;
+        }).join('')}
+      `;
+
+      drawScaleViz(notes);
+    }
+
+    function drawScaleViz(notes) {
+      const c = document.getElementById('scaleCanvas');
+      const ctx = c.getContext('2d');
+      const W = c.width, H = c.height;
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = 'rgba(4,4,15,0.5)';
+      ctx.fillRect(0, 0, W, H);
+      notes.forEach((n, i) => {
+        const x = (i / notes.length) * W + (W / notes.length) / 2;
+        const col = KEY_COLORS[n] || '168,85,247';
+        const h = 50 + Math.random() * 20;
+        ctx.beginPath();
+        ctx.arc(x, H/2, 12, 0, Math.PI*2);
+        ctx.fillStyle = `rgba(${col},0.2)`;
+        ctx.fill();
+        ctx.strokeStyle = `rgba(${col},0.7)`;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.fillStyle = `rgba(${col},1)`;
+        ctx.font = 'bold 10px Inter';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(n, x, H/2);
+      });
+    }
+
+    function playScaleAudio() {
+      const root = document.getElementById('scaleRoot').value;
+      const rootIdx = NOTES.indexOf(root);
+      const intervals = SCALES[selectedScale];
+      if (!window.AudioContext && !window.webkitAudioContext) return;
+      const actx = new (window.AudioContext || window.webkitAudioContext)();
+      const freqBase = 261.63 * Math.pow(2, (rootIdx - NOTES.indexOf('C')) / 12);
+      intervals.concat([intervals[0]+12]).forEach((s, i) => {
+        const freq = freqBase * Math.pow(2, s/12);
+        const osc = actx.createOscillator();
+        const gain = actx.createGain();
+        osc.type = 'sine'; osc.frequency.setValueAtTime(freq, actx.currentTime);
+        gain.gain.setValueAtTime(0, actx.currentTime + i*0.35);
+        gain.gain.linearRampToValueAtTime(0.3, actx.currentTime + i*0.35 + 0.05);
+        gain.gain.linearRampToValueAtTime(0, actx.currentTime + i*0.35 + 0.3);
+        osc.connect(gain); gain.connect(actx.destination);
+        osc.start(actx.currentTime + i*0.35);
+        osc.stop(actx.currentTime + i*0.35 + 0.35);
+      });
+    }
+
+    // ─── INTERVAL MATH ────────────────────────────────────────────
+    function renderIntervals() {
+      const tbody = document.getElementById('intervalBody');
+      tbody.innerHTML = INTERVALS.map(iv => {
+        const col = iv.semi <= 2 ? '34,211,216' : iv.semi === 6 ? '236,72,153' :
+                    iv.semi >= 7 && iv.semi <= 8 ? '16,185,129' : '168,85,247';
+        return `<tr>
+          <td style="color:rgba(${col},0.9)">${iv.n}</td>
+          <td>${iv.semi}</td>
+          <td>${iv.ratio}</td>
+          <td>${iv.n}</td>
+          <td style="color:rgba(226,232,240,0.5)">${iv.char}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    function calcIntervals() {
+      const base = parseFloat(document.getElementById('baseHzInput').value) || 261.63;
+      const result = document.getElementById('freqCalcResult');
+      result.innerHTML = INTERVALS.map(iv => {
+        const freq = (base * Math.pow(2, iv.semi/12)).toFixed(2);
+        const col = iv.semi === 7 ? '16,185,129' : iv.semi === 12 ? '34,211,216' : '168,85,247';
+        return `<div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid rgba(168,85,247,0.06);">
+          <span style="font-size:12px; color:rgba(${col},0.9)">${iv.n}</span>
+          <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:rgba(226,232,240,0.5)">${freq} Hz</span>
+        </div>`;
+      }).join('');
+    }
+
+    // ─── IMPORT / EXPORT ──────────────────────────────────────────
+    function exportJson() {
+      const json = JSON.stringify({ playlist, exported: new Date().toISOString() }, null, 2);
+      const blob = new Blob([json], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'chromaflora-playlist.json'; a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importJson() { document.getElementById('importFile').click(); }
+    function handleImport(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (data.playlist && Array.isArray(data.playlist)) {
+            playlist = data.playlist;
+            savePlaylist();
+            renderTrackList();
+          }
+        } catch { alert('Invalid playlist JSON.'); }
+      };
+      reader.readAsText(file);
+    }
+
+    function sharePlaylist() {
+      const encoded = btoa(JSON.stringify(playlist));
+      const url = `${location.origin}/playlist.html?pl=${encodeURIComponent(encoded)}`;
+      navigator.clipboard.writeText(url).then(() => {
+        alert('Playlist link copied! Anyone with this link can import it.');
+      });
+    }
+
+    function checkSharedUrl() {
+      const params = new URLSearchParams(location.search);
+      const pl = params.get('pl');
+      if (pl) {
+        try {
+          const imported = JSON.parse(atob(decodeURIComponent(pl)));
+          if (Array.isArray(imported) && imported.length) {
+            if (confirm(`Import shared playlist (${imported.length} tracks)?`)) {
+              playlist = imported;
+              savePlaylist();
+              renderTrackList();
+            }
+          }
+        } catch {}
+      }
+    }
+
+    // ─── TAB SWITCHING ────────────────────────────────────────────
+    function switchTab(tabId, btn) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+      if (tabId === 'circle') { setTimeout(() => drawCircle(), 50); }
+      if (tabId === 'scales') { renderScaleGrid(); renderScaleNotes(); }
+      if (tabId === 'math') { renderIntervals(); calcIntervals(); }
+    }
+
+    // ─── INIT ─────────────────────────────────────────────────────
+    playlist = cfLoad('cf_playlist', []);
+    renderTrackList();
+    checkSharedUrl();
+
+    // Living system: track visit
+    const model = cfLoad('cf_preference_model', {});
+    model.playlist_visits = (model.playlist_visits || 0) + 1;
+    cfSave('cf_preference_model', model);
+  </script>
+</body>
+</html>

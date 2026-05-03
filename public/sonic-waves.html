@@ -4,7 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sonic Waves — ChromaFlora</title>
-<meta name="description" content="Interactive oscilloscope, harmonic synthesizer, spectrum analyzer, and Lissajous display. Generative sonic art — ChromaFlora.">
+<meta name="description" content="Free browser oscilloscope and harmonic synthesizer — spectrum analyzer, Lissajous display, Web Audio API visualization. Generative sonic art. ChromaFlora Sonic Waves.">
+<link rel="canonical" href="https://chromaflora.replit.app/sonic-waves.html">
+<meta property="og:title" content="Free Browser Oscilloscope & Harmonic Synthesizer | ChromaFlora Sonic Waves">
+<meta property="og:description" content="Interactive oscilloscope, harmonic synthesizer, spectrum analyzer, and Lissajous display. Web Audio API. Free browser tool, no download.">
+<meta property="og:url" content="https://chromaflora.replit.app/sonic-waves.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ChromaFlora">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@halcyonminx">
+<meta name="twitter:title" content="Free Browser Oscilloscope & Synthesizer | ChromaFlora">
+<meta name="twitter:description" content="Harmonic synthesizer, oscilloscope, spectrum analyzer, Lissajous display. Web Audio API. Free, no account.">
+<meta name="theme-color" content="#04040f">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"ChromaFlora Sonic Waves","url":"https://chromaflora.replit.app/sonic-waves.html","applicationCategory":"MusicApplication","operatingSystem":"Browser","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Free browser-based harmonic synthesizer, oscilloscope, spectrum analyzer, and Lissajous display using the Web Audio API.","author":{"@type":"Person","name":"Jennipher Troup","alternateName":"@halcyonminx"}}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -105,14 +119,16 @@ input[type=range].r.green{--iris:#10b981}
     <a href="studio.html">Studio</a>
     <a href="mandala.html">Mandala</a>
     <a href="sonic-waves.html" class="active">Waves</a>
-    <a href="plotter.html">Plotter</a>
     <a href="band.html">Band</a>
-    <a href="player.html">Player</a>
+    <a href="ai-studio.html">AI Studio</a>
     <a href="discovery.html">Discover</a>
+    <a href="asmr.html">ASMR</a>
+    <a href="playlist.html">Playlist</a>
   </nav>
   <div style="display:flex;gap:6px">
     <button id="btnPlay" class="cf-btn cf-btn-play" style="width:auto;padding:5px 18px;margin:0;font-size:12px">▶ Sound On</button>
     <button class="cf-btn cf-btn-ghost" id="btnExport" style="width:auto;padding:5px 14px;margin:0">⬇ PNG</button>
+    <button class="cf-btn cf-btn-ghost" onclick="copySonicEmbed(this)" style="width:auto;padding:5px 14px;margin:0;border-color:rgba(34,211,216,0.35);color:rgba(34,211,216,0.85)" title="Copy embeddable iframe code">‹/› Embed</button>
   </div>
 </header>
 
@@ -773,6 +789,15 @@ function captureCanvas(){
 }
 document.getElementById('btnCapture').addEventListener('click',captureCanvas);
 document.getElementById('btnExport').addEventListener('click',captureCanvas);
+
+function copySonicEmbed(btn) {
+  const seed = Math.floor(Math.random()*99999);
+  const url = `${location.origin}/embed.html?type=waves&color=aqua&speed=0.5&seed=${seed}`;
+  const snippet = `<iframe\n  src="${url}"\n  width="560" height="220"\n  style="border:none; border-radius:12px; background:#04040f"\n  allow="autoplay"\n  title="ChromaFlora Sonic Waves embed"\n></iframe>`;
+  navigator.clipboard.writeText(snippet).then(() => {
+    if (btn) { btn.textContent = '✓ Copied!'; setTimeout(() => { btn.textContent = '‹/› Embed'; }, 2000); }
+  });
+}
 document.getElementById('btnSaveGal').addEventListener('click',()=>{
   try{
     const saved=JSON.parse(localStorage.getItem('cf_gallery')||'[]');

@@ -4,8 +4,22 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Band Manager · ChromaFlora</title>
-<meta name="description" content="ChromaFlora Band Manager — organize bands, tracks, stems, and SoundCloud integration with a full audio database.">
+<meta name="description" content="Free step sequencer browser — 8-track Euclidean rhythm generator using the Bjorklund algorithm, logistic map chaos, human groove. No plugins. ChromaFlora Band Studio.">
 <meta name="author" content="Jennipher Troup">
+<link rel="canonical" href="https://chromaflora.replit.app/band.html">
+<meta property="og:title" content="Free Step Sequencer Browser — Euclidean Rhythms | ChromaFlora Band">
+<meta property="og:description" content="8-track browser step sequencer with Euclidean rhythm generation (Bjorklund algorithm), logistic map chaos patterns, human groove, and swing. Free. No plugins.">
+<meta property="og:url" content="https://chromaflora.replit.app/band.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ChromaFlora">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@halcyonminx">
+<meta name="twitter:title" content="Free Browser Step Sequencer — Euclidean Rhythms | ChromaFlora">
+<meta name="twitter:description" content="8-track Euclidean step sequencer. Bjorklund algorithm, chaos patterns, human groove, pattern memory. Free in your browser.">
+<meta name="theme-color" content="#04040f">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","name":"ChromaFlora Band Studio","url":"https://chromaflora.replit.app/band.html","applicationCategory":"MusicApplication","operatingSystem":"Browser","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Free browser-based 8-track step sequencer with Euclidean rhythm generation using the Bjorklund algorithm, originally developed for nuclear reactor physics.","author":{"@type":"Person","name":"Jennipher Troup","alternateName":"@halcyonminx"}},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is the Bjorklund algorithm?","acceptedAnswer":{"@type":"Answer","text":"The Bjorklund algorithm was invented in 1982 for evenly spacing fuel rods in nuclear reactors. Musicologist Godfried Toussaint discovered in 2005 that it generates the same mathematical patterns underlying most world music rhythms including Cuban son clave, African djembe, and Turkish folk music."}}]}]}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#04040f;--purple:#a855f7;--aqua:#22d3ee;--pink:#ec4899;--orange:#f97316;--green:#10b981;--border:rgba(255,255,255,0.08);--t-snap:0.12s cubic-bezier(0.4,0,0.2,1);--t-spring:0.4s cubic-bezier(0.34,1.56,0.64,1)}
@@ -204,13 +218,17 @@ input[type=file]{display:none}
 <header class="header">
   <div class="logo"><a href="index.html">Chroma<span>Flora</span></a> <span style="font-size:11px;opacity:.4;font-weight:500;margin-left:6px">Band Manager</span></div>
   <div class="nav-links">
-    <a href="index.html" class="nl">System</a>
-    <a href="player.html" class="nl">Synth</a>
     <a href="studio.html" class="nl">Studio</a>
-    <a href="ai-studio.html" class="nl">AI Studio</a>
+    <a href="mandala.html" class="nl">Mandala</a>
+    <a href="sonic-waves.html" class="nl">Waves</a>
     <a href="band.html" class="nl active">Band</a>
+    <a href="ai-studio.html" class="nl">AI Studio</a>
+    <a href="discovery.html" class="nl">Discover</a>
+    <a href="asmr.html" class="nl">ASMR</a>
+    <a href="playlist.html" class="nl">Playlist</a>
   </div>
   <div class="hdr-right">
+    <button class="btn-secondary" onclick="shareSequencerEmbed(this)" style="border-color:rgba(34,211,216,0.35);color:rgba(34,211,216,0.85)">‹/› Embed</button>
     <button class="btn-secondary" onclick="openAddBandModal()">+ New Band</button>
   </div>
 </header>
@@ -689,6 +707,15 @@ function renderBandList() {
       <div class="band-track-count">${trackCount}</div>
     </div>`;
   }).join('');
+}
+
+function shareSequencerEmbed(btn) {
+  const seed = Math.floor(Math.random()*99999);
+  const url = `${location.origin}/embed.html?type=sequencer&color=iris&speed=0.5&seed=${seed}`;
+  const snippet = `<iframe\n  src="${url}"\n  width="560" height="315"\n  style="border:none; border-radius:12px; background:#04040f"\n  allow="autoplay"\n  title="ChromaFlora Sequencer embed"\n></iframe>`;
+  navigator.clipboard.writeText(snippet).then(() => {
+    if (btn) { btn.textContent = '✓ Copied!'; setTimeout(() => { btn.textContent = '‹/› Embed'; }, 2000); }
+  });
 }
 
 /* ═══════════════════════════════════════════

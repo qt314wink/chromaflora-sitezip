@@ -4,8 +4,22 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Discovery Engine · ChromaFlora</title>
-<meta name="description" content="ChromaFlora Discovery Engine — anti-feedback-loop curiosity exploration. Pulls from design systems, philosophy, ecology, engineering, cultural theory, and natural phenomena to push your thinking into new territories.">
+<meta name="description" content="Anti-echo-loop discovery engine — 24 inquiry cards across 9 knowledge territories. Ecology, math, biology, philosophy, materials science, acoustic physics. ChromaFlora.">
 <meta name="author" content="Jennipher Troup">
+<link rel="canonical" href="https://chromaflora.replit.app/discovery.html">
+<meta property="og:title" content="Anti-Echo Discovery Engine — 9 Knowledge Territories | ChromaFlora">
+<meta property="og:description" content="A discovery engine that fights your own echo chamber. 24 inquiry cards across 9 territories: ecology, math, biology, philosophy, culture, materials, physics, economics, astrobiology.">
+<meta property="og:url" content="https://chromaflora.replit.app/discovery.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ChromaFlora">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@halcyonminx">
+<meta name="twitter:title" content="Anti-Echo Discovery Engine | ChromaFlora">
+<meta name="twitter:description" content="24 inquiry cards across 9 territories. Algorithmically weighted to surface what you haven't explored yet. Free curiosity engine.">
+<meta name="theme-color" content="#04040f">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","name":"ChromaFlora Discovery Engine","url":"https://chromaflora.replit.app/discovery.html","applicationCategory":"EducationApplication","operatingSystem":"Browser","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Anti-feedback-loop curiosity discovery engine with 24 inquiry cards across 9 knowledge territories. Algorithmically fights echo chambers by weighting against your exploration history.","author":{"@type":"Person","name":"Jennipher Troup","alternateName":"@halcyonminx"}},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is the ChromaFlora Discovery Engine?","acceptedAnswer":{"@type":"Answer","text":"The Discovery Engine serves 24 inquiry cards across 9 knowledge territories — ecological systems, abstract mathematics, evolutionary biology, philosophy of mind, cultural anthropology, materials science, acoustic physics, political economy, and astrobiology. It uses an anti-feedback algorithm that weights against your exploration history to surface genuine surprise rather than reinforcing existing preferences."}}]}]}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#04040f;--purple:#a855f7;--aqua:#22d3ee;--pink:#ec4899;--orange:#f97316;--green:#10b981;--border:rgba(255,255,255,0.08);--t-snap:0.12s cubic-bezier(0.4,0,0.2,1);--t-spring:0.4s cubic-bezier(0.34,1.56,0.64,1)}
@@ -94,11 +108,14 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
 <header class="header">
   <div class="logo"><a href="index.html">Chroma<span>Flora</span></a> <span style="font-size:11px;opacity:.4;font-weight:500;margin-left:6px">Discovery Engine</span></div>
   <div class="nav-links">
-    <a href="index.html" class="nl">System</a>
     <a href="studio.html" class="nl">Studio</a>
     <a href="mandala.html" class="nl">Mandala</a>
+    <a href="sonic-waves.html" class="nl">Waves</a>
+    <a href="band.html" class="nl">Band</a>
     <a href="ai-studio.html" class="nl">AI Studio</a>
     <a href="discovery.html" class="nl active">Discover</a>
+    <a href="asmr.html" class="nl">ASMR</a>
+    <a href="playlist.html" class="nl">Playlist</a>
   </div>
 </header>
 
@@ -124,6 +141,12 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
     <div id="mysteryGuesses"></div>
     <button style="margin-top:8px;font-size:10px;background:none;border:none;color:rgba(255,255,255,0.2);cursor:pointer;font-family:inherit;text-align:left" onclick="newMystery()">↻ New mystery</button>
   </div>
+</div>
+
+<!-- Living System Stats + Surprise -->
+<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 28px 0;flex-wrap:wrap;gap:10px">
+  <div id="modelStats" style="font-size:11px;color:rgba(255,255,255,0.28);font-family:'JetBrains Mono',monospace;min-height:16px"></div>
+  <button onclick="surpriseMe()" style="background:linear-gradient(135deg,rgba(168,85,247,0.12),rgba(34,211,216,0.08));border:1px solid rgba(168,85,247,0.25);border-radius:10px;color:rgba(168,85,247,0.85);cursor:pointer;font-size:12px;font-family:'Inter',sans-serif;font-weight:600;padding:7px 18px;transition:all 0.2s;letter-spacing:0.02em" onmouseover="this.style.background='rgba(168,85,247,0.18)'" onmouseout="this.style.background='linear-gradient(135deg,rgba(168,85,247,0.12),rgba(34,211,216,0.08))'">✦ Surprise Me</button>
 </div>
 
 <!-- Filter bar -->
@@ -528,6 +551,73 @@ function renderGuesses() {
 }
 
 /* ═══════════════════════════════
+   LIVING SYSTEM — PREFERENCE MODEL
+═══════════════════════════════ */
+function cfLoadModel() {
+  try { return JSON.parse(localStorage.getItem('cf_preference_model')) || {}; } catch { return {}; }
+}
+function cfSaveModel(m) {
+  try { localStorage.setItem('cf_preference_model', JSON.stringify(m)); } catch {}
+}
+
+function trackCardOpen(card) {
+  const m = cfLoadModel();
+  m.discovery_opens = m.discovery_opens || {};
+  m.discovery_opens[card.category] = (m.discovery_opens[card.category] || 0) + 1;
+  m.discovery_total_opens = (m.discovery_total_opens || 0) + 1;
+  m.discovery_last_category = card.category;
+  m.discovery_last_card_id = card.id;
+  m.discovery_session_start = m.discovery_session_start || Date.now();
+  cfSaveModel(m);
+}
+
+function trackCardSave(card) {
+  const m = cfLoadModel();
+  m.discovery_saves = m.discovery_saves || {};
+  m.discovery_saves[card.category] = (m.discovery_saves[card.category] || 0) + 1;
+  cfSaveModel(m);
+}
+
+// Returns weight (1-4) for a category: least-explored = highest weight
+function getCategoryWeight(category) {
+  const m = cfLoadModel();
+  const opens = m.discovery_opens || {};
+  const count = opens[category] || 0;
+  if (count === 0) return 4;
+  if (count === 1) return 3;
+  if (count <= 3) return 2;
+  return 1;
+}
+
+function surpriseMe() {
+  const m = cfLoadModel();
+  const opens = m.discovery_opens || {};
+  // Find least-explored category
+  const cats = [...new Set(BAIT_CARDS.map(c => c.category))];
+  cats.sort((a, b) => (opens[a] || 0) - (opens[b] || 0));
+  const leastExplored = cats[0];
+  // Pick a random card from that category
+  const pool = BAIT_CARDS.filter(c => c.category === leastExplored);
+  const card = pool[Math.floor(Math.random() * pool.length)];
+  if (card) openCard(card.id);
+}
+
+function renderModelStats() {
+  const m = cfLoadModel();
+  const opens = m.discovery_opens || {};
+  const total = m.discovery_total_opens || 0;
+  const el = document.getElementById('modelStats');
+  if (!el) return;
+  if (total === 0) { el.textContent = 'No sessions yet — start exploring.'; return; }
+  const cats = Object.entries(opens).sort((a,b) => b[1]-a[1]);
+  const top = cats[0];
+  const unseen = [...new Set(BAIT_CARDS.map(c=>c.category))].filter(c=>!opens[c]);
+  el.innerHTML = `<span style="color:rgba(168,85,247,0.8)">${total} cards opened</span> · 
+    <span style="color:rgba(34,211,216,0.7)">Most explored: ${top ? top[0] : '—'}</span> · 
+    <span style="color:rgba(16,185,129,0.7)">${unseen.length} territories untouched</span>`;
+}
+
+/* ═══════════════════════════════
    CARD RENDERING
 ═══════════════════════════════ */
 let activeFilter = 'all';
@@ -541,7 +631,16 @@ function filterCards(cat, btn) {
 }
 
 function renderBaitGrid() {
-  const cards = activeFilter === 'all' ? BAIT_CARDS : BAIT_CARDS.filter(c=>c.category===activeFilter);
+  let cards = activeFilter === 'all' ? [...BAIT_CARDS] : BAIT_CARDS.filter(c=>c.category===activeFilter);
+  if (activeFilter === 'all') {
+    // Living system: weight unseen/underexplored territories higher, then shuffle within weight bands
+    cards.sort((a, b) => {
+      const wa = getCategoryWeight(a.category);
+      const wb = getCategoryWeight(b.category);
+      if (wb !== wa) return wb - wa; // higher weight first
+      return Math.random() - 0.5;   // shuffle within same weight band
+    });
+  }
   document.getElementById('baitGrid').innerHTML = cards.map(c => `
     <div class="bait-card" style="--card-gradient:${c.gradient};--card-accent:${c.accent}" onclick="openCard(${c.id})">
       <div class="bait-glyph">${c.glyph}</div>
@@ -561,6 +660,8 @@ function openCard(id) {
   const card = BAIT_CARDS.find(c=>c.id===id);
   if (!card) return;
   activeLightboxCard = card;
+  trackCardOpen(card);
+  renderModelStats();
   document.getElementById('lbGlyph').textContent = card.glyph;
   document.getElementById('lbOrigin').textContent = card.origin;
   document.getElementById('lbTitle').textContent = card.title;
@@ -608,6 +709,7 @@ function generatePollinations() {
 
 function saveToNotebook() {
   if (!activeLightboxCard) return;
+  trackCardSave(activeLightboxCard);
   const saved = JSON.parse(LS('cf_discovery_notebook') || '[]');
   if (!saved.find(s=>s.id===activeLightboxCard.id)) {
     saved.push({id:activeLightboxCard.id, title:activeLightboxCard.title, savedAt:new Date().toISOString()});
@@ -624,6 +726,7 @@ function saveToNotebook() {
 renderBaitGrid();
 newMystery();
 renderGuesses();
+renderModelStats();
 
 // Keyboard nav
 document.addEventListener('keydown', e => {

@@ -702,7 +702,9 @@ const studio = (function() {
       `;
       // Thumb preview
       const th = item.querySelector('canvas');
-      th.getContext('2d').drawImage(l.canvas, 0, 0, 30, 22);
+      if (l.canvas.width > 0 && l.canvas.height > 0) {
+        th.getContext('2d').drawImage(l.canvas, 0, 0, 30, 22);
+      }
       item.querySelector('.layer-vis').addEventListener('click', e => {
         e.stopPropagation(); l.visible = !l.visible;
         compositeAndDraw(); buildLayerUI();

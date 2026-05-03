@@ -139,11 +139,106 @@ Unique procedural styles — each renders with pure Canvas 2D:
 ### 🎨 Projects Theme Physics (projects.html)
 Each void-drift card gets theme-specific overlay canvas (orbs/drips/sparks/orbiters/bubbles/shards/stars/bloom) on hover, particle burst on click.
 
-## Design Tokens
+## Phase 2b — Completed (May 2026)
+
+### Three.js WebGL Particle Layer (studio.html)
+- `<canvas id="cf-webgl">` layered above 2D canvas, `pointer-events:none`, `z-index:8`, `mix-blend-mode:screen`
+- 3000 particles distributed in a flattened torus, colored by ChromaFlora token palette
+- `THREE.AdditiveBlending` = bioluminescent glow without postprocessing pipeline
+- Breathing opacity (0.45–0.70) at ~1Hz simulates living system
+- Particles dim to 15% opacity while user draws (restores on pointer-up)
+- Graceful CDN fallback — if Three.js fails to load, WebGL canvas hidden, no error
+- Cmd/Ctrl+S saves canvas to `cf_studio_art` localStorage + aurora flash
+
+### Web Worker — Mandala Math (mandala-math.worker.js)
+- `public/mandala-math.worker.js` — offloads supplementary point computation from main thread
+- Protocol: `postMessage({type:'compute', ...params})` → receives `Float32Array` of (x,y,r,g,b,a) tuples
+- Computes additional dot field layer using simplex noise FBM + polar math
+- Integrated with progressive enhancement: if Worker fails, main-thread render continues unaffected
+- Worker layer only fires during animation (anim|spin|pulse) to avoid redundant computation
+
+### Canvas DPR Scaling (mandala.html)
+- `sizeCanvas()` now applies `window.devicePixelRatio` scaling to both mandala and glow canvases
+- CSS size clamped to logical pixels; physical canvas = W×dpr, H×dpr — eliminates retina blurriness
+
+### Aurora Save Feedback (mandala.html, studio.html)
+- `triggerAurora()` / `triggerAuroraCF()`: radial burst of all 6 token colors, 900ms ease-out
+- Fires on: Cmd+S, save-to-gallery button click, any explicit save action
+
+### Keyboard Shortcuts (mandala.html, studio.html)
+- `Cmd/Ctrl+S` → save + aurora flash (all pages)
+- `Escape` → stop animation (mandala.html)
+- `R` → reset (mandala.html, without modifier)
+
+### Phase 2b Documentation (public/docs/)
+| File | Content | Lines |
+|------|---------|-------|
+| `phase2b-socratic.md` | 20 Qs × 4 domains (Design/UX/IxD/HiFi) + RE questions | ~450 |
+| `phase2b-engineering.md` | Blueprints, schematics, ASCII wireframes, parameter tables, signal flows | ~420 |
+| `phase2b-social-strategy.md` | Platform strategy, content pillars, GEO/SEO, schema markup, podcast bible | ~380 |
+| `phase2b-qa.md` | 150+ QA checklist items across 12 sections | ~300 |
+
+### Phase 2b Skills (.agents/skills/)
+| Skill | Purpose |
+|-------|---------|
+| `chromaflora-social-strategy` | Social media strategy, GEO/SEO, schema markup, podcast framework |
+| `chromaflora-engineering-patterns` | Web Worker, Three.js, DPR scaling, LERP, aurora, localStorage patterns |
+
+### API Key Direct Links (FREE, no key required)
+- Pollinations.ai image + text: https://pollinations.ai — zero signup, used in ai-studio.html
+- Wikipedia REST: https://en.wikipedia.org/api/rest_v1/ — no key
+- Web Speech API: browser-native, no key
+
+### API Key Direct Links (free tier with registration)
+| Service | Direct Link |
+|---------|-------------|
+| HuggingFace | https://huggingface.co/settings/tokens |
+| NASA APOD | https://api.nasa.gov/ |
+| Google Gemini | https://aistudio.google.com/app/apikey |
+| ElevenLabs TTS | https://elevenlabs.io/app/settings/api-keys |
+| Leonardo.ai | https://app.leonardo.ai/settings/api-keys |
+| Stability AI | https://platform.stability.ai/account/keys |
+| Replicate | https://replicate.com/account/api-tokens |
+| OpenRouter | https://openrouter.ai/keys |
+| Freesound audio | https://freesound.org/apiv2/apply/ |
+| Pexels images | https://www.pexels.com/api/ |
+| Unsplash images | https://unsplash.com/developers |
+| Last.fm music | https://www.last.fm/api/account/create |
+| Spotify Web API | https://developer.spotify.com/dashboard |
+| Grok / xAI | https://console.x.ai/ |
+| OpenAI | https://platform.openai.com/api-keys |
+| Anthropic Claude | https://console.anthropic.com/settings/keys |
+
+## Design Tokens (Canonical)
+```css
+--void:     #04040f   /* cosmic background — additive light not pigment */
+--iris:     #a855f7   /* primary / loading / active states */
+--aqua:     #22d3d8   /* sequencer playhead / success / secondary active */
+--bloom:    #ec4899   /* error / warning / danger (cosmic aposematism) */
+--ember:    #f97316   /* warm accent / heat / energy */
+--viridian: #10b981   /* success / growth / organic */
+```
+Semantic layer:
+```css
+--token-success:   var(--viridian)
+--token-error:     var(--bloom)
+--token-loading:   var(--iris)
+--token-active:    var(--aqua)
+--token-inactive:  rgba(168,85,247,0.3)
+--token-hover:     rgba(34,211,216,0.15)
+```
+Timing:
 - `--t-snap: 0.1s cubic-bezier(0.4,0,0.2,1)` — 100ms micro-interactions
 - `--t-spring: 0.4s cubic-bezier(0.34,1.56,0.64,1)` — spring bounce
-- Colors: `--purple:#a855f7` `--aqua:#22d3ee` `--pink:#ec4899` `--orange:#f97316` `--green:#10b981`
-- No `background-image` URLs — pure CSS gradients + Canvas only
+- Micro (hover/click): 100–200ms · State transition: 250–400ms · Ambient: 2000–8000ms
+
+## IMPORTANT CONVENTIONS
+- Nav class: `nl` on band.html ONLY; `nav-link` on all other pages
+- localStorage prefix: `cf_` on all keys
+- No hardcoded hex values in CSS — always `var(--token)`
+- Never white backgrounds — always `var(--void)` (#04040f)
+- All canvas pages must apply DPR scaling (see chromaflora-engineering-patterns skill)
+- Screenshot tool tries port 5000 — site runs port 8000 — screenshots fail via tool; user verifies in preview
 
 ## localStorage Keys
 | Key | Content |

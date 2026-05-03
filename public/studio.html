@@ -312,6 +312,7 @@
   <!-- Canvas area -->
   <div class="canvas-area" id="canvasArea">
     <canvas id="studioCanvas"></canvas>
+    <canvas id="cf-webgl" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:8;mix-blend-mode:screen;opacity:0"></canvas>
     <div class="canvas-crosshair" id="canvasCursor"></div>
     <div class="pour-controls" id="pourControls">
       <button class="pour-btn active" data-pour="drip">Drip</button>
@@ -2267,5 +2268,202 @@ document.addEventListener('keydown', e => {
 })();
 </script>
 <script src="player-bar.js"></script>
+<script>
+/* ════════════════════════════════════════════
+   ChromaFlora Studio — Three.js Bioluminescent Particle Field
+   WebGL layer (mix-blend-mode: screen) over the 2D drawing canvas
+   Additive blending creates natural bioluminescent glow without postprocessing
+════════════════════════════════════════════ */
+(function initCFParticles(){
+  const area = document.getElementById('canvasArea');
+  const webglCanvas = document.getElementById('cf-webgl');
+  if (!area || !webglCanvas) return;
+
+  // Load Three.js from CDN
+  const script = document.createElement('script');
+  script.src = 'https://cdn.jsdelivr.net/npm/three@0.162/build/three.min.js';
+  script.onload = function() {
+    const THREE = window.THREE;
+    if (!THREE) return;
+
+    // Renderer — transparent so 2D canvas shows through
+    const renderer = new THREE.WebGLRenderer({
+      canvas: webglCanvas,
+      alpha: true,
+      antialias: false,
+      powerPreference: 'low-power'
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setClearColor(0x000000, 0);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 2000);
+    camera.position.z = 420;
+
+    function resize() {
+      const w = area.clientWidth, h = area.clientHeight;
+      renderer.setSize(w, h);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+    resize();
+    new ResizeObserver(resize).observe(area);
+
+    // ChromaFlora token palette
+    const TOKEN_COLORS = [
+      new THREE.Color(0xa855f7), // iris
+      new THREE.Color(0x22d3d8), // aqua
+      new THREE.Color(0xec4899), // bloom
+      new THREE.Color(0xf97316), // ember
+      new THREE.Color(0x10b981), // viridian
+    ];
+
+    // Particle system — 3000 particles in two orbital rings
+    const N = 3000;
+    const positions = new Float32Array(N * 3);
+    const colors = new Float32Array(N * 3);
+    const velocities = new Float32Array(N * 3); // angular drift
+
+    for (let i = 0; i < N; i++) {
+      // Distribute in a flattened torus-like cloud
+      const theta = Math.random() * Math.PI * 2;
+      const phi = (Math.random() - 0.5) * Math.PI * 0.6;
+      const radius = 80 + Math.random() * 280;
+      positions[i*3]   = radius * Math.cos(theta) * Math.cos(phi);
+      positions[i*3+1] = radius * Math.sin(theta) * Math.cos(phi);
+      positions[i*3+2] = radius * Math.sin(phi) * 0.4 + (Math.random()-0.5)*60;
+
+      // Assign token color with slight variation
+      const tc = TOKEN_COLORS[Math.floor(Math.random() * TOKEN_COLORS.length)];
+      const brightness = 0.5 + Math.random() * 0.5;
+      colors[i*3]   = tc.r * brightness;
+      colors[i*3+1] = tc.g * brightness;
+      colors[i*3+2] = tc.b * brightness;
+
+      // Angular drift speed (slow orbital motion)
+      velocities[i*3]   = (Math.random()-0.5) * 0.0004;
+      velocities[i*3+1] = (Math.random()-0.5) * 0.0004;
+      velocities[i*3+2] = (Math.random()-0.5) * 0.0002;
+    }
+
+    const geo = new THREE.BufferGeometry();
+    const posAttr = new THREE.BufferAttribute(positions, 3);
+    posAttr.setUsage(THREE.DynamicDrawUsage);
+    geo.setAttribute('position', posAttr);
+    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+    const mat = new THREE.PointsMaterial({
+      size: 3.0,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.65,
+      blending: THREE.AdditiveBlending, // bioluminescent glow effect
+      depthWrite: false,
+      sizeAttenuation: true,
+    });
+
+    const particles = new THREE.Points(geo, mat);
+    scene.add(particles);
+
+    // Fade in the WebGL canvas after Three.js is ready
+    webglCanvas.style.transition = 'opacity 2s ease';
+    setTimeout(() => { webglCanvas.style.opacity = '0.8'; }, 100);
+
+    // Breathing opacity — simulates bioluminescent pulse
+    let t = 0;
+    let breathPhase = 0;
+
+    function animate() {
+      requestAnimationFrame(animate);
+      t += 0.0004;
+      breathPhase += 0.008;
+
+      // Slow rotation of the entire field
+      particles.rotation.y = t;
+      particles.rotation.x = t * 0.25;
+      particles.rotation.z = t * 0.08;
+
+      // Bioluminescent breathing (0.8–1.2 Hz analog)
+      mat.opacity = 0.45 + 0.25 * Math.sin(breathPhase);
+
+      // Organic drift: nudge individual particles slightly
+      if (Math.floor(t * 1000) % 3 === 0) {
+        const posArr = geo.attributes.position.array;
+        for (let i = 0; i < N; i += 8) {
+          posArr[i*3]   += velocities[i*3]   * 30;
+          posArr[i*3+1] += velocities[i*3+1] * 30;
+          posArr[i*3+2] += velocities[i*3+2] * 30;
+          // Contain within sphere radius 380
+          const dx=posArr[i*3],dy=posArr[i*3+1],dz=posArr[i*3+2];
+          const dist=Math.sqrt(dx*dx+dy*dy+dz*dz);
+          if(dist>380){posArr[i*3]*=0.98;posArr[i*3+1]*=0.98;posArr[i*3+2]*=0.98;}
+        }
+        geo.attributes.position.needsUpdate = true;
+      }
+
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // Hide WebGL layer when drawing (it can distract from artwork editing)
+    const studioCanvas = document.getElementById('studioCanvas');
+    if (studioCanvas) {
+      studioCanvas.addEventListener('pointerdown', () => {
+        webglCanvas.style.opacity = '0.15';
+      });
+      studioCanvas.addEventListener('pointerup', () => {
+        webglCanvas.style.opacity = '0.8';
+      });
+    }
+  };
+
+  script.onerror = function() {
+    // Three.js CDN failed — graceful degradation, no error shown
+    webglCanvas.style.display = 'none';
+  };
+
+  document.head.appendChild(script);
+})();
+
+/* ── Aurora save feedback (studio-wide) ── */
+function triggerAuroraCF() {
+  const el = document.createElement('div');
+  el.style.cssText = [
+    'position:fixed','top:50%','left:50%','width:240px','height:240px',
+    'margin:-120px 0 0 -120px','border-radius:50%','pointer-events:none',
+    'background:radial-gradient(circle,rgba(168,85,247,.8) 0%,rgba(34,211,216,.6) 33%,rgba(236,72,153,.4) 66%,transparent 100%)',
+    'z-index:9999','opacity:0','transition:none'
+  ].join(';');
+  document.body.appendChild(el);
+  el.style.animation = 'cf-studio-aurora 900ms ease-out forwards';
+  setTimeout(() => el.remove(), 900);
+}
+
+// Inject aurora keyframes once
+const cfAuroraStyle = document.createElement('style');
+cfAuroraStyle.textContent = `@keyframes cf-studio-aurora{0%{opacity:0;transform:scale(0)}20%{opacity:.65;transform:scale(.8)}60%{opacity:.3;transform:scale(2)}100%{opacity:0;transform:scale(3)}}`;
+document.head.appendChild(cfAuroraStyle);
+
+// Cmd/Ctrl+S triggers save feedback
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    e.preventDefault();
+    triggerAuroraCF();
+    // Trigger studio export if available
+    if (window.studio && window.studio.export) {
+      // Don't auto-export on Cmd+S — just show feedback (save is localStorage-based)
+    }
+    // Save layers to localStorage
+    try {
+      const studioCanvas = document.getElementById('studioCanvas');
+      if (studioCanvas) {
+        const savedArt = JSON.parse(localStorage.getItem('cf_studio_art') || '[]');
+        savedArt.unshift({ url: studioCanvas.toDataURL('image/webp', 0.85), ts: Date.now() });
+        localStorage.setItem('cf_studio_art', JSON.stringify(savedArt.slice(0, 20)));
+      }
+    } catch(e) {}
+  }
+});
+</script>
 </body>
 </html>

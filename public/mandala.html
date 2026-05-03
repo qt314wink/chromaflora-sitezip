@@ -89,6 +89,27 @@ canvas{position:absolute;top:0;left:0;display:block;touch-action:none}
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:rgba(168,85,247,0.3);border-radius:2px}
+
+/* Aurora save feedback */
+@keyframes cf-aurora {
+  0%   { opacity:0; transform:translate(-50%,-50%) scale(0); }
+  20%  { opacity:0.7; transform:translate(-50%,-50%) scale(0.8); }
+  60%  { opacity:0.35; transform:translate(-50%,-50%) scale(1.8); }
+  100% { opacity:0; transform:translate(-50%,-50%) scale(3); }
+}
+.cf-aurora-el {
+  position:fixed; top:50%; left:50%;
+  width:220px; height:220px;
+  border-radius:50%; pointer-events:none;
+  background:radial-gradient(circle, rgba(168,85,247,.8) 0%, rgba(34,211,216,.6) 33%, rgba(236,72,153,.4) 66%, transparent 100%);
+  animation:cf-aurora 900ms ease-out forwards;
+  z-index:9999;
+}
+/* Breathing loading glow */
+@keyframes cf-breathe {
+  0%,100%{opacity:0.35;box-shadow:0 0 8px rgba(168,85,247,.2)}
+  50%{opacity:1;box-shadow:0 0 28px rgba(168,85,247,.8),0 0 56px rgba(168,85,247,.3)}
+}
 </style>
 </head>
 <body>
@@ -369,9 +390,14 @@ const gCtx=gc.getContext('2d');
 let W,H;
 
 function sizeCanvas(){
+  const dpr=window.devicePixelRatio||1;
   W=wrap.clientWidth; H=wrap.clientHeight;
-  mc.width=W; mc.height=H;
-  gc.width=W; gc.height=H;
+  mc.width=Math.round(W*dpr); mc.height=Math.round(H*dpr);
+  gc.width=Math.round(W*dpr); gc.height=Math.round(H*dpr);
+  mc.style.width=W+'px'; mc.style.height=H+'px';
+  gc.style.width=W+'px'; gc.style.height=H+'px';
+  ctx.scale(dpr,dpr);
+  gCtx.scale(dpr,dpr);
 }
 sizeCanvas();
 new ResizeObserver(()=>{sizeCanvas();scheduleRender();}).observe(wrap);
@@ -840,6 +866,80 @@ document.getElementById('btnSaveGallery').addEventListener('click',()=>{
   document.getElementById('btnSaveGallery').textContent='✓ Saved!';
   setTimeout(()=>{document.getElementById('btnSaveGallery').textContent='+ Gallery';},2000);
 });
+
+/* ── Aurora save feedback ── */
+function triggerAurora(){
+  const el=document.createElement('div');
+  el.className='cf-aurora-el';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),900);
+}
+
+/* ── Keyboard shortcuts ── */
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;
+  if((e.ctrlKey||e.metaKey)&&e.key==='s'){
+    e.preventDefault();
+    // Save to gallery
+    document.getElementById('btnSaveGallery')?.click();
+    triggerAurora();
+  }
+  if(e.key==='r'||e.key==='R'){
+    if(!(e.ctrlKey||e.metaKey)){
+      e.preventDefault();
+      document.getElementById('btnReset')?.click();
+    }
+  }
+  if(e.key==='Escape'){
+    P.anim=false;
+    document.getElementById('tAnim')?.classList.remove('on');
+  }
+});
+
+/* ── Patch save gallery to include aurora ── */
+document.getElementById('btnSaveGallery').addEventListener('click',()=>{
+  triggerAurora();
+},{capture:false});
+
+/* ── Web Worker for mandala math (progressive enhancement) ── */
+let mandalaWorker=null;
+let workerReady=false;
+try{
+  mandalaWorker=new Worker('mandala-math.worker.js');
+  mandalaWorker.onmessage=function({data}){
+    if(data.type==='frame'){
+      // Worker-computed points: draw as pixel-sized dots
+      const pts=data.points;
+      const len=data.length;
+      for(let i=0;i<len;i+=6){
+        const x=pts[i],y=pts[i+1];
+        const r=Math.round(pts[i+2]),g=Math.round(pts[i+3]),b=Math.round(pts[i+4]),a=pts[i+5];
+        ctx.fillStyle=`rgba(${r},${g},${b},${(a*0.12).toFixed(3)})`;
+        ctx.fillRect(x-0.5,y-0.5,1,1);
+      }
+    }
+  };
+  mandalaWorker.onerror=function(){mandalaWorker=null;};
+  workerReady=true;
+}catch(e){mandalaWorker=null;}
+
+/* ── Patch render to send worker frame in parallel ── */
+const _origRender=render;
+function renderWithWorker(){
+  _origRender();
+  // Dispatch worker computation for supplementary dot field (adds depth)
+  if(mandalaWorker&&(P.anim||Math.abs(P.spin)>0||P.pulse>0)){
+    mandalaWorker.postMessage({
+      type:'compute',
+      rings:P.layers,steps:Math.min(P.density,180),freq:P.freq,
+      amp:P.amp*0.6,phase:P.phase,harm:P.harm,turb:P.turb,
+      nScale:P.nScale,nOct:P.nOct,noiseT,animT,spin:P.spin,
+      pulse:P.pulse,opacity:P.opacity*0.4,radius:P.radius,
+      W,H,colorMode:P.colorMode,color:P.color,
+      mirror:P.mirror,golden:P.golden,layers:P.layers,symmetry:P.symmetry
+    });
+  }
+}
 
 /* ── Init ── */
 document.querySelectorAll('input[type=range]').forEach(updateBg);

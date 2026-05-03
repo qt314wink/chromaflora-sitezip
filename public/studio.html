@@ -620,27 +620,30 @@ const studio = (function() {
 
   /* ── Init ── */
   function init() {
-    resize();
-    window.addEventListener('resize', resize);
+    // Wait for layout to be fully resolved before reading dimensions
+    requestAnimationFrame(() => {
+      resize();
+      window.addEventListener('resize', () => requestAnimationFrame(resize));
 
-    // Create first layer
-    addLayer('Background');
-    addLayer('Layer 1');
-    setActiveLayer(1);
+      // Create first layer
+      addLayer('Background');
+      addLayer('Layer 1');
+      setActiveLayer(1);
 
-    // Fill bg dark
-    const bgCtx = layers[0].canvas.getContext('2d');
-    bgCtx.fillStyle = '#0a0a1a';
-    bgCtx.fillRect(0, 0, W, H);
+      // Fill bg dark
+      const bgCtx = layers[0].canvas.getContext('2d');
+      bgCtx.fillStyle = '#0a0a1a';
+      bgCtx.fillRect(0, 0, W, H);
 
-    compositeAndDraw();
+      compositeAndDraw(true);
 
-    bindCanvas();
-    bindUI();
-    initSwatches();
-    initSliders();
-    initShortcuts();
-    buildLayerUI();
+      bindCanvas();
+      bindUI();
+      initSwatches();
+      initSliders();
+      initShortcuts();
+      buildLayerUI();
+    }); // end requestAnimationFrame
   }
 
   function resize() {
@@ -659,7 +662,7 @@ const studio = (function() {
       tc.drawImage(l.canvas, 0, 0);
       l.canvas = tmp;
     });
-    compositeAndDraw();
+    compositeAndDraw(true);
   }
 
   /* ── Layer management ── */
@@ -722,8 +725,14 @@ const studio = (function() {
   }
 
   /* ── Composite all layers to display canvas ── */
-  function compositeAndDraw() {
-    if (!ctx) return;
+  let _layerUITimer = null;
+  function scheduledLayerUI() {
+    clearTimeout(_layerUITimer);
+    _layerUITimer = setTimeout(buildLayerUI, 80);
+  }
+
+  function compositeAndDraw(rebuildUI) {
+    if (!ctx || !W || !H) return;
     ctx.clearRect(0, 0, W, H);
     // Checkerboard for transparency
     const sz = 12;
@@ -739,8 +748,8 @@ const studio = (function() {
       ctx.drawImage(l.canvas, 0, 0);
       ctx.restore();
     });
-    // Update all layer thumbs
-    buildLayerUI();
+    // Only rebuild layer UI when explicitly needed (layer changes), throttled
+    if (rebuildUI) scheduledLayerUI();
   }
 
   /* ── Get active layer context ── */
@@ -1356,6 +1365,14 @@ const studio = (function() {
     } catch(e) {}
   })();
 
+  // Expose internals for preset apply and math engine
+  window._studioLayers = {
+    get W() { return W; },
+    get H() { return H; },
+    getLayerCtx,
+    composite: () => compositeAndDraw(),
+  };
+
   return { export: exportCanvas, clear: clearAll };
 })();
 
@@ -1750,10 +1767,20 @@ function initPresets() {
     if (!activePresetId) { alert('Select a preset first!'); return; }
     const preset = CF_PRESETS.find(p => p.id === activePresetId);
     if (!preset) return;
-    const mainCanvas = document.getElementById('studioCanvas');
-    const c = mainCanvas.getContext('2d');
-    const W = mainCanvas.width, H = mainCanvas.height;
-    preset.render(c, W, H);
+    // Render into the active layer canvas, not the composite display canvas
+    const studioMod = window._studioLayers;
+    if (studioMod) {
+      const lc = studioMod.getLayerCtx();
+      const W = studioMod.W, H = studioMod.H;
+      preset.render(lc, W, H);
+      studioMod.composite();
+    } else {
+      // Fallback: render to studioCanvas if module not exposed
+      const mainCanvas = document.getElementById('studioCanvas');
+      const c = mainCanvas.getContext('2d');
+      const W = mainCanvas.width, H = mainCanvas.height;
+      preset.render(c, W, H);
+    }
   });
 }
 

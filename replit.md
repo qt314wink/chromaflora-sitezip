@@ -67,19 +67,24 @@ All 8 core module pages now have:
 - ✅ JSON-LD WebApplication schema (+ FAQPage on band.html, ai-studio.html, discovery.html, asmr.html)
 - ✅ `<link rel="preconnect">` for Google Fonts
 
-## Nav Convention (UPDATED Phase 3)
-All 8 core module pages now share a consistent 8-link nav:
-Studio · Mandala · Sonic Waves · Band · AI Studio · Discover · ASMR · Playlist
+## Nav Convention (v5.0 — Unified)
+Every page (all 25 HTML files) has navigation. Two patterns:
 
-Nav class split:
-- `band.html` → `.nl` class on `.nav-links` div
-- `ai-studio.html` → `.nl` class on `.nav-links` div
-- `discovery.html` → `.nl` class on `.nav-links` div
-- `studio.html` → `.nav-link` class on `.nav` element
-- `mandala.html` → `.cf-nav a` (no class on links)
-- `sonic-waves.html` → `.cf-nav a` (no class on links)
-- `asmr.html` → `.nav-link` class on `nav` element
-- `playlist.html` → `.nav-link` class on `nav` element
+**Pattern A — Core modules (studio, mandala, sonic-waves, band, ai-studio, discovery, asmr, playlist)**
+- Cross-link each other only (8 links: Studio, Mandala, Waves, Band, AI Studio, Discover, ASMR, Playlist)
+- No logo or System link in the bar — immersive experience
+- Classes vary by file: `.nav-link`, `.nl`, or `.cf-nav a`
+- `band/ai-studio/discovery` use `.nav-links` wrapper div
+
+**Pattern B — Legacy/tool/community pages (index, projects, about, blog, gallery, challenges, marketplace, profile, player, tokens, components, plotter, project, swirl-generator, beats-boxes, hidden-order, embed, admin)**
+- Always: `System` link + all 8 core module links + current page active
+- Logo/home link present
+- `admin.html` is a special dashboard (top-bar only, no cross-links)
+
+**Pattern C — Homepage (index.html)**
+- v5.0 branded nav with two dropdowns: "Modules" (8 core + embed + player) and "Pages" (community + tools)
+- Plus flat links: System · Projects · About
+- Full nav drawer (left) with all modules, utilities, and community pages
 
 ## Design Tokens (Canonical)
 ```css

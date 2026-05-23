@@ -78,14 +78,18 @@
     }
 
     /* NAV */
-    nav {
-      position: fixed; top: 0; left: 0; right: 0;
-      display: flex; gap: 0; justify-content: center; align-items: center;
-      padding: 12px 20px; z-index: 100;
+    header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 24px; height: 48px;
       background: rgba(4,4,15,0.85);
       border-bottom: 1px solid rgba(168,85,247,0.15);
-      backdrop-filter: blur(12px); flex-wrap: wrap; gap: 4px;
+      backdrop-filter: blur(12px);
     }
+    .logo { font-size: 14px; font-weight: 700; }
+    .logo a { color: var(--iris); text-decoration: none; }
+    .logo a:hover { color: var(--aqua); }
+    nav { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; align-items: center; }
     .nav-link {
       color: rgba(226,232,240,0.6); text-decoration: none;
       font-size: 12px; font-weight: 500; letter-spacing: 0.05em;
@@ -330,7 +334,9 @@
   </style>
 </head>
 <body>
-  <nav>
+  <header>
+    <div class="logo"><a href="index.html">ChromaFlora</a></div>
+    <nav>
     <a href="studio.html" class="nav-link">Studio</a>
     <a href="mandala.html" class="nav-link">Mandala</a>
     <a href="sonic-waves.html" class="nav-link">Sonic Waves</a>
@@ -339,7 +345,8 @@
     <a href="discovery.html" class="nav-link">Discover</a>
     <a href="asmr.html" class="nav-link active">ASMR</a>
     <a href="playlist.html" class="nav-link">Playlist</a>
-  </nav>
+    </nav>
+  </header>
 
   <canvas id="bgCanvas"></canvas>
 

@@ -15,12 +15,12 @@
       border-bottom: 1px solid rgba(255,255,255,0.08);
       font-family: 'Inter', sans-serif;
     }
-    .cf-header .logo a {
+    .cf-header .cf-logo {
       font-size: 16px; font-weight: 800; text-decoration: none;
       background: linear-gradient(135deg,#ec4899,#a855f7,#22d3d8,#10b981);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     }
-    .cf-header nav { display: flex; gap: 4px; }
+    .cf-header .cf-nav { display: flex; gap: 4px; }
     .cf-header .nl {
       padding: 5px 13px; border-radius: 20px; font-size: 13px; font-weight: 500;
       color: rgba(255,255,255,0.55); text-decoration: none;
@@ -261,14 +261,17 @@
 </head>
 <body>
 <header class="cf-header">
-  <div class="logo"><a href="index.html">ChromaFlora</a></div>
-  <nav>
-    <a href="index.html"           class="nl">System</a>
-    <a href="studio.html"          class="nl">Studio</a>
-    <a href="gallery.html"         class="nl">Gallery</a>
-    <a href="swirl-generator.html" class="nl active">Swirl</a>
-    <a href="plotter.html"         class="nl">Plotter</a>
-    <a href="tokens.html"          class="nl">Tokens</a>
+  <a href="index.html" class="cf-logo">ChromaFlora</a>
+  <nav class="cf-nav">
+    <a href="studio.html">Studio</a>
+    <a href="mandala.html">Mandala</a>
+    <a href="sonic-waves.html">Waves</a>
+    <a href="band.html">Band</a>
+    <a href="ai-studio.html">AI Studio</a>
+    <a href="discovery.html">Discover</a>
+    <a href="asmr.html">ASMR</a>
+    <a href="playlist.html">Playlist</a>
+    <a href="swirl-generator.html" class="active">Swirl</a>
   </nav>
 </header>
 

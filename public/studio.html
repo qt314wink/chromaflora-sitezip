@@ -880,6 +880,23 @@ const studio = (function() {
 
   /* ── Flood fill ── */
   function floodFill(sx, sy) {
+    // If a rectangular grid overlay is active, fill only the clicked grid cell
+    const geo = window._studioGeo?.activeGeo;
+    if (geo && geo !== 'none') {
+      const cell = getGridCell(sx, sy, geo);
+      if (cell) {
+        const lc = getLayerCtx();
+        lc.save();
+        lc.globalAlpha = brushOpacity;
+        lc.globalCompositeOperation = blendMode;
+        lc.fillStyle = currentColor;
+        lc.fillRect(cell.x, cell.y, cell.w, cell.h);
+        lc.restore();
+        compositeAndDraw();
+        return;
+      }
+    }
+    // Standard flood fill
     const lc = getLayerCtx();
     const imgData = lc.getImageData(0, 0, W, H);
     const d = imgData.data;
@@ -900,6 +917,29 @@ const studio = (function() {
     }
     lc.putImageData(imgData, 0, 0);
     compositeAndDraw();
+  }
+
+  /* ── Grid cell resolver — returns {x,y,w,h} for the clicked cell based on active overlay ── */
+  function getGridCell(sx, sy, geo) {
+    if (geo === 'phi-grid') {
+      const phi = 1.61803398875;
+      const rx = W / (phi + 1);
+      const ry = H / (phi + 1);
+      const cols = [0, rx, W - rx, W];
+      const rows = [0, ry, H - ry, H];
+      let x0 = 0, x1 = W, y0 = 0, y1 = H;
+      for (let i = 0; i < cols.length - 1; i++) { if (sx >= cols[i] && sx < cols[i+1]) { x0 = cols[i]; x1 = cols[i+1]; break; } }
+      for (let i = 0; i < rows.length - 1; i++) { if (sy >= rows[i] && sy < rows[i+1]) { y0 = rows[i]; y1 = rows[i+1]; break; } }
+      return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+    }
+    if (geo === 'fibonacci') {
+      // Fibonacci uses a 40px base grid aligned to canvas
+      const gs = 40;
+      const x0 = Math.floor(sx / gs) * gs, y0 = Math.floor(sy / gs) * gs;
+      return { x: x0, y: y0, w: gs, h: gs };
+    }
+    // Other overlays (flower, metatron, vesica, seed) are not grid-based — fall through to flood fill
+    return null;
   }
 
   function colorMatch(a, b, tol=32) {
@@ -1104,6 +1144,33 @@ const studio = (function() {
     canvasEl.addEventListener('touchstart', e => { e.preventDefault(); startDraw(e); }, { passive: false });
     canvasEl.addEventListener('touchmove', e => { e.preventDefault(); moveDraw(e); }, { passive: false });
     canvasEl.addEventListener('touchend', endDraw);
+
+    // Drag and drop images onto canvas
+    canvasEl.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; canvasEl.style.outline = '2px dashed rgba(168,85,247,0.8)'; });
+    canvasEl.addEventListener('dragleave', () => { canvasEl.style.outline = ''; });
+    canvasEl.addEventListener('drop', e => {
+      e.preventDefault();
+      canvasEl.style.outline = '';
+      const file = Array.from(e.dataTransfer.files).find(f => f.type.startsWith('image/'));
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const img = new Image();
+        img.onload = () => {
+          saveState();
+          addLayer('Drop');
+          setActiveLayer(layers.length - 1);
+          const lc = getLayerCtx();
+          const scale = Math.min(W / img.width, H / img.height, 1);
+          const iw = img.width * scale, ih = img.height * scale;
+          lc.drawImage(img, (W - iw) / 2, (H - ih) / 2, iw, ih);
+          compositeAndDraw(true);
+          showToast('Image dropped onto new layer');
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
   }
 
   /* ── UI bindings ── */
@@ -1723,7 +1790,7 @@ const CF_PRESETS = [
   }
 ];
 
-let activePresetId = null;
+const activePresetIds = new Set();
 
 function initPresets() {
   const grid = document.getElementById('presetGrid');
@@ -1745,41 +1812,48 @@ function initPresets() {
 
     card.appendChild(canvas); card.appendChild(label);
     card.addEventListener('click', () => {
-      document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('active'));
-      card.classList.add('active');
-      activePresetId = preset.id;
-      // Update prompt builder params
-      const p = preset.params;
-      ['pStyle','pMaterial','pColors','pShape','pLight'].forEach(id => {
-        const key = id === 'pStyle' ? 'style' : id === 'pMaterial' ? 'material' : id === 'pColors' ? 'colors' : id === 'pShape' ? 'shape' : 'light';
-        const sel = document.getElementById(id);
-        if (!sel) return;
-        for (let i=0;i<sel.options.length;i++) {
-          if (sel.options[i].text === p[key]) { sel.selectedIndex=i; break; }
-        }
-      });
+      // Toggle this card — multiple can be active at once
+      if (activePresetIds.has(preset.id)) {
+        activePresetIds.delete(preset.id);
+        card.classList.remove('active');
+      } else {
+        activePresetIds.add(preset.id);
+        card.classList.add('active');
+        // Update prompt builder params from the most recently selected preset
+        const p = preset.params;
+        ['pStyle','pMaterial','pColors','pShape','pLight'].forEach(id => {
+          const key = id === 'pStyle' ? 'style' : id === 'pMaterial' ? 'material' : id === 'pColors' ? 'colors' : id === 'pShape' ? 'shape' : 'light';
+          const sel = document.getElementById(id);
+          if (!sel) return;
+          for (let i=0;i<sel.options.length;i++) {
+            if (sel.options[i].text === p[key]) { sel.selectedIndex=i; break; }
+          }
+        });
+      }
+      // Update button label to show count
+      const btn = document.getElementById('btnApplyPreset');
+      if (btn) btn.textContent = activePresetIds.size > 1 ? `Apply ${activePresetIds.size} Presets to Canvas` : 'Apply Preset to Canvas';
     });
     grid.appendChild(card);
   });
 
   document.getElementById('btnApplyPreset').addEventListener('click', () => {
-    if (!activePresetId) { alert('Select a preset first!'); return; }
-    const preset = CF_PRESETS.find(p => p.id === activePresetId);
-    if (!preset) return;
-    // Render into the active layer canvas, not the composite display canvas
+    if (activePresetIds.size === 0) { alert('Select one or more presets first!'); return; }
     const studioMod = window._studioLayers;
-    if (studioMod) {
-      const lc = studioMod.getLayerCtx();
-      const W = studioMod.W, H = studioMod.H;
-      preset.render(lc, W, H);
-      studioMod.composite();
-    } else {
-      // Fallback: render to studioCanvas if module not exposed
-      const mainCanvas = document.getElementById('studioCanvas');
-      const c = mainCanvas.getContext('2d');
-      const W = mainCanvas.width, H = mainCanvas.height;
-      preset.render(c, W, H);
-    }
+    // Apply each selected preset in the order they appear in CF_PRESETS (layering order)
+    CF_PRESETS.forEach(preset => {
+      if (!activePresetIds.has(preset.id)) return;
+      if (studioMod) {
+        const lc = studioMod.getLayerCtx();
+        const W = studioMod.W, H = studioMod.H;
+        preset.render(lc, W, H);
+      } else {
+        const mainCanvas = document.getElementById('studioCanvas');
+        const c = mainCanvas.getContext('2d');
+        preset.render(c, mainCanvas.width, mainCanvas.height);
+      }
+    });
+    if (studioMod) studioMod.composite();
   });
 }
 
@@ -2060,8 +2134,13 @@ document.querySelectorAll('[data-geo]').forEach(btn => {
     btn.classList.add('active');
     activeGeo = btn.dataset.geo;
     drawGeoOverlay(activeGeo);
+    // Keep window._studioGeo in sync so the fill tool can read it
+    window._studioGeo = { activeGeo };
   });
 });
+
+// Expose activeGeo for the fill tool
+window._studioGeo = { activeGeo };
 
 /* ── Show/hide math tool panels ── */
 document.querySelectorAll('.tool-btn[data-tool]').forEach(btn => {

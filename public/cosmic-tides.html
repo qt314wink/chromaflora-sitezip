@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cosmic Tides — ChromaFlora</title>
+<meta name="description" content="Cosmic Tides — generative bioluminescent wave field. Layered sine waves, particle currents, and shifting oceanic light. Real-time Canvas 2D. ChromaFlora.">
+<link rel="canonical" href="https://chromaflora.replit.app/cosmic-tides.html">
+<meta property="og:title" content="Cosmic Tides — Generative Wave Field | ChromaFlora">
+<meta property="og:description" content="Layered bioluminescent sine waves and particle currents. Real-time procedural Canvas 2D. Free browser tool, no account required.">
+<meta property="og:url" content="https://chromaflora.replit.app/cosmic-tides.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ChromaFlora">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@halcyonminx">
+<meta name="twitter:title" content="Cosmic Tides — Generative Waves | ChromaFlora">
+<meta name="twitter:description" content="Bioluminescent layered wave field. Procedural Canvas 2D, real-time controls, export PNG.">
+<meta name="theme-color" content="#04040f">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"ChromaFlora Cosmic Tides","url":"https://chromaflora.replit.app/cosmic-tides.html","applicationCategory":"DesignApplication","operatingSystem":"Browser","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Generative bioluminescent wave field with layered sine tides, particle currents, and real-time color controls. Free browser tool.","author":{"@type":"Person","name":"Jennipher Troup","alternateName":"@halcyonminx"}}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#04040f;--iris:#a855f7;--aqua:#22d3d8;--bloom:#ec4899;
+  --ember:#f97316;--viridian:#10b981;
+  --surface:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.08);
+  --t-snap:0.12s cubic-bezier(0.4,0,0.2,1);
+  --t-spring:0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Inter',sans-serif;background:var(--void);color:#fff;display:flex;flex-direction:column}
+
+.cf-header{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:56px;flex-shrink:0;background:rgba(4,4,15,0.97);border-bottom:1px solid var(--border);z-index:100}
+.cf-logo{font-size:16px;font-weight:900;text-decoration:none;background:linear-gradient(135deg,var(--aqua),var(--iris),var(--bloom));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-0.01em}
+.cf-nav{display:flex;gap:4px;align-items:center}
+.cf-nav a{padding:7px 14px;border-radius:10px;font-size:13px;font-weight:600;color:rgba(255,255,255,0.45);text-decoration:none;transition:var(--t-snap);letter-spacing:0.01em}
+.cf-nav a:hover{color:#fff;background:rgba(255,255,255,0.08)}
+.cf-nav a.active{color:#fff;background:linear-gradient(135deg,rgba(34,211,216,0.22),rgba(168,85,247,0.12));box-shadow:0 0 20px rgba(34,211,216,0.25),inset 0 0 12px rgba(34,211,216,0.1);border:1px solid rgba(34,211,216,0.35)}
+
+.studio{flex:1;display:grid;grid-template-columns:224px 1fr 244px;min-height:0}
+.sidebar,.panel{background:rgba(5,3,18,0.98);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden}
+.sidebar{border-right:1px solid var(--border)}
+.panel{border-left:1px solid var(--border)}
+.s-sec{padding:12px 14px;border-bottom:1px solid var(--border)}
+.s-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:rgba(255,255,255,0.28);margin-bottom:10px}
+
+.cf-row{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.cf-lbl{display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.5)}
+.cf-lbl .v{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--aqua)}
+input[type=range].r{width:100%;height:3px;-webkit-appearance:none;appearance:none;background:linear-gradient(to right,var(--aqua) var(--pct,50%),rgba(255,255,255,0.1) var(--pct,50%));border-radius:3px;cursor:pointer;outline:none}
+input[type=range].r::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:#fff;box-shadow:0 0 6px rgba(34,211,216,0.5)}
+
+.tog-row{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:8px}
+.cf-tog{position:relative;width:32px;height:18px;background:rgba(255,255,255,0.1);border-radius:9px;cursor:pointer;transition:background var(--t-snap);flex-shrink:0}
+.cf-tog.on{background:var(--aqua)}
+.cf-tog::after{content:'';position:absolute;width:13px;height:13px;border-radius:50%;background:#fff;top:2.5px;left:2.5px;transition:transform var(--t-snap)}
+.cf-tog.on::after{transform:translateX(14px)}
+
+.seg{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:10px}
+.seg-btn{padding:4px 9px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:rgba(255,255,255,0.5);font-size:10px;font-weight:600;cursor:pointer;transition:var(--t-snap)}
+.seg-btn.active{background:rgba(34,211,216,0.18);border-color:rgba(34,211,216,0.4);color:#fff}
+
+.mode-chip{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 6px;border-radius:9px;border:1px solid var(--border);background:var(--surface);cursor:pointer;transition:var(--t-snap);font-size:9px;font-weight:700;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.06em}
+.mode-chip span{font-size:18px;line-height:1}
+.mode-chip:hover{border-color:rgba(34,211,216,0.3);color:rgba(255,255,255,0.75)}
+.mode-chip.active{border-color:rgba(34,211,216,0.6);background:rgba(34,211,216,0.12);color:#fff}
+
+.cf-swatch{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:var(--t-snap)}
+.cf-swatch.active,.cf-swatch:hover{border-color:#fff;transform:scale(1.2)}
+
+.cf-btn{width:100%;padding:9px;border-radius:9px;border:none;cursor:pointer;font-size:12px;font-weight:700;margin-top:6px;transition:var(--t-spring);display:flex;align-items:center;justify-content:center;gap:6px}
+.cf-btn-primary{background:linear-gradient(135deg,var(--aqua),var(--iris));color:#fff;box-shadow:0 4px 18px rgba(34,211,216,0.3)}
+.cf-btn-primary:hover{transform:translateY(-1px) scale(1.02);box-shadow:0 8px 24px rgba(34,211,216,0.45)}
+.cf-btn-ghost{background:var(--surface);border:1px solid var(--border);color:rgba(255,255,255,0.7)}
+.cf-btn-ghost:hover{background:rgba(255,255,255,0.08);color:#fff}
+
+.canvas-wrap{position:relative;overflow:hidden;background:#01010e;flex:1}
+canvas{position:absolute;top:0;left:0;display:block}
+#glowCanvas{pointer-events:none;opacity:0.5;mix-blend-mode:screen}
+#particleCanvas{pointer-events:none;mix-blend-mode:screen}
+
+.hud{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:8px;pointer-events:none;z-index:10}
+.hud-tag{padding:4px 12px;border-radius:20px;font-size:10px;font-weight:600;background:rgba(4,4,15,0.85);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.5);letter-spacing:0.05em;font-family:'JetBrains Mono',monospace}
+
+.readout{font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(34,211,216,0.75);line-height:1.9;background:rgba(0,0,0,0.35);border-radius:7px;padding:9px 10px;border:1px solid rgba(34,211,216,0.1);white-space:pre-wrap}
+
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(34,211,216,0.3);border-radius:2px}
+
+@keyframes cf-aurora{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(0)}
+  20%{opacity:0.7;transform:translate(-50%,-50%) scale(0.8)}
+  60%{opacity:0.35;transform:translate(-50%,-50%) scale(1.8)}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(3)}
+}
+.aurora-el{position:fixed;top:50%;left:50%;width:220px;height:220px;border-radius:50%;pointer-events:none;background:radial-gradient(circle,rgba(34,211,216,.8) 0%,rgba(168,85,247,.6) 33%,rgba(236,72,153,.4) 66%,transparent 100%);animation:cf-aurora 900ms ease-out forwards;z-index:9999}
+</style>
+</head>
+<body>
+
+<header class="cf-header">
+  <a href="index.html" class="cf-logo">ChromaFlora</a>
+  <nav class="cf-nav">
+    <a href="studio.html">Studio</a>
+    <a href="mandala.html">Mandala</a>
+    <a href="sonic-waves.html">Waves</a>
+    <a href="band.html">Band</a>
+    <a href="ai-studio.html">AI Studio</a>
+    <a href="discovery.html">Discover</a>
+    <a href="asmr.html">ASMR</a>
+    <a href="playlist.html">Playlist</a>
+    <a href="cosmic-tides.html" class="active">Tides</a>
+  </nav>
+  <div style="display:flex;gap:6px">
+    <button class="cf-btn cf-btn-ghost" id="btnSave" style="width:auto;padding:5px 14px;margin:0">+ Gallery</button>
+    <button class="cf-btn cf-btn-primary" id="btnExport" style="width:auto;padding:5px 14px;margin:0">⬇ PNG</button>
+  </div>
+</header>
+
+<div class="studio">
+
+  <!-- LEFT: wave controls -->
+  <aside class="sidebar">
+
+    <div class="s-sec">
+      <div class="s-title">Wave Mode</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:4px">
+        <div class="mode-chip active" data-mode="tides"><span>〰</span>Tides</div>
+        <div class="mode-chip" data-mode="pulsar"><span>◎</span>Pulsar</div>
+        <div class="mode-chip" data-mode="aurora"><span>🌌</span>Aurora</div>
+        <div class="mode-chip" data-mode="reef"><span>🪸</span>Reef</div>
+        <div class="mode-chip" data-mode="storm"><span>⚡</span>Storm</div>
+        <div class="mode-chip" data-mode="drift"><span>✦</span>Drift</div>
+      </div>
+    </div>
+
+    <div class="s-sec">
+      <div class="s-title">Wave Structure</div>
+      <div class="cf-row">
+        <div class="cf-lbl"><span>Wave Layers</span><span class="v" id="vLayers">8</span></div>
+        <input type="range" class="r" id="sLayers" min="2" max="20" step="1" value="8">
+      </div>
+      <div class="cf-row">
+        <div class="cf-lbl"><span>Amplitude</span><span class="v" id="vAmp">1.00</span></div>
+        <input type="range" class="r" id="sAmp" min="0.1" max="3" step="0.05" value="1">
+      </div>
+      <div class="cf-row">
+        <div class="cf-lbl"><span>Frequency</span><span class="v" id="vFreq">1.00</span></div>
+        <input type="range" class="r" id="sFreq" min="0.2" max="4" step="0.05" value="1">
+      </div>
+      <div class="cf-row">
+        <div class="cf-lbl"><span>Layer Spread</span><span class="v" id="vSpread">14</span>px</div>
+        <input type="range" class="r" id="sSpread" min="4" max="40" step="1" value="14">
+      </div>
+      <div class="cf-row">
+        <div class="cf-lbl"><span>Horizon</span><span class="v" id="vHorizon">42</span>%</div>
+        <input type="range" class="r" id="sHorizon" min="20" max="80" step="1" value="42">
+      </div>
+    </div>
+
+    <div class="s-sec">
+      <div class="s-title">Motion</div>
+      <div class="cf-row">
+        <div class="cf-lbl"><span>Tide Speed</span><span class="v" id="vSpeed">1.00</span>×</div>
+        <input type="range" class="r" id="sSpeed" min="0" max="4" step="0.05" value="1">
+      </div>
+      <div class="cf-row">
+        <div class="cf-lbl"><span>Wave Wander</span><span class="v" id="vWander">0.50</span></div>
+        <input type="range" class="r" id="sWander" min="0" max="2" step="0.05" value="0.5">
+      </div>
+      <div class="cf-row">
+        <div class="cf-lbl"><span>Counter-phase</span><span class="v" id="vPhase">0.50</span></div>
+        <input type="range" class="r" id="sPhase" min="0" max="2" step="0.05" value="0.5">
+      </div>
+      <div class="tog-row"><span>Reverse Flow</span><div class="cf-tog" id="tReverse"></div></div>
+    </div>
+
+    <div class="s-sec">
+      <div class="s-title">Particles</div>
+      <div class="cf-row">
+        <div class="cf-lbl"><span>Particle Count</span><span class="v" id="vPCount">80</span></div>
+        <input type="range" class="r" id="sPCount" min="0" max="300" step="10" value="80">
+      </div>
+      <div class="cf-row">
+        <div class="cf-lbl"><span>Particle Size</span><span class="v" id="vPSize">1.5</span></div>
+        <input type="range" class="r" id="sPSize" min="0.5" max="5" step="0.25" value="1.5">
+      </div>
+      <div class="cf-row">
+        <div class="cf-lbl"><span>Drift Speed</span><span class="v" id="vPSpeed">0.40</span></div>
+        <input type="range" class="r" id="sPSpeed" min="0.05" max="2" step="0.05" value="0.4">
+      </div>
+      <div class="tog-row"><span>Ride Waves</span><div class="cf-tog on" id="tRide"></div></div>
+    </div>
+
+  </aside>
+
+  <!-- CENTER: canvas -->
+  <div class="canvas-wrap" id="canvasWrap">
+    <canvas id="waveCanvas"></canvas>
+    <canvas id="glowCanvas"></canvas>
+    <canvas id="particleCanvas"></canvas>
+    <div class="hud">
+      <div class="hud-tag" id="hudMode">TIDES</div>
+      <div class="hud-tag" id="hudFps">— FPS</div>
+      <div class="hud-tag" id="hudLayers">8 WAVES</div>
+    </div>
+  </div>
+
+  <!-- RIGHT: color, glow, export -->
+  <aside class="panel">
+
+    <div class="s-sec">
+      <div class="s-title">Color Palette</div>
+      <div class="seg" id="colorMode">
+        <div class="seg-btn active" data-cm="biolum">Biolum</div>
+        <div class="seg-btn" data-cm="aurora">Aurora</div>
+        <div class="seg-btn" data-cm="ember">Ember</div>
+        <div class="seg-btn" data-cm="mono">Mono</div>
+        <div class="seg-btn" data-cm="custom">Custom</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:2px" id="swatchRow">
+        <div class="cf-swatch active" data-c="#22d3d8" style="background:#22d3d8"></div>
+        <div class="cf-swatch" data-c="#a855f7" style="background:#a855f7"></div>
+        <div class="cf-swatch" data-c="#ec4899" style="background:#ec4899"></div>
+        <div class="cf-swatch" data-c="#f97316" style="background:#f97316"></div>
+        <div class="cf-swatch" data-c="#10b981" style="background:#10b981"></div>
+        <div class="cf-swatch" data-c="#60a5fa" style="background:#60a5fa"></div>
+        <div class="cf-swatch" data-c="#fbbf24" style="background:#fbbf24"></div>
+        <div class="cf-swatch" data-c="#fff" style="background:rgba(255,255,255,0.85)"></div>
+      </div>
+    </div>
+
+    <div class="s-sec">
+      <div class="s-title">Color Motion</div>
+      <div class="cf-row">
+        <div class="cf-lbl"><span>Hue Shift</span><span class="v" id="vHue">195</span>°</div>
+        <input type="range" class="r" id="sHue" min="0" max="359" step="1" value="195">
+      </div>
+      <div class="cf-row">
+        <div class="cf-lbl"><span>Hue Span</span><span class="v" id="vHueSpan">18</span>°/layer</div>
+        <input type="range" class="r" id="sHueSpan" min="0" max="60" step="1" value="18">
+      </div>
+      <div class="cf-row">
+        <div class="cf-lbl"><span>Cycle Speed</span><span class="v" id="vCycle">0.30</span></div>
+        <input type="range" class="r" id="sCycle" min="0" max="2" step="0.05" value="0.3">
+      </div>
+      <div class="cf-row">
+        <div class="cf-lbl"><span>Opacity Base</span><span class="v" id="vOpacity">0.55</span></div>
+        <input type="range" class="r" id="sOpacity" min="0.05" max="1" step="0.05" value="0.55">
+      </div>
+    </div>
+
+    <div class="s-sec">
+      <div class="s-title">Glow &amp; Atmosphere</div>
+      <div class="tog-row"><span>Glow Bloom</span><div class="cf-tog on" id="tGlow"></div></div>
+      <div class="cf-row">
+        <div class="cf-lbl"><span>Glow Intensity</span><span class="v" id="vGlow">0.50</span></div>
+        <input type="range" class="r" id="sGlow" min="0" max="1" step="0.05" value="0.5">
+      </div>
+      <div class="cf-row">
+        <div class="cf-lbl"><span>Trail Fade</span><span class="v" id="vTrail">0.08</span></div>
+        <input type="range" class="r" id="sTrail" min="0.01" max="0.5" step="0.01" value="0.08">
+      </div>
+      <div class="seg" id="bgSeg">
+        <div class="seg-btn active" data-bg="void">Void</div>
+        <div class="seg-btn" data-bg="deep">Deep</div>
+        <div class="seg-btn" data-bg="abyss">Abyss</div>
+        <div class="seg-btn" data-bg="white">White</div>
+      </div>
+    </div>
+
+    <div class="s-sec">
+      <div class="s-title">Live Readout</div>
+      <div class="readout" id="mathReadout">Loading…</div>
+    </div>
+
+    <div class="s-sec">
+      <div class="s-title">Quick Presets</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
+        <button class="cf-btn cf-btn-ghost" style="margin:0;font-size:10px" data-qp="deep">Deep Sea</button>
+        <button class="cf-btn cf-btn-ghost" style="margin:0;font-size:10px" data-qp="solar">Solar Wind</button>
+        <button class="cf-btn cf-btn-ghost" style="margin:0;font-size:10px" data-qp="borealis">Borealis</button>
+        <button class="cf-btn cf-btn-ghost" style="margin:0;font-size:10px" data-qp="lava">Lava Flow</button>
+        <button class="cf-btn cf-btn-ghost" style="margin:0;font-size:10px" data-qp="void">Void Drift</button>
+        <button class="cf-btn cf-btn-ghost" style="margin:0;font-size:10px" data-qp="storm">Storm</button>
+      </div>
+    </div>
+
+    <div class="s-sec">
+      <div class="s-title">Export</div>
+      <button class="cf-btn cf-btn-primary" id="btnExportPanel">⬇ Download PNG (2×)</button>
+      <button class="cf-btn cf-btn-ghost" id="btnReset">↺ Reset All</button>
+    </div>
+
+  </aside>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════
+   ChromaFlora — Cosmic Tides
+   Layered sine wave field + bioluminescent particle system
+   Modes: Tides · Pulsar · Aurora · Reef · Storm · Drift
+════════════════════════════════════════════════════════ */
+
+/* ── State ── */
+const P = {
+  mode: 'tides',
+  layers: 8, amp: 1, freq: 1, spread: 14, horizon: 42,
+  speed: 1, wander: 0.5, phase: 0.5, reverse: false,
+  pCount: 80, pSize: 1.5, pSpeed: 0.4, ride: true,
+  colorMode: 'biolum', customColor: '#22d3d8',
+  hue: 195, hueSpan: 18, cycle: 0.3, opacity: 0.55,
+  glow: true, glowAmt: 0.5, trail: 0.08, bg: 'void',
+};
+
+/* ── Canvas setup ── */
+const wrap   = document.getElementById('canvasWrap');
+const wc     = document.getElementById('waveCanvas');
+const gc     = document.getElementById('glowCanvas');
+const pc     = document.getElementById('particleCanvas');
+const wCtx   = wc.getContext('2d');
+const gCtx   = gc.getContext('2d');
+const pCtx   = pc.getContext('2d');
+let W, H, dpr;
+
+function sizeCanvas() {
+  dpr = window.devicePixelRatio || 1;
+  W = wrap.clientWidth;
+  H = wrap.clientHeight;
+  [wc, gc, pc].forEach(c => {
+    c.width  = Math.round(W * dpr);
+    c.height = Math.round(H * dpr);
+    c.style.width  = W + 'px';
+    c.style.height = H + 'px';
+    c.getContext('2d').scale(dpr, dpr);
+  });
+}
+sizeCanvas();
+new ResizeObserver(() => { sizeCanvas(); initParticles(); }).observe(wrap);
+
+/* ── Timing ── */
+let t = 0, rafId = null;
+let _ff = 0, _ft = 0, _fps = 60;
+
+/* ── Particles ── */
+let particles = [];
+function initParticles() {
+  particles = Array.from({ length: P.pCount }, (_, i) => spawnParticle(i / P.pCount * W));
+}
+function spawnParticle(x) {
+  return {
+    x: x !== undefined ? x : Math.random() * W,
+    y: Math.random() * H,
+    vy: (Math.random() - 0.5) * 0.3,
+    phase: Math.random() * Math.PI * 2,
+    layer: Math.floor(Math.random() * P.layers),
+    hue: Math.random() * 360,
+    size: 0.5 + Math.random() * P.pSize,
+    opacity: 0.3 + Math.random() * 0.7,
+  };
+}
+initParticles();
+
+/* ── Color helpers ── */
+function waveColor(i, total, tt) {
+  const f = i / total;
+  switch (P.colorMode) {
+    case 'aurora': {
+      const h = (P.hue + i * P.hueSpan + tt * P.cycle * 40) % 360;
+      const l = 45 + f * 20;
+      return `hsla(${h},85%,${l}%,${P.opacity * (0.12 + f * 0.09)})`;
+    }
+    case 'ember': {
+      const h = (20 + i * 8 + tt * P.cycle * 20) % 60;
+      return `hsla(${h},95%,${50 + f * 15}%,${P.opacity * (0.1 + f * 0.1)})`;
+    }
+    case 'mono':
+      return `rgba(255,255,255,${P.opacity * (0.06 + f * 0.07)})`;
+    case 'custom': {
+      const hex = P.customColor.replace('#', '');
+      const r = parseInt(hex.slice(0,2),16), g = parseInt(hex.slice(2,4),16), b = parseInt(hex.slice(4,6),16);
+      return `rgba(${r},${g},${b},${P.opacity * (0.1 + f * 0.09)})`;
+    }
+    default: { /* biolum */
+      const h = (P.hue + i * P.hueSpan + tt * P.cycle * 40) % 360;
+      return `hsla(${h},95%,${50 + f * 15}%,${P.opacity * (0.10 + f * 0.055)})`;
+    }
+  }
+}
+
+/* ── Wave Y at position x for layer i ── */
+function waveY(x, i, tt) {
+  const dir  = P.reverse ? -1 : 1;
+  const base = H * (P.horizon / 100) + i * P.spread;
+  const p    = (x / W) * Math.PI * 2 * P.freq;
+  const off  = i * P.phase;
+  const spd  = tt * P.speed * 0.03 * dir;
+  const w1   = Math.sin(p + spd + off) * (16 + i * 5) * P.amp;
+  const w2   = Math.sin(p * 1.8 - spd * 0.7 + i) * (8 + i * 2.5) * P.amp * P.wander;
+  return base + w1 + w2;
+}
+
+/* ── Mode renderers ── */
+function drawTides(tt) {
+  for (let i = P.layers - 1; i >= 0; i--) {
+    wCtx.beginPath();
+    wCtx.moveTo(0, H);
+    for (let x = 0; x <= W; x += 2) {
+      wCtx.lineTo(x, waveY(x, i, tt));
+    }
+    wCtx.lineTo(W, H);
+    wCtx.closePath();
+    const grd = wCtx.createLinearGradient(0, 0, 0, H);
+    const c1 = waveColor(i, P.layers, tt);
+    grd.addColorStop(0, c1);
+    grd.addColorStop(1, 'rgba(1,1,14,0.03)');
+    wCtx.fillStyle = grd;
+    wCtx.fill();
+  }
+}
+
+function drawPulsar(tt) {
+  const cx = W / 2, cy = H * (P.horizon / 100);
+  for (let i = 0; i < P.layers; i++) {
+    const r = (i + 1) * (Math.min(W, H) * 0.04 * P.amp)
+            + Math.sin(tt * P.speed * 0.04 + i * P.phase) * 18 * P.amp;
+    wCtx.beginPath();
+    for (let a = 0; a <= Math.PI * 2; a += 0.04) {
+      const wave = Math.sin(a * P.freq * 3 + tt * P.speed * 0.05 + i * 0.5) * 12 * P.amp;
+      const rx = cx + (r + wave) * Math.cos(a);
+      const ry = cy + (r + wave) * Math.sin(a) * 0.45;
+      a === 0 ? wCtx.moveTo(rx, ry) : wCtx.lineTo(rx, ry);
+    }
+    wCtx.closePath();
+    const h = (P.hue + i * P.hueSpan + tt * P.cycle * 40) % 360;
+    wCtx.strokeStyle = `hsla(${h},95%,65%,${0.35 + (i / P.layers) * 0.4})`;
+    wCtx.lineWidth = 1 + (i / P.layers) * 0.8;
+    wCtx.stroke();
+    wCtx.fillStyle = `hsla(${h},95%,50%,${0.04 + (i / P.layers) * 0.05})`;
+    wCtx.fill();
+  }
+}
+
+function drawAurora(tt) {
+  for (let i = 0; i < P.layers; i++) {
+    const yBase = H * 0.1 + i * (H * 0.06 * P.amp);
+    wCtx.beginPath();
+    wCtx.moveTo(0, yBase);
+    for (let x = 0; x <= W; x += 3) {
+      const p2 = (x / W) * Math.PI * 2 * P.freq;
+      const spd = tt * P.speed * 0.02 * (P.reverse ? -1 : 1);
+      const y = yBase
+        + Math.sin(p2 + spd + i * P.phase) * (30 + i * 10) * P.amp
+        + Math.sin(p2 * 2.3 - spd * 0.5) * (12 + i * 3) * P.amp * P.wander;
+      wCtx.lineTo(x, y);
+    }
+    const h = (P.hue + i * P.hueSpan + tt * P.cycle * 40) % 360;
+    wCtx.strokeStyle = `hsla(${h},90%,70%,${0.15 + (i / P.layers) * 0.25})`;
+    wCtx.lineWidth = 2 + (i / P.layers) * 4;
+    wCtx.shadowColor = `hsl(${h},95%,65%)`;
+    wCtx.shadowBlur = 12 + P.glowAmt * 20;
+    wCtx.stroke();
+    wCtx.shadowBlur = 0;
+  }
+}
+
+function drawReef(tt) {
+  const xStep = W / (P.layers + 1);
+  for (let i = 0; i < P.layers; i++) {
+    const cx2 = xStep * (i + 1);
+    const baseH = H * (P.horizon / 100 + 0.1);
+    const h = (P.hue + i * P.hueSpan + tt * P.cycle * 40) % 360;
+    const height = (40 + i * 15) * P.amp;
+    const sway  = Math.sin(tt * P.speed * 0.02 + i * P.phase) * 12 * P.wander;
+    wCtx.beginPath();
+    for (let seg = 0; seg <= 12; seg++) {
+      const fy = seg / 12;
+      const bx = cx2 + sway * fy + Math.sin(tt * P.speed * 0.03 + seg * 0.7 + i) * 5 * P.wander;
+      const by = baseH - height * fy;
+      const w2 = (8 + i * 2) * (1 - fy * 0.7);
+      if (seg === 0) {
+        wCtx.moveTo(bx - w2, by);
+      } else {
+        wCtx.lineTo(bx - w2 * (1 - fy * 0.5), by);
+      }
+    }
+    for (let seg = 12; seg >= 0; seg--) {
+      const fy = seg / 12;
+      const bx = cx2 + sway * fy + Math.sin(tt * P.speed * 0.03 + seg * 0.7 + i) * 5 * P.wander;
+      const by = baseH - height * fy;
+      const w2 = (8 + i * 2) * (1 - fy * 0.7);
+      wCtx.lineTo(bx + w2 * (1 - fy * 0.5), by);
+    }
+    wCtx.closePath();
+    wCtx.fillStyle = `hsla(${h},85%,45%,${0.3 + (i / P.layers) * 0.35})`;
+    wCtx.fill();
+    wCtx.strokeStyle = `hsla(${h},95%,70%,0.5)`;
+    wCtx.lineWidth = 0.8;
+    wCtx.stroke();
+  }
+  drawTides(tt);
+}
+
+function drawStorm(tt) {
+  for (let i = 0; i < P.layers; i++) {
+    const h = (P.hue + i * P.hueSpan + tt * P.cycle * 60) % 360;
+    wCtx.beginPath();
+    wCtx.moveTo(0, H);
+    for (let x = 0; x <= W; x += 2) {
+      const p2 = (x / W) * Math.PI * 2 * P.freq;
+      const spd = tt * P.speed * 0.05 * (P.reverse ? -1 : 1);
+      const chaos = Math.sin(p2 * 3.7 + spd * 1.3 + i) * (5 + i * 3) * P.wander;
+      const y = H * (P.horizon / 100) + i * P.spread
+              + Math.sin(p2 + spd + i * P.phase) * (20 + i * 7) * P.amp
+              + Math.sin(p2 * 2.1 - spd * 0.8 + i) * (10 + i * 3) * P.amp
+              + chaos;
+      wCtx.lineTo(x, y);
+    }
+    wCtx.lineTo(W, H);
+    wCtx.closePath();
+    const grd = wCtx.createLinearGradient(0, 0, 0, H);
+    grd.addColorStop(0, `hsla(${h},95%,60%,${P.opacity * (0.08 + (i/P.layers)*0.1)})`);
+    grd.addColorStop(1, 'rgba(1,1,14,0.02)');
+    wCtx.fillStyle = grd;
+    wCtx.fill();
+  }
+  /* lightning crackle */
+  if (Math.random() < 0.04) {
+    const lx = Math.random() * W;
+    wCtx.beginPath();
+    wCtx.moveTo(lx, 0);
+    let ly = 0;
+    while (ly < H * 0.7) {
+      lx + (Math.random() - 0.5) * 30;
+      ly += 10 + Math.random() * 20;
+      wCtx.lineTo(lx + (Math.random() - 0.5) * 40, ly);
+    }
+    const lh = (P.hue + tt * P.cycle * 80) % 360;
+    wCtx.strokeStyle = `hsla(${lh},100%,90%,0.7)`;
+    wCtx.lineWidth = 1;
+    wCtx.shadowColor = `hsl(${lh},100%,80%)`;
+    wCtx.shadowBlur = 16;
+    wCtx.stroke();
+    wCtx.shadowBlur = 0;
+  }
+}
+
+function drawDrift(tt) {
+  const cx = W / 2, cy = H * (P.horizon / 100);
+  for (let i = 0; i < P.layers; i++) {
+    const angle = (i / P.layers) * Math.PI * 2 + tt * P.speed * 0.008 * (P.reverse ? -1 : 1);
+    const r  = (30 + i * 18) * P.amp;
+    const x0 = cx + Math.cos(angle) * r * (1 + P.wander * 0.5);
+    const y0 = cy + Math.sin(angle) * r * 0.5;
+    wCtx.beginPath();
+    const steps = 200;
+    for (let s = 0; s <= steps; s++) {
+      const sa = (s / steps) * Math.PI * 2;
+      const rx = (r + Math.sin(sa * P.freq * 3 + tt * P.speed * 0.04 + i * P.phase) * 14 * P.amp) * (1 + P.wander * 0.3);
+      const ry = (r + Math.sin(sa * P.freq * 2 - tt * P.speed * 0.03 + i * 0.4) * 10 * P.amp) * 0.5;
+      const px2 = x0 + rx * Math.cos(sa);
+      const py2 = y0 + ry * Math.sin(sa);
+      s === 0 ? wCtx.moveTo(px2, py2) : wCtx.lineTo(px2, py2);
+    }
+    wCtx.closePath();
+    const h = (P.hue + i * P.hueSpan + tt * P.cycle * 40) % 360;
+    wCtx.strokeStyle = `hsla(${h},90%,65%,${0.2 + (i / P.layers) * 0.4})`;
+    wCtx.lineWidth = 0.8 + (i / P.layers) * 1.2;
+    wCtx.fillStyle = `hsla(${h},85%,50%,${0.02 + (i / P.layers) * 0.04})`;
+    wCtx.fill();
+    wCtx.stroke();
+  }
+}
+
+/* ── Particle pass ── */
+function drawParticles(tt) {
+  pCtx.clearRect(0, 0, W, H);
+  if (!particles.length) return;
+  const dir = P.reverse ? -1 : 1;
+  particles.forEach(p => {
+    p.x += P.pSpeed * dir * (0.5 + Math.sin(t * 0.02 + p.phase) * 0.3);
+    if (P.ride) {
+      const targetY = waveY(p.x, p.layer, tt) - p.layer * 3;
+      p.y += (targetY - p.y) * 0.04 + p.vy;
+    } else {
+      p.y += p.vy;
+    }
+    if (p.x > W + 4) p.x = -4;
+    if (p.x < -4)    p.x = W + 4;
+    if (p.y < 0)     p.y = H;
+    if (p.y > H)     p.y = 0;
+    const h = (P.hue + p.layer * P.hueSpan + tt * P.cycle * 40) % 360;
+    pCtx.beginPath();
+    pCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    pCtx.fillStyle = `hsla(${h},90%,75%,${p.opacity * 0.7})`;
+    pCtx.fill();
+  });
+}
+
+/* ── Glow pass ── */
+function drawGlow() {
+  if (!P.glow) { gCtx.clearRect(0, 0, W, H); return; }
+  gCtx.clearRect(0, 0, W, H);
+  gCtx.filter = `blur(${10 + P.glowAmt * 28}px)`;
+  gCtx.drawImage(wc, 0, 0, W, H);
+  gCtx.filter = 'none';
+}
+
+/* ── Background ── */
+function drawBg() {
+  switch (P.bg) {
+    case 'white': wCtx.fillStyle = '#f0f0f8'; break;
+    case 'deep':  { const g = wCtx.createRadialGradient(W/2,H/2,0,W/2,H/2,Math.max(W,H)/2); g.addColorStop(0,'#071528'); g.addColorStop(1,'#01010e'); wCtx.fillStyle=g; } break;
+    case 'abyss': wCtx.fillStyle = '#000005'; break;
+    default:      wCtx.fillStyle = '#01010e';
+  }
+  wCtx.fillRect(0, 0, W, H);
+}
+
+/* ── Main render ── */
+function render() {
+  const now = performance.now();
+  _ff++;
+  if (now - _ft > 600) {
+    _fps = Math.round(_ff / ((now - _ft) / 1000));
+    _ff = 0; _ft = now;
+    document.getElementById('hudFps').textContent = _fps + ' FPS';
+  }
+
+  wCtx.fillStyle = bgFade();
+  wCtx.fillRect(0, 0, W, H);
+
+  switch (P.mode) {
+    case 'tides':  drawTides(t);  break;
+    case 'pulsar': drawPulsar(t); break;
+    case 'aurora': drawAurora(t); break;
+    case 'reef':   drawReef(t);   break;
+    case 'storm':  drawStorm(t);  break;
+    case 'drift':  drawDrift(t);  break;
+  }
+
+  drawGlow();
+  drawParticles(t);
+  updateReadout();
+
+  t++;
+  rafId = requestAnimationFrame(render);
+}
+
+function bgFade() {
+  switch (P.bg) {
+    case 'white': return `rgba(240,240,248,${P.trail})`;
+    case 'deep':  return `rgba(7,21,40,${P.trail})`;
+    case 'abyss': return `rgba(0,0,5,${P.trail})`;
+    default:      return `rgba(1,1,14,${P.trail})`;
+  }
+}
+
+/* ── Readout ── */
+function updateReadout() {
+  const modeFormulas = {
+    tides:  `y(x,i) = H·horizon + i·spread\n  + A·sin(f·x + speed·t + i·φ)\n  + A·wander·sin(f·1.8x − 0.7t + i)`,
+    pulsar: `r(θ,i) = R_i + A·sin(f·3θ + t + i·φ)\nx = cx + r·cos(θ)\ny = cy + r·sin(θ)·0.45`,
+    aurora: `y(x,i) = H·0.1 + i·spread\n  + A·sin(f·x + t + i·φ)\n  + A·wander·sin(2.3f·x − 0.5t)`,
+    reef:   `Kelp branch: polar arc\nbody → tip sway: A·sin(t + i·φ)`,
+    storm:  `y = tides + chaos·sin(3.7f·x)\nLightning: p=0.04 per frame`,
+    drift:  `r_x(θ,i) = R·sin(3f·θ + t + i·φ)\nr_y(θ,i) = R·sin(2f·θ − t)\nPolar orbit: ω = speed·0.008`,
+  };
+  document.getElementById('mathReadout').textContent =
+    modeFormulas[P.mode]
+    + `\n\nlayers: ${P.layers}   amp: ${P.amp.toFixed(2)}\nfreq: ${P.freq.toFixed(2)}   speed: ${P.speed.toFixed(2)}\nhue: ${Math.round(P.hue)}°   t: ${t}`;
+}
+
+/* ── Slider helpers ── */
+function updateBg(el) {
+  const min = parseFloat(el.min), max = parseFloat(el.max), v = parseFloat(el.value);
+  el.style.setProperty('--pct', ((v - min) / (max - min) * 100).toFixed(1) + '%');
+}
+function bindSlider(id, valId, key, fmt) {
+  const el = document.getElementById(id), vEl = document.getElementById(valId);
+  if (!el) return;
+  const upd = () => {
+    const v = parseFloat(el.value); P[key] = v;
+    if (vEl) vEl.textContent = fmt ? fmt(v) : v;
+    updateBg(el);
+    if (key === 'pCount') { initParticles(); }
+  };
+  el.addEventListener('input', upd);
+  updateBg(el);
+}
+function bindToggle(id, key, cb) {
+  const el = document.getElementById(id); if (!el) return;
+  el.addEventListener('click', () => {
+    el.classList.toggle('on'); P[key] = el.classList.contains('on');
+    if (cb) cb();
+  });
+}
+
+bindSlider('sLayers',  'vLayers',  'layers',  v => Math.round(v));
+bindSlider('sAmp',     'vAmp',     'amp',     v => v.toFixed(2));
+bindSlider('sFreq',    'vFreq',    'freq',    v => v.toFixed(2));
+bindSlider('sSpread',  'vSpread',  'spread',  v => Math.round(v));
+bindSlider('sHorizon', 'vHorizon', 'horizon', v => Math.round(v));
+bindSlider('sSpeed',   'vSpeed',   'speed',   v => v.toFixed(2));
+bindSlider('sWander',  'vWander',  'wander',  v => v.toFixed(2));
+bindSlider('sPhase',   'vPhase',   'phase',   v => v.toFixed(2));
+bindSlider('sPCount',  'vPCount',  'pCount',  v => Math.round(v));
+bindSlider('sPSize',   'vPSize',   'pSize',   v => v.toFixed(2));
+bindSlider('sPSpeed',  'vPSpeed',  'pSpeed',  v => v.toFixed(2));
+bindSlider('sHue',     'vHue',     'hue',     v => Math.round(v));
+bindSlider('sHueSpan', 'vHueSpan', 'hueSpan', v => Math.round(v));
+bindSlider('sCycle',   'vCycle',   'cycle',   v => v.toFixed(2));
+bindSlider('sOpacity', 'vOpacity', 'opacity', v => v.toFixed(2));
+bindSlider('sGlow',    'vGlow',    'glowAmt', v => v.toFixed(2));
+bindSlider('sTrail',   'vTrail',   'trail',   v => v.toFixed(2));
+
+bindToggle('tReverse', 'reverse');
+bindToggle('tRide',    'ride');
+bindToggle('tGlow',    'glow');
+
+/* ── Wave mode chips ── */
+document.querySelectorAll('[data-mode]').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('[data-mode]').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    P.mode = el.dataset.mode;
+    document.getElementById('hudMode').textContent = el.dataset.mode.toUpperCase();
+  });
+});
+
+/* ── Color mode ── */
+document.querySelectorAll('[data-cm]').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('[data-cm]').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    P.colorMode = el.dataset.cm;
+  });
+});
+
+/* ── BG seg ── */
+document.querySelectorAll('[data-bg]').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('[data-bg]').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    P.bg = el.dataset.bg;
+  });
+});
+
+/* ── Swatches ── */
+document.querySelectorAll('.cf-swatch').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.cf-swatch').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    P.customColor = el.dataset.c;
+    P.colorMode = 'custom';
+    document.querySelectorAll('[data-cm]').forEach(c => c.classList.toggle('active', c.dataset.cm === 'custom'));
+    const h = el.dataset.c.replace('#','');
+    if (h.length === 6) {
+      const r2 = parseInt(h.slice(0,2),16), g2 = parseInt(h.slice(2,4),16), b2 = parseInt(h.slice(4,6),16);
+      P.hue = Math.round(Math.atan2(Math.sqrt(3)*(g2-b2), 2*r2-g2-b2) * 180 / Math.PI + 360) % 360;
+    }
+  });
+});
+
+/* ── Quick presets ── */
+const PRESETS = {
+  deep:     { mode:'tides',  layers:12, amp:1.2, freq:0.8, hue:195, hueSpan:14, speed:0.6,  wander:0.4, trail:0.06, bg:'abyss', colorMode:'biolum', pCount:120, pSize:1.2 },
+  solar:    { mode:'aurora', layers:8,  amp:1.5, freq:1.2, hue:20,  hueSpan:10, speed:1.5,  wander:0.8, trail:0.04, bg:'void',  colorMode:'ember',  pCount:60,  pSize:2   },
+  borealis: { mode:'aurora', layers:10, amp:1.8, freq:0.6, hue:150, hueSpan:20, speed:0.8,  wander:1.2, trail:0.05, bg:'deep',  colorMode:'aurora', pCount:40,  pSize:1.5 },
+  lava:     { mode:'tides',  layers:6,  amp:1.4, freq:1.4, hue:15,  hueSpan:8,  speed:0.5,  wander:0.6, trail:0.12, bg:'abyss', colorMode:'ember',  pCount:80,  pSize:2   },
+  void:     { mode:'drift',  layers:8,  amp:0.8, freq:0.7, hue:260, hueSpan:12, speed:0.4,  wander:0.3, trail:0.03, bg:'void',  colorMode:'mono',   pCount:30,  pSize:1   },
+  storm:    { mode:'storm',  layers:14, amp:2.0, freq:2.0, hue:200, hueSpan:22, speed:3.0,  wander:1.8, trail:0.15, bg:'abyss', colorMode:'biolum', pCount:200, pSize:1   },
+};
+const PRESET_SLIDERS = { layers:'sLayers', amp:'sAmp', freq:'sFreq', spread:'sSpread', horizon:'sHorizon', speed:'sSpeed', wander:'sWander', phase:'sPhase', pCount:'sPCount', pSize:'sPSize', pSpeed:'sPSpeed', hue:'sHue', hueSpan:'sHueSpan', cycle:'sCycle', opacity:'sOpacity', glowAmt:'sGlow', trail:'sTrail' };
+document.querySelectorAll('[data-qp]').forEach(el => {
+  el.addEventListener('click', () => {
+    const qp = PRESETS[el.dataset.qp]; if (!qp) return;
+    Object.assign(P, qp);
+    for (const [k, sid] of Object.entries(PRESET_SLIDERS)) {
+      const sl = document.getElementById(sid);
+      if (sl && P[k] !== undefined) { sl.value = P[k]; updateBg(sl); }
+    }
+    const lv = document.getElementById('v' + PRESET_SLIDERS[Object.keys(qp)[0]]?.slice(1));
+    // sync all val labels
+    [['layers','vLayers',v=>Math.round(v)],['amp','vAmp',v=>v.toFixed(2)],['freq','vFreq',v=>v.toFixed(2)],
+     ['speed','vSpeed',v=>v.toFixed(2)],['wander','vWander',v=>v.toFixed(2)],['hue','vHue',v=>Math.round(v)],
+     ['hueSpan','vHueSpan',v=>Math.round(v)],['trail','vTrail',v=>v.toFixed(2)],
+     ['pCount','vPCount',v=>Math.round(v)],['pSize','vPSize',v=>v.toFixed(2)]
+    ].forEach(([k,vid,fmt])=>{ const el2=document.getElementById(vid); if(el2&&P[k]!==undefined)el2.textContent=fmt(P[k]); });
+    if (qp.mode) {
+      document.querySelectorAll('[data-mode]').forEach(c => c.classList.toggle('active', c.dataset.mode === qp.mode));
+      document.getElementById('hudMode').textContent = qp.mode.toUpperCase();
+    }
+    if (qp.colorMode) {
+      document.querySelectorAll('[data-cm]').forEach(c => c.classList.toggle('active', c.dataset.cm === qp.colorMode));
+    }
+    if (qp.bg) {
+      document.querySelectorAll('[data-bg]').forEach(c => c.classList.toggle('active', c.dataset.bg === qp.bg));
+    }
+    initParticles();
+  });
+});
+
+/* ── Export ── */
+function exportPNG(scale) {
+  scale = scale || 2;
+  const eC = document.createElement('canvas');
+  eC.width  = Math.round(W * scale);
+  eC.height = Math.round(H * scale);
+  const eCtx = eC.getContext('2d');
+  eCtx.drawImage(wc, 0, 0, eC.width, eC.height);
+  if (P.glow) {
+    eCtx.globalAlpha = 0.5;
+    eCtx.globalCompositeOperation = 'screen';
+    eCtx.drawImage(gc, 0, 0, eC.width, eC.height);
+    eCtx.globalCompositeOperation = 'source-over';
+    eCtx.globalAlpha = 1;
+  }
+  eCtx.drawImage(pc, 0, 0, eC.width, eC.height);
+  const a = document.createElement('a');
+  a.href = eC.toDataURL('image/png');
+  a.download = 'chromaflora-cosmic-tides-' + Date.now() + '.png';
+  a.click();
+}
+
+/* ── Save to gallery ── */
+function saveToGallery(btn) {
+  const tmp = document.createElement('canvas');
+  tmp.width = Math.round(W * 2); tmp.height = Math.round(H * 2);
+  const tCtx = tmp.getContext('2d');
+  tCtx.drawImage(wc, 0, 0, tmp.width, tmp.height);
+  if (P.glow) { tCtx.globalAlpha=0.5; tCtx.globalCompositeOperation='screen'; tCtx.drawImage(gc,0,0,tmp.width,tmp.height); tCtx.globalCompositeOperation='source-over'; tCtx.globalAlpha=1; }
+  tCtx.drawImage(pc, 0, 0, tmp.width, tmp.height);
+  try {
+    const saved = JSON.parse(localStorage.getItem('cf_artworks') || '[]');
+    saved.unshift({ id: Date.now(), username: 'me', prompt: 'cosmic-tides · ' + P.mode, dataUrl: tmp.toDataURL('image/png'), timestamp: Date.now() });
+    localStorage.setItem('cf_artworks', JSON.stringify(saved.slice(0, 50)));
+  } catch(e) {}
+  if (btn) { btn.textContent = '✓ Saved!'; setTimeout(() => { btn.textContent = '+ Gallery'; }, 2000); }
+  aurora();
+}
+
+function aurora() {
+  const el = document.createElement('div');
+  el.className = 'aurora-el';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 900);
+}
+
+/* ── Wire buttons ── */
+document.getElementById('btnSave').addEventListener('click', e => saveToGallery(e.currentTarget));
+document.getElementById('btnExport').addEventListener('click', () => exportPNG(2));
+document.getElementById('btnExportPanel').addEventListener('click', () => exportPNG(2));
+document.getElementById('btnReset').addEventListener('click', () => location.reload());
+
+/* ── HUD layer count ── */
+document.getElementById('sLayers').addEventListener('input', () => {
+  document.getElementById('hudLayers').textContent = P.layers + ' WAVES';
+});
+
+/* ── Keyboard ── */
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    e.preventDefault();
+    document.getElementById('btnSave').click();
+  }
+  if (e.key === ' ') {
+    e.preventDefault();
+    P.speed = P.speed > 0 ? 0 : 1;
+    const sl = document.getElementById('sSpeed');
+    if (sl) { sl.value = P.speed; updateBg(sl); document.getElementById('vSpeed').textContent = P.speed.toFixed(2); }
+  }
+  if (e.key === 'r' || e.key === 'R') {
+    if (!(e.ctrlKey || e.metaKey)) { e.preventDefault(); location.reload(); }
+  }
+});
+
+/* ── Init ── */
+document.querySelectorAll('input[type=range]').forEach(updateBg);
+render();
+</script>
+</body>
+</html>

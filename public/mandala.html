@@ -708,9 +708,22 @@ function render(){
   drawGlow();
   document.getElementById('hudPoints').textContent=pts.toLocaleString()+' PTS';
   updateMath(pts);
-  if(P.anim||Math.abs(P.spin)>0||P.pulse>0||P.noiseAnim){
+  const animating=P.anim||Math.abs(P.spin)>0||P.pulse>0||P.noiseAnim;
+  if(animating){
     animT+=0.016;
     if(P.noiseAnim)noiseT+=0.007;
+    // dispatch supplementary dot field to worker (progressive enhancement)
+    if(mandalaWorker){
+      mandalaWorker.postMessage({
+        type:'compute',
+        rings:P.layers,steps:Math.min(P.density,180),freq:P.freq,
+        amp:P.amp*0.6,phase:P.phase,harm:P.harm,turb:P.turb,
+        nScale:P.nScale,nOct:P.nOct,noiseT,animT,spin:P.spin,
+        pulse:P.pulse,opacity:P.opacity*0.4,radius:P.radius,
+        W,H,colorMode:P.colorMode,color:P.color,
+        mirror:P.mirror,golden:P.golden,layers:P.layers,symmetry:P.symmetry
+      });
+    }
     rafId=requestAnimationFrame(render);
   }
 }
@@ -856,18 +869,10 @@ document.querySelectorAll('[data-qp]').forEach(el=>{
 function exportPNG(scale){
   scale=scale||2;
   const eC=document.createElement('canvas');
-  eC.width=W*scale;eC.height=H*scale;
+  eC.width=Math.round(W*scale);eC.height=Math.round(H*scale);
   const eCtx=eC.getContext('2d');
-  eCtx.scale(scale,scale);
-  // Redraw at scale
-  const origW=W,origH=H;
-  W=eC.width/scale;H=eC.height/scale;
-  // Draw bg
-  const tempCtx=ctx;
-  // Simple: just composite what's visible
-  eCtx.drawImage(mc,0,0);
-  if(P.glow){eCtx.globalAlpha=0.45;eCtx.globalCompositeOperation='screen';eCtx.drawImage(gc,0,0);eCtx.globalCompositeOperation='source-over';eCtx.globalAlpha=1;}
-  W=origW;H=origH;
+  eCtx.drawImage(mc,0,0,eC.width,eC.height);
+  if(P.glow){eCtx.globalAlpha=0.45;eCtx.globalCompositeOperation='screen';eCtx.drawImage(gc,0,0,eC.width,eC.height);eCtx.globalCompositeOperation='source-over';eCtx.globalAlpha=1;}
   const a=document.createElement('a');
   a.href=eC.toDataURL('image/png');
   a.download='chromaflora-mandala-'+Date.now()+'.png';
@@ -878,7 +883,11 @@ document.getElementById('btnExportHdr').addEventListener('click',()=>exportPNG(2
 document.getElementById('btnReset').addEventListener('click',()=>location.reload());
 document.getElementById('btnSaveGallery').addEventListener('click',()=>{
   const data=mc.toDataURL('image/png');
-  try{const saved=JSON.parse(localStorage.getItem('cf_gallery')||'[]');saved.unshift({url:data,type:'mandala',ts:Date.now()});localStorage.setItem('cf_gallery',JSON.stringify(saved.slice(0,50)));}catch(e){}
+  try{
+    const saved=JSON.parse(localStorage.getItem('cf_artworks')||'[]');
+    saved.unshift({id:Date.now(),username:'me',prompt:'mandala · '+P.preset+' · '+P.symmetry+'-fold',dataUrl:data,timestamp:Date.now()});
+    localStorage.setItem('cf_artworks',JSON.stringify(saved.slice(0,50)));
+  }catch(e){}
   document.getElementById('btnSaveGallery').textContent='✓ Saved!';
   setTimeout(()=>{document.getElementById('btnSaveGallery').textContent='+ Gallery';},2000);
 });
@@ -950,23 +959,6 @@ try{
   workerReady=true;
 }catch(e){mandalaWorker=null;}
 
-/* ── Patch render to send worker frame in parallel ── */
-const _origRender=render;
-function renderWithWorker(){
-  _origRender();
-  // Dispatch worker computation for supplementary dot field (adds depth)
-  if(mandalaWorker&&(P.anim||Math.abs(P.spin)>0||P.pulse>0)){
-    mandalaWorker.postMessage({
-      type:'compute',
-      rings:P.layers,steps:Math.min(P.density,180),freq:P.freq,
-      amp:P.amp*0.6,phase:P.phase,harm:P.harm,turb:P.turb,
-      nScale:P.nScale,nOct:P.nOct,noiseT,animT,spin:P.spin,
-      pulse:P.pulse,opacity:P.opacity*0.4,radius:P.radius,
-      W,H,colorMode:P.colorMode,color:P.color,
-      mirror:P.mirror,golden:P.golden,layers:P.layers,symmetry:P.symmetry
-    });
-  }
-}
 
 /* ── Init ── */
 document.querySelectorAll('input[type=range]').forEach(updateBg);

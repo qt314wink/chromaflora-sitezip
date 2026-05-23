@@ -75,7 +75,7 @@ Each module is a complete expression of the philosophy. Each one can be used in 
 
 Jennipher is available for: creative technology consulting, design system architecture, generative art commissions, speaking on systems thinking and cross-domain creativity, and white-label ChromaFlora builds for studios and brands.
 
-**Contact:** girlwithstarryeyes@outlook.com | @halcyonminx on all platforms
+**Contact:** jennipher@melodicbloom.com | @halcyonminx on all platforms
 
 ---
 

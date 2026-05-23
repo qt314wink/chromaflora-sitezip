@@ -86,7 +86,7 @@ ChromaFlora is static HTML served via Python's http.server — all content is im
         "@type": "Person",
         "name": "Jennipher Troup",
         "alternateName": "@halcyonminx",
-        "email": "girlwithstarryeyes@outlook.com",
+        "email": "jennipher@melodicbloom.com",
         "sameAs": ["https://twitter.com/halcyonminx", "https://instagram.com/halcyonminx"]
       },
       "applicationCategory": "DesignApplication",

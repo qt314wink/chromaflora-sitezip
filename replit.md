@@ -1,5 +1,5 @@
 # ChromaFlora Design System v5.0
-**Creator:** Jennipher Troup — girlwithstarryeyes@outlook.com · @halcyonminx
+**Creator:** Jennipher Troup — jennipher@melodicbloom.com · @halcyonminx
 
 A cosmic bioluminescent design system and portfolio — pure HTML/CSS/JS, no external images, all procedural Canvas 2D + CSS.
 

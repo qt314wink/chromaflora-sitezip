@@ -99,7 +99,7 @@ This matches the "Notion / Figma / Canva free tier" precedent: free makes the pr
 ---
 
 ### Tier 4: Enterprise (Custom Pricing)
-**Contact:** girlwithstarryeyes@outlook.com
+**Contact:** jennipher@melodicbloom.com
 
 **Includes:**
 - All Agency features

@@ -268,12 +268,7 @@
   .parse-tags { display:flex;flex-wrap:wrap;gap:4px;margin-top:6px; }
   .parse-tag { padding:3px 8px;border-radius:99px;font-size:9px;font-weight:700;background:rgba(34,211,238,0.12);border:1px solid rgba(34,211,238,0.25);color:rgba(34,211,238,0.85); }
 
-  /* ── Premium lock ── */
-  .feature-locked { position:relative;overflow:hidden; }
-  .lock-overlay { position:absolute;inset:0;background:rgba(4,4,15,0.7);backdrop-filter:blur(2px);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;border-radius:10px;gap:4px; }
-  .lock-icon { font-size:20px; }
-  .lock-text { font-size:9px;font-weight:700;color:rgba(255,215,0,0.8);letter-spacing:0.05em; }
-  .lock-btn { margin-top:4px;padding:3px 10px;border-radius:8px;border:none;cursor:pointer;background:linear-gradient(135deg,#f97316,#a855f7);color:white;font-size:9px;font-weight:700; }
+
 </style>
 </head>
 <body>
@@ -345,27 +340,12 @@
     <div class="panel-section">
       <div class="panel-title" style="display:flex;align-items:center;justify-content:space-between">
         <span>✦ Style Presets</span>
-        <span style="font-size:9px;color:rgba(255,215,0,0.7);font-weight:700">PRO+FREE</span>
       </div>
       <div class="preset-grid" id="presetGrid"></div>
       <button class="preset-apply-btn" id="btnApplyPreset">Apply Preset to Canvas</button>
       <div style="margin-top:8px;display:flex;gap:5px">
-        <button class="layer-btn feature-locked" id="btnBatchExport" style="flex:1;position:relative">
-          Batch (3×)
-          <div class="lock-overlay">
-            <div class="lock-icon">🔒</div>
-            <div class="lock-text">PRO</div>
-            <button class="lock-btn" onclick="showProModal(event)">Upgrade</button>
-          </div>
-        </button>
-        <button class="layer-btn feature-locked" id="btnAnimPreview" style="flex:1;position:relative">
-          Animate
-          <div class="lock-overlay">
-            <div class="lock-icon">🔒</div>
-            <div class="lock-text">PRO</div>
-            <button class="lock-btn" onclick="showProModal(event)">Upgrade</button>
-          </div>
-        </button>
+        <button class="layer-btn" id="btnBatchExport" style="flex:1">Batch (3×)</button>
+        <button class="layer-btn" id="btnAnimPreview" style="flex:1">Animate</button>
       </div>
     </div>
 
@@ -512,18 +492,9 @@
         <a href="plotter.html" style="font-size:9px;color:rgba(34,211,238,0.7);font-weight:700;text-decoration:none">Plotter Studio →</a>
       </div>
       <div style="display:flex;flex-direction:column;gap:6px">
-        <button class="pour-btn feature-locked" style="position:relative;padding:7px;font-size:11px;font-weight:700;width:100%">
-          ⬡ Export SVG (AxiDraw)
-          <div class="lock-overlay" style="border-radius:6px"><div class="lock-icon" style="font-size:12px">🔒</div><div class="lock-text">PRO</div><button class="lock-btn" onclick="showProModal(event)">Upgrade</button></div>
-        </button>
-        <button class="pour-btn feature-locked" id="btnExportGCode" style="position:relative;padding:7px;font-size:11px;font-weight:700;width:100%">
-          ⚙ Export GCode (.nc)
-          <div class="lock-overlay" style="border-radius:6px"><div class="lock-icon" style="font-size:12px">🔒</div><div class="lock-text">PRO</div><button class="lock-btn" onclick="showProModal(event)">Upgrade</button></div>
-        </button>
-        <button class="pour-btn feature-locked" id="btnExportTurtle" style="position:relative;padding:7px;font-size:11px;font-weight:700;width:100%">
-          🐢 TurtleToy Script
-          <div class="lock-overlay" style="border-radius:6px"><div class="lock-icon" style="font-size:12px">🔒</div><div class="lock-text">PRO</div><button class="lock-btn" onclick="showProModal(event)">Upgrade</button></div>
-        </button>
+        <button class="pour-btn" onclick="exportSVG()" style="padding:7px;font-size:11px;font-weight:700;width:100%">⬡ Export SVG (AxiDraw)</button>
+        <button class="pour-btn" onclick="exportGCode()" style="padding:7px;font-size:11px;font-weight:700;width:100%">⚙ Export GCode (.nc)</button>
+        <button class="pour-btn" onclick="exportTurtle()" style="padding:7px;font-size:11px;font-weight:700;width:100%">🐢 TurtleToy Script</button>
       </div>
       <div style="margin-top:10px;font-size:10px;color:rgba(255,255,255,.2);line-height:1.5">
         Pen plotters: AxiDraw, EvilMadScientist, WaterColorBot, custom GRBL
@@ -1894,29 +1865,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-/* ── Pro Modal ── */
-function showProModal(e) {
-  if (e) { e.preventDefault(); e.stopPropagation(); }
-  let modal = document.getElementById('proModal');
-  if (!modal) {
-    modal = document.createElement('div');
-    modal.id = 'proModal';
-    modal.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.85);backdrop-filter:blur(12px)';
-    modal.innerHTML = `
-      <div style="background:linear-gradient(135deg,#0d0822,#080416);border:1px solid rgba(168,85,247,0.3);border-radius:24px;padding:40px;max-width:420px;width:90%;text-align:center">
-        <div style="font-size:48px;margin-bottom:16px">✦</div>
-        <div style="font-size:24px;font-weight:900;background:linear-gradient(135deg,#f97316,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px">ChromaFlora Pro</div>
-        <div style="color:rgba(255,255,255,0.5);font-size:14px;margin-bottom:28px;line-height:1.6">Unlock the full creative suite and take your art to the next level.</div>
-        <div style="text-align:left;display:flex;flex-direction:column;gap:10px;margin-bottom:28px">
-          ${['Batch export 3× canvas variations','Animation preview & frame builder','High-res export (4K+)','NFT mint & wallet connect','Exclusive style preset packs','Early access to new features','Priority gallery placement','Remove ChromaFlora watermark'].map(f=>`<div style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,0.8)"><span style="color:#f97316">✦</span>${f}</div>`).join('')}
-        </div>
-        <button onclick="alert('Coming soon! Sign up at jennipher@melodicbloom.com for early access.');document.getElementById('proModal').remove();" style="width:100%;padding:14px;border-radius:12px;border:none;cursor:pointer;background:linear-gradient(135deg,#f97316,#a855f7);color:white;font-size:15px;font-weight:800;margin-bottom:10px">Unlock Pro — Coming Soon</button>
-        <button onclick="document.getElementById('proModal').remove()" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:13px;cursor:pointer">Maybe later</button>
-      </div>`;
-    document.body.appendChild(modal);
-    modal.addEventListener('click', e => { if (e.target===modal) modal.remove(); });
-  }
-}
+/* Pro paywall removed — all features are now free */
+function showProModal(e) { if(e)e.stopPropagation(); }
 window.showProModal = showProModal;
 
 /* ── Creator / Share system ── */

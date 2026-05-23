@@ -51,7 +51,7 @@
   .embed-panel{border-radius:20px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.025);overflow:hidden;position:sticky;top:80px}
   .embed-header{padding:20px 22px 0;display:flex;align-items:center;justify-content:space-between}
   .embed-title{font-size:14px;font-weight:800}
-  .pro-badge{padding:3px 10px;border-radius:99px;font-size:10px;font-weight:800;background:linear-gradient(135deg,rgba(249,115,22,0.3),rgba(168,85,247,0.3));border:1px solid rgba(249,115,22,0.3);color:rgba(249,200,100,0.9)}
+
 
   /* ── Lang tabs ── */
   .lang-tabs{display:flex;gap:2px;padding:14px 22px 0}
@@ -62,23 +62,14 @@
   /* ── Code block ── */
   .code-wrap{position:relative;margin:12px}
   .code-block{background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:18px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.7;color:rgba(255,255,255,0.65);max-height:220px;overflow:hidden;position:relative;white-space:pre;overflow-x:auto}
-  .code-block.locked #codeContent{filter:blur(5px);user-select:none;pointer-events:none}
   .code-lang{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.2);margin-bottom:8px}
-
-  /* ── Paywall overlay ── */
-  .paywall{position:absolute;bottom:0;left:0;right:0;height:160px;background:linear-gradient(to top,rgba(4,4,15,0.98) 60%,transparent);display:flex;align-items:flex-end;justify-content:center;padding-bottom:18px;border-radius:0 0 12px 12px}
-  .paywall-inner{text-align:center}
-  .paywall-lock{font-size:22px;margin-bottom:6px}
-  .paywall-msg{font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:12px;line-height:1.4}
-  .paywall-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 22px;border-radius:10px;border:none;cursor:pointer;background:linear-gradient(135deg,#f97316,#a855f7);color:white;font-size:13px;font-weight:800;transition:var(--t-spring);font-family:inherit}
-  .paywall-btn:hover{transform:scale(1.04);box-shadow:0 4px 20px rgba(168,85,247,0.4)}
 
   /* ── Copy btn (unlocked state) ── */
   .copy-btn{position:absolute;top:8px;right:8px;padding:5px 12px;border-radius:7px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.5);font-size:10px;font-weight:700;cursor:pointer;font-family:'JetBrains Mono',monospace;transition:var(--t-snap)}
   .copy-btn:hover{background:rgba(255,255,255,0.12);color:white}
   .copy-btn.copied{background:rgba(16,185,129,0.2);border-color:rgba(16,185,129,0.3);color:#10b981}
 
-  /* ── Pro modal ── */
+  /* ── Modal overlay (reused for share/info) ── */
   .modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.85);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity 0.2s}
   .modal-overlay.open{opacity:1;pointer-events:all}
   .modal-box{background:linear-gradient(160deg,#0d0822,#07041a);border:1px solid rgba(168,85,247,0.25);border-radius:24px;max-width:420px;width:100%;padding:36px;position:relative;transform:scale(0.92);transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);text-align:center}
@@ -152,7 +143,6 @@
   <div class="embed-panel">
     <div class="embed-header">
       <div class="embed-title">Embed This Effect</div>
-      <div class="pro-badge">PRO</div>
     </div>
 
     <!-- Variant controls -->
@@ -206,13 +196,6 @@
         <div id="codeContent"></div>
       </div>
       <button class="copy-btn" id="copyBtn" style="display:none" onclick="copyCode()">Copy</button>
-      <div class="paywall" id="paywallOverlay">
-        <div class="paywall-inner">
-          <div class="paywall-lock">🔒</div>
-          <div class="paywall-msg">Embed code is a Pro feature.<br>Unlock for all 18 effects in 7 frameworks.</div>
-          <button class="paywall-btn" onclick="openProModal()">✦ Unlock Pro Access</button>
-        </div>
-      </div>
     </div>
     <div style="padding:12px 22px 18px;font-size:11px;color:rgba(255,255,255,0.25);line-height:1.5">
       Embed ChromaFlora effects on any website. Self-contained Canvas 2D — no build tools required.
@@ -220,42 +203,6 @@
   </div>
 </div>
 
-<!-- Pro modal -->
-<div class="modal-overlay" id="proModal">
-  <div class="modal-box">
-    <button class="modal-close" onclick="document.getElementById('proModal').classList.remove('open')">✕</button>
-    <div class="modal-crown">✦</div>
-    <div class="modal-h">ChromaFlora Pro</div>
-    <div class="modal-sub">Unlock embed codes, batch export, animation presets, and the full asset library.</div>
-    <div class="modal-feats">
-      <div class="modal-feat"><div class="feat-icon">📦</div>All embed formats</div>
-      <div class="modal-feat"><div class="feat-icon">🎨</div>12 art presets</div>
-      <div class="modal-feat"><div class="feat-icon">⬇</div>Batch PNG export</div>
-      <div class="modal-feat"><div class="feat-icon">🎬</div>Animation recorder</div>
-      <div class="modal-feat"><div class="feat-icon">🛒</div>Asset pack access</div>
-      <div class="modal-feat"><div class="feat-icon">🏆</div>Challenge badges</div>
-      <div class="modal-feat"><div class="feat-icon">🔷</div>NFT mint priority</div>
-      <div class="modal-feat"><div class="feat-icon">📞</div>Creator support</div>
-    </div>
-    <button class="modal-cta" onclick="window.location.href='mailto:jennipher@melodicbloom.com?subject=ChromaFlora%20Pro%20Access'">Get Pro Access →</button>
-    <div style="margin:18px 0 10px;position:relative">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-        <div style="flex:1;height:1px;background:rgba(255,255,255,0.07)"></div>
-        <div style="font-size:10px;color:rgba(255,255,255,0.2);font-weight:700">OR ENTER ACCESS CODE</div>
-        <div style="flex:1;height:1px;background:rgba(255,255,255,0.07)"></div>
-      </div>
-      <div style="display:flex;gap:8px">
-        <input type="text" id="proCodeInput" placeholder="Enter code e.g. CHROMAPRO2026"
-          style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:9px;padding:9px 13px;font-size:12px;color:white;font-family:'JetBrains Mono',monospace;outline:none"
-          onkeydown="if(event.key==='Enter')verifyProCode()">
-        <button onclick="verifyProCode()"
-          style="padding:9px 16px;border-radius:9px;border:none;background:rgba(168,85,247,0.25);color:rgba(200,150,255,0.9);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">Verify</button>
-      </div>
-      <div id="codeMsg" style="font-size:11px;margin-top:8px;color:rgba(255,255,255,0.3)"></div>
-    </div>
-    <div class="modal-footer-text">jennipher@melodicbloom.com · @halcyonminx</div>
-  </div>
-</div>
 
 <script src="effects.js"></script>
 <script src="player-bar.js"></script>
@@ -583,7 +530,7 @@ const projectId = params.get('id') || 'chromaflora';
 const project = PROJECTS[projectId] || PROJECTS['chromaflora'];
 
 let currentLang = 'html';
-let isProUnlocked = localStorage.getItem('cf_pro_unlocked') === '1';
+let isProUnlocked = true; /* Pro paywall removed — all features are now free */
 
 function init() {
   document.title = `${project.title} · ChromaFlora`;
@@ -634,47 +581,15 @@ function init() {
 }
 
 function renderEmbed() {
-  document.getElementById('codeContent').innerHTML = isProUnlocked
-    ? getEmbedCode(currentLang, project.title, project.effect)
-    : getLockedPlaceholder(currentLang);
+  document.getElementById('codeContent').innerHTML = getEmbedCode(currentLang, project.title, project.effect);
   document.getElementById('codeLang').textContent = currentLang.toUpperCase();
-  document.getElementById('paywallOverlay').style.display = isProUnlocked ? 'none' : '';
-  document.getElementById('copyBtn').style.display = isProUnlocked ? '' : 'none';
-  document.getElementById('codeBlock').classList.toggle('locked', !isProUnlocked);
+  document.getElementById('copyBtn').style.display = '';
 }
 
-function getLockedPlaceholder(lang) {
-  const lines = {
-    html: ['&lt;!-- ChromaFlora Embed Code --&gt;','&lt;script src="..."&gt;&lt;/script&gt;','&lt;canvas id="cf" ...&gt;&lt;/canvas&gt;'],
-    react: ['import { ChromaFlora } from ...','const MyComponent = () => {','  return &lt;ChromaCanvas effect="..." /&gt;'],
-    vue: ['import ChromaCanvas from ...','&lt;template&gt;','  &lt;chroma-canvas effect="..." /&gt;'],
-    svelte: ['import { onMount } from "svelte"','let canvas; onMount(() => {...})','&lt;canvas bind:this={canvas} /&gt;'],
-    wc: ['&lt;script type="module" src="..."&gt;','&lt;chroma-flora effect="..."&gt;','&lt;/chroma-flora&gt;'],
-    next: ["'use client';",'import { useEffect, useRef } from "react"','const ChromaCanvas: FC = () => {...}'],
-    js: ['import { ChromaFlora } from "..."','const cf = new ChromaFlora({...})','cf.play();'],
-  };
-  const l = lines[lang] || lines.html;
-  return `<span style="opacity:.35">${l.join('\n')}</span>\n<span style="opacity:.2">// 🔒 Unlock Pro to copy full embed code\n// jennipher@melodicbloom.com</span>`;
-}
 
-function verifyProCode() {
-  const code = (document.getElementById('proCodeInput')?.value || '').trim().toUpperCase();
-  const validCodes = ['CHROMAPRO2026','HALCYONPRO','JENNIPHER2026','CHROMAFLORA'];
-  if (validCodes.includes(code)) {
-    localStorage.setItem('cf_pro_unlocked', '1');
-    isProUnlocked = true;
-    document.getElementById('codeMsg').style.color = '#10b981';
-    document.getElementById('codeMsg').textContent = '✓ Pro access unlocked! Enjoy all embed formats.';
-    setTimeout(() => {
-      document.getElementById('proModal').classList.remove('open');
-      renderEmbed();
-    }, 1200);
-  } else {
-    document.getElementById('codeMsg').style.color = 'rgba(255,100,130,0.9)';
-    document.getElementById('codeMsg').textContent = '✕ Invalid code. Email jennipher@melodicbloom.com to get your code.';
-  }
-}
-window.verifyProCode = verifyProCode;
+
+
+/* Pro paywall removed — all features are now free */
 
 // Lang tab switching
 document.querySelectorAll('.lang-tab').forEach(tab => {
@@ -752,13 +667,6 @@ function copyCode() {
   });
 }
 window.copyCode = copyCode;
-
-function openProModal() { document.getElementById('proModal').classList.add('open'); }
-window.openProModal = openProModal;
-
-document.getElementById('proModal').addEventListener('click', e => {
-  if (e.target === document.getElementById('proModal')) document.getElementById('proModal').classList.remove('open');
-});
 
 function shareProject() {
   const url = location.href;

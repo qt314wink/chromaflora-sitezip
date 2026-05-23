@@ -44,9 +44,7 @@
   .pack-card:hover{transform:translateY(-6px);border-color:rgba(249,115,22,0.3);box-shadow:0 20px 60px rgba(0,0,0,0.5),0 0 30px rgba(249,115,22,0.1)}
   .pack-thumb{height:160px;position:relative;overflow:hidden}
   .pack-thumb canvas{display:block;width:100%;height:100%}
-  .pack-badge{position:absolute;top:10px;right:10px;padding:3px 10px;border-radius:99px;font-size:10px;font-weight:800;background:rgba(249,115,22,0.9);color:white}
-  .pack-badge.free{background:rgba(16,185,129,0.9)}
-  .pack-badge.pro{background:linear-gradient(135deg,#f97316,#a855f7)}
+  .pack-badge{position:absolute;top:10px;right:10px;padding:3px 10px;border-radius:99px;font-size:10px;font-weight:800;background:rgba(16,185,129,0.9);color:white}
   .pack-info{padding:18px}
   .pack-name{font-size:16px;font-weight:800;margin-bottom:4px}
   .pack-desc{font-size:12px;color:rgba(255,255,255,0.45);line-height:1.5;margin-bottom:12px}
@@ -56,8 +54,6 @@
   .pack-cta{padding:7px 16px;border-radius:9px;border:none;cursor:pointer;font-size:12px;font-weight:700;transition:var(--t-snap)}
   .pack-cta.get{background:rgba(16,185,129,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.25)}
   .pack-cta.get:hover{background:rgba(16,185,129,0.3);color:white}
-  .pack-cta.buy{background:linear-gradient(135deg,rgba(249,115,22,0.3),rgba(168,85,247,0.3));color:white;border:1px solid rgba(249,115,22,0.3)}
-  .pack-cta.buy:hover{background:linear-gradient(135deg,rgba(249,115,22,0.5),rgba(168,85,247,0.5))}
 
   /* ── Commission board ── */
   .commission-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
@@ -199,8 +195,8 @@ const PACKS = [
   {
     name: 'Nebula Ribbon Pack',
     desc: '8 flowing nebula styles, glow presets, and 3 cosmic background generators.',
-    price: '$4.99',
-    badge: 'pro',
+    price: 'FREE',
+    badge: 'free',
     render(ctx, W, H) {
       const bg=ctx.createRadialGradient(W*0.3,H*0.4,0,W/2,H/2,Math.max(W,H)*0.8);
       bg.addColorStop(0,'#120824'); bg.addColorStop(1,'#020208');
@@ -219,8 +215,8 @@ const PACKS = [
   {
     name: 'Acid Pour Collection',
     desc: '10 acid pour flow presets with fine-tuned physics settings + 4 exclusive palettes.',
-    price: '$7.99',
-    badge: 'pro',
+    price: 'FREE',
+    badge: 'free',
     render(ctx, W, H) {
       ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
       const pal=['#00ffaa','#ff00cc','#ffcc00','#ff3300','#00ccff'];
@@ -236,8 +232,8 @@ const PACKS = [
   {
     name: 'Biolume Deep Sea',
     desc: 'Underwater bioluminescent styles: 7 organism presets, floating tendrils + orb generators.',
-    price: '$5.99',
-    badge: 'pro',
+    price: 'FREE',
+    badge: 'free',
     render(ctx, W, H) {
       ctx.fillStyle='#000d1a'; ctx.fillRect(0,0,W,H);
       for (let i=0;i<20;i++) {
@@ -265,8 +261,8 @@ function initPacks() {
     canvas.style.cssText = 'width:100%;height:100%;display:block';
     pack.render(canvas.getContext('2d'), 520, 320);
     const badge = document.createElement('div');
-    badge.className = `pack-badge ${pack.badge}`;
-    badge.textContent = pack.badge === 'free' ? 'FREE' : pack.badge === 'pro' ? 'PRO' : pack.badge.toUpperCase();
+    badge.className = 'pack-badge';
+    badge.textContent = 'FREE';
     thumbDiv.appendChild(canvas); thumbDiv.appendChild(badge);
 
     card.innerHTML = `
@@ -274,9 +270,9 @@ function initPacks() {
         <div class="pack-name">${pack.name}</div>
         <div class="pack-desc">${pack.desc}</div>
         <div class="pack-meta">
-          <div class="${pack.badge==='free'?'pack-price free-price':'pack-price'}">${pack.price}</div>
-          <button class="pack-cta ${pack.badge==='free'?'get':'buy'}" onclick="handlePackCta('${pack.badge}','${pack.name.replace(/'/g,'')}')">
-            ${pack.badge==='free'?'Get Free':'Buy Now'}
+          <div class="pack-price free-price">FREE</div>
+          <button class="pack-cta get" onclick="handlePackCta('free','${pack.name.replace(/'/g,'')}')">
+            Get Pack
           </button>
         </div>
       </div>`;
@@ -287,11 +283,7 @@ function initPacks() {
 }
 
 function handlePackCta(badge, name) {
-  if (badge === 'free') {
-    alert(`"${name}" pack applied! Your studio presets have been updated with this pack's styles.`);
-  } else {
-    alert(`Premium purchase coming soon! Email jennipher@melodicbloom.com to get early access to "${name}".`);
-  }
+  alert(`"${name}" pack applied! Your studio presets have been updated with this pack's styles.`);
 }
 window.handlePackCta = handlePackCta;
 

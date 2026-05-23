@@ -40,7 +40,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
 .panel{display:flex;flex-direction:column;gap:16px}
 .panel-card{border-radius:16px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.025);padding:20px}
 .panel-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.3);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
-.pro-tag{padding:2px 8px;border-radius:99px;font-size:9px;font-weight:800;background:linear-gradient(135deg,rgba(249,115,22,.25),rgba(168,85,247,.25));border:1px solid rgba(249,115,22,.3);color:rgba(249,200,100,.9)}
+
 .free-tag{padding:2px 8px;border-radius:99px;font-size:9px;font-weight:800;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.25);color:rgba(16,185,129,.9)}
 
 .cf-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.3);margin-bottom:4px}
@@ -64,8 +64,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
 .pattern-card:hover,.pattern-card.active{border-color:rgba(34,211,238,.4);box-shadow:0 0 12px rgba(34,211,238,.15)}
 .pattern-card canvas{display:block;width:100%;height:60px}
 .pattern-label{font-size:9px;text-align:center;padding:4px 2px;color:rgba(255,255,255,.5);font-weight:700;background:rgba(0,0,0,.5)}
-.pattern-free{position:absolute;top:4px;right:4px;padding:2px 5px;border-radius:4px;font-size:8px;font-weight:800;background:rgba(16,185,129,.8);color:white}
-.pattern-pro{position:absolute;top:4px;right:4px;padding:2px 5px;border-radius:4px;font-size:8px;font-weight:800;background:rgba(249,115,22,.8);color:white}
+
 
 /* ── Code output ── */
 .code-output{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:14px;font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(255,255,255,.55);max-height:180px;overflow-y:auto;white-space:pre;overflow-x:auto;margin-bottom:8px;position:relative;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.1) transparent}
@@ -141,7 +140,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
 
       <!-- Pattern Generator -->
       <div class="panel-card">
-        <div class="panel-title">Generative Patterns <span class="free-tag">FREE</span></div>
+        <div class="panel-title">Generative Patterns</div>
         <div class="pattern-grid" id="patternGrid"></div>
         <div class="slider-group">
           <div class="slider-label">Complexity <span id="complexVal">50</span></div>
@@ -207,14 +206,14 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
 
       <!-- Export targets -->
       <div class="panel-card">
-        <div class="panel-title">Export <span class="pro-tag">PRO for all</span></div>
+        <div class="panel-title">Export</div>
         <button class="export-btn svg" id="btnSVG">⬡ Export SVG (AxiDraw-ready)</button>
         <button class="export-btn gcode" id="btnGCode">⚙ Export GCode (.nc)</button>
         <button class="export-btn turtle" id="btnTurtle">🐢 Export TurtleToy Script</button>
         <button class="export-btn canva" id="btnCanva" disabled>◈ Canva Integration (coming)</button>
         <button class="export-btn canva" id="btnFigma" disabled>◈ Figma Plugin (coming)</button>
         <div style="font-size:10px;color:rgba(255,255,255,.2);margin-top:8px;line-height:1.6;font-family:'JetBrains Mono',monospace">
-          SVG is free · GCode + TurtleToy require Pro<br>
+          All exports are free and open-source<br>
           Canva/Figma integrations launching Q3 2025
         </div>
       </div>
@@ -497,12 +496,8 @@ function buildPatternThumbs() {
     const label = document.createElement('div');
     label.className = 'pattern-label';
     label.textContent = pat.name;
-    const tag = document.createElement('div');
-    tag.className = pat.free ? 'pattern-free' : 'pattern-pro';
-    tag.textContent = pat.free ? 'FREE' : 'PRO';
-    card.appendChild(thumb); card.appendChild(label); card.appendChild(tag);
+    card.appendChild(thumb); card.appendChild(label);
     card.addEventListener('click', () => {
-      if (!pat.free) { showProHint(); return; }
       currentDraw = key;
       document.querySelectorAll('.pattern-card').forEach(c => c.classList.remove('active'));
       card.classList.add('active');
@@ -512,9 +507,8 @@ function buildPatternThumbs() {
   });
 }
 
-function showProHint() {
-  alert('This pattern is a Pro feature. Email jennipher@melodicbloom.com for early access.');
-}
+/* Pro paywall removed — all patterns are now free */
+function showProHint() {}
 
 /* ── Draw to canvas ── */
 function generateAndDraw() {
@@ -629,7 +623,6 @@ function downloadText(content, filename, mime) {
 document.querySelectorAll('.ctool[data-draw]').forEach(btn => {
   btn.addEventListener('click', () => {
     const key = btn.dataset.draw;
-    if (PATTERNS[key] && !PATTERNS[key].free) { showProHint(); return; }
     currentDraw = key;
     document.querySelectorAll('.ctool[data-draw]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
@@ -642,14 +635,8 @@ document.querySelectorAll('.ctool[data-draw]').forEach(btn => {
 document.getElementById('clearBtn').addEventListener('click', () => { paths = []; ctx.clearRect(0, 0, W, H); drawGrid(); updateInfo(); document.getElementById('codeOutput').textContent = '; Canvas cleared'; });
 document.getElementById('genPattern').addEventListener('click', generateAndDraw);
 document.getElementById('btnSVG').addEventListener('click', exportSVG);
-document.getElementById('btnGCode').addEventListener('click', () => {
-  if (!confirm('GCode export is a Pro feature. Export preview version for free?')) return;
-  exportGCode();
-});
-document.getElementById('btnTurtle').addEventListener('click', () => {
-  if (!confirm('TurtleToy export is a Pro feature. Export preview version for free?')) return;
-  exportTurtle();
-});
+document.getElementById('btnGCode').addEventListener('click', exportGCode);
+document.getElementById('btnTurtle').addEventListener('click', exportTurtle);
 
 /* ── Sliders ── */
 function trackSl(el) { el.style.setProperty('--pct', ((+el.value - +el.min) / (+el.max - +el.min) * 100) + '%'); }

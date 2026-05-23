@@ -2117,54 +2117,49 @@ document.addEventListener('DOMContentLoaded', function() {
   new CF.FloatWidget([
     { label: 'Navigation', icon: '☰', onClick: () => navDrawer.open() },
     { label: 'Art Studio', icon: '🎨', onClick: () => window.location.href = 'studio.html' },
+    { label: 'Mandala', icon: '☯', onClick: () => window.location.href = 'mandala.html' },
+    { label: 'Cosmic Tides', icon: '〰', onClick: () => window.location.href = 'cosmic-tides.html' },
     { label: 'ChromaSynth', icon: '🎵', onClick: () => window.location.href = 'player.html' },
     { label: 'Settings', icon: '⚙', onClick: () => settingsDrawer.open() },
     { label: 'Export Kit', icon: '✦', onClick: () => exportModal.open() },
   ]);
 
-  /* ── Gallery tile click-to-project navigation ── */
+  /* ── Gallery tile click navigation ── */
   (function bindTileNav() {
-    // Map data-effect → project page ID
-    const effectToProject = {
-      'abstract-flows': 'chromaflora',
-      'liquid-neon': 'liquid-neon',
-      'plasma-drift': 'plasma-drift',
-      'mandala': 'mandala',
-      'cosmic-tide': 'cosmic-tide',
-      'floral-glow': 'floral-glow',
-      'deep-space': 'deep-space',
-      'liquid-mercury': 'liquid-mercury',
-      'quilling': 'quilling',
-      'tectonic-shift': 'tectonic-shift',
-      'ripple-field': 'ripple-field',
-      'bubble': 'bubble',
-      'crystallize': 'crystallize',
-      'liquify': 'liquify',
-      'paper-layer': 'paper-layer',
-      'coloring-book': 'coloring-book',
-      'acid-pour': 'acid-pour',
-      'chromaflora': 'chromaflora',
+    // Core modules route to their full studio page; other effects → project detail page
+    const effectToModule = {
+      'mandala':      'mandala.html',
+      'cosmic-tide':  'cosmic-tides.html',
+      'abstract-flows':'studio.html',
     };
 
     document.querySelectorAll('.gallery-tile[data-effect]').forEach(tile => {
       tile.style.cursor = 'pointer';
-      // Inject "View Project →" chip into label on hover
+      const effect = tile.dataset.effect;
+      const isModule = !!effectToModule[effect];
       const label = tile.querySelector('.gallery-tile-label');
       if (label) {
         const chip = document.createElement('div');
         chip.style.cssText = 'display:inline-flex;align-items:center;gap:4px;margin-top:6px;padding:4px 10px;border-radius:7px;font-size:10px;font-weight:800;background:rgba(168,85,247,.25);border:1px solid rgba(168,85,247,.4);color:rgba(200,150,255,.9);opacity:0;transition:opacity .2s;letter-spacing:.04em';
-        chip.textContent = 'View Project →';
+        chip.textContent = isModule ? 'Open Studio →' : 'View Project →';
+        if (isModule) {
+          chip.style.background = 'rgba(34,211,216,.25)';
+          chip.style.borderColor = 'rgba(34,211,216,.4)';
+          chip.style.color = 'rgba(180,235,240,.95)';
+        }
         label.appendChild(chip);
         tile.addEventListener('mouseenter', () => chip.style.opacity = '1');
         tile.addEventListener('mouseleave', () => chip.style.opacity = '0');
       }
 
       tile.addEventListener('click', function(e) {
-        // Don't navigate if clicking on an interactive canvas element
         if (e.target.tagName === 'CANVAS' && e.target.style.pointerEvents === 'none') return;
-        const effect = this.dataset.effect;
-        const projectId = effectToProject[effect] || effect;
-        window.location.href = `project.html?id=${projectId}`;
+        const fx = this.dataset.effect;
+        if (effectToModule[fx]) {
+          window.location.href = effectToModule[fx];
+        } else {
+          window.location.href = `project.html?id=${fx}`;
+        }
       });
     });
   })();
